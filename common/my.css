@@ -1,0 +1,12 @@
+/* 游戏列表图片大小 */
+.cu-avatar.lg {
+	width: 106upx;
+	height: 106upx;
+	font-size: 2em;
+}
+
+/* 游戏列表左边图标位置 */
+.cu-list.menu-avatar>.cu-item>.cu-avatar {
+	position: absolute;
+	left: 20upx;
+}

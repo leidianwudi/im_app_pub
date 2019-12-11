@@ -1,0 +1,1 @@
+<view class="content"><view data-event-opts="{{[['tap',[['createGroup',['$event']]]]]}}" class="cell_divider createG" bindtap="__e"><text>创建群聊</text><view><micon vue-id="1" type="forward" size="18" bind:__l="__l"></micon></view></view></view>

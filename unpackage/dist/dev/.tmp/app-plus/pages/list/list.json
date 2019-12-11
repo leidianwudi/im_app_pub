@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "联系人",
+  "enablePullDownRefresh": true,
+  "usingComponents": {
+    "cell": "/components/list-cell/list-cell"
+  }
+}

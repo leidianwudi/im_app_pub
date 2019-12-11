@@ -1,0 +1,22 @@
+
+.modify_box{
+	border-bottom: 1px solid #09BB07;
+	width:90%;
+	margin:0 auto;
+	padding-top:50rpx;
+	padding-left:15rpx;
+	-webkit-box-sizing:border-box;
+	        box-sizing:border-box;
+}
+.modify_test{
+	color:#808080;
+	font-size:14px;
+	padding-left:30rpx;
+	-webkit-box-sizing:border-box;
+	        box-sizing:border-box;
+	margin-top:10rpx;
+}
+.apply_friend{
+	margin-top:100rpx;
+}
+

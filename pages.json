@@ -1,0 +1,171 @@
+{
+    "pages": [ //pages数组中第一项表示应用启动页,
+        {
+            "path": "pages/group/addGroupUser/addGroupUser",
+            "style": {
+                "navigationBarTitleText": "邀请好友",
+				"app-plus":{
+					"titleNView": {
+						"buttons": [ //原生标题栏按钮配置,
+							  {
+								"text":"\u2713",
+								"float":"right",
+								"fontSize":"20px"
+							  }
+						]
+					}
+				}
+            }			
+		},{
+            "path": "pages/group/myGroup/myGroup",
+            "style": {
+                "navigationBarTitleText": "我的群聊"
+            }			
+        },{
+            "path": "pages/group/checkGroup/checkGroup",
+            "style": {
+                "navigationBarTitleText": "群信息",
+        		"app-plus": {
+        			//app页面不显示滚动条
+        			"scrollIndicator": "none"
+        		}
+            }
+        },{
+            "path": "pages/friend/chat/groupChat/groupChat",
+            "style": {
+                "navigationBarTitleText": "群聊天",
+        		"enablePullDownRefresh": true,
+				"app-plus": {
+					"bounce": "none", //关闭窗口回弹效果
+					"titleNView": {
+						"buttons": [ //原生标题栏按钮配置,
+							  {
+								"type":"menu",
+								"float":"right"
+							  }
+						]
+					}
+				}
+            }
+        },{
+            "path": "pages/friend/FriendList/FriendList",
+            "style": {
+                "navigationBarTitleText": "联系人",
+        		"enablePullDownRefresh": true,
+        		"app-plus": {
+        			//app页面不显示滚动条
+        			"scrollIndicator": "none"
+        		}
+            }
+        },{
+            "path": "pages/friend/news/news",
+            "style": {
+                "navigationBarTitleText": "消息",
+        		"enablePullDownRefresh": true,
+        		"app-plus": {
+        			//app页面不显示滚动条
+        			"scrollIndicator": "none"
+        		}
+            }
+        },{
+            "path": "pages/friend/chat/friendChat/friendChat",
+            "style": {
+                "navigationBarTitleText": "聊天记录",
+				"app-plus": {
+					//app页面不显示滚动条
+					"scrollIndicator": "none"
+				}
+            }
+        },{
+            "path": "pages/user/My/My",
+            "style": {
+                "navigationBarTitleText": "我的"
+            }
+        },{
+            "path": "pages/friend/find/find",
+            "style": {
+                "navigationBarTitleText": "发现",
+				"app-plus": {
+					//app页面不显示滚动条
+					"scrollIndicator": "none"
+				}
+            }
+        },{
+            "path": "pages/group/createGroup/createGroup",
+            "style": {
+                "navigationBarTitleText": "创建群聊"
+            }
+        },{
+        	"path":"pages/user/MyInfo/MyInfo",
+        	"style":{
+        		"navigationBarTitleText":"修改信息"
+        	}
+        },{
+			"path": "pages/user/MyInfo/updMyAge/updMyAge",
+			"style": {
+			    "navigationBarTitleText": "修改年龄"
+			}
+		},{
+			"path": "pages/user/MyInfo/updMySex/updMySex",
+			"style": {
+			    "navigationBarTitleText": "修改性别"
+			}
+		},{
+			"path":"pages/user/MyInfo/updMytext/updMytext",
+			"style":{
+                "navigationBarTitleText": "填写信息"				
+			}
+		},{
+	    	"path":"pages/friend/details/details",
+	    	"style": {
+	    		"navigationBarTitleText": "用户详情"
+	    	}
+	    },{
+            "path": "pages/user/login/login",
+            "style": {
+                "navigationBarTitleText": "登录"
+            }
+        },  {
+            "path": "pages/user/updpwd/updpwd",
+            "style": {
+                "navigationBarTitleText": "找回密码"
+            }
+        },  {
+            "path": "pages/user/reg/reg",
+            "style": {
+                "navigationBarTitleText": "新用户注册"
+            }
+        }
+    ],
+    "tabBar": {
+        "color": "#7a7e83",
+        "selectedColor": "#0faeff",
+        "backgroundColor": "#ffffff",
+        "list": [{
+            "pagePath": "pages/friend/news/news",
+            "text": "消息",
+            "iconPath": "static/img/msg.png",
+            "selectedIconPath": "static/img/msg_a.png"
+        }, {
+            "pagePath": "pages/friend/FriendList/FriendList",
+            "text": "联系人",
+            "iconPath": "static/img/extend.png",
+            "selectedIconPath": "static/img/extend_a.png"
+        },{
+		    "pagePath": "pages/friend/find/find",
+		    "text": "发现",
+		    "iconPath": "static/img/my.png",
+		    "selectedIconPath": "static/img/my_a.png"
+		},{
+            "pagePath": "pages/user/My/My",
+            "text": "我的",
+            "iconPath": "static/img/list.png",
+            "selectedIconPath": "static/img/list_a.png"
+        }]
+    },
+    "globalStyle": {
+        "navigationBarTextStyle": "black",
+        "navigationBarBackgroundColor": "#FFFFFF",  //1AAC19
+        "backgroundColor": "#fbf9fe"
+    }
+}

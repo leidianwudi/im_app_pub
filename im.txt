@@ -1,0 +1,13 @@
+登录
+http://192.168.3.229:8021/api/user/userLogin
+{
+"account":"test2",
+"pwd":"123456"
+}
+
+注册
+api/user/userRegister
+{
+"account":"test2",
+"pwd":"123456"
+}

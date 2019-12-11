@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "修改信息",
+  "usingComponents": {
+    "micon": "/components/m-icon/m-icon"
+  }
+}

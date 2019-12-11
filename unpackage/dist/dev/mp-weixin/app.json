@@ -1,0 +1,57 @@
+{
+  "pages": [
+    "pages/friend/news/news",
+    "pages/friend/chat/friendChat/friendChat",
+    "pages/user/My/My",
+    "pages/group/myGroup/myGroup",
+    "pages/friend/find/find",
+    "pages/group/createGroup/createGroup",
+    "pages/user/MyInfo/MyInfo",
+    "pages/user/MyInfo/updMyAge/updMyAge",
+    "pages/user/MyInfo/updMySex/updMySex",
+    "pages/user/MyInfo/updMytext/updMytext",
+    "pages/friend/details/details",
+    "pages/friend/FriendList/FriendList",
+    "pages/user/login/login",
+    "pages/user/updpwd/updpwd",
+    "pages/user/reg/reg"
+  ],
+  "subPackages": [],
+  "window": {
+    "navigationBarTextStyle": "black",
+    "navigationBarBackgroundColor": "#FFFFFF",
+    "backgroundColor": "#fbf9fe"
+  },
+  "tabBar": {
+    "color": "#7a7e83",
+    "selectedColor": "#0faeff",
+    "backgroundColor": "#ffffff",
+    "list": [
+      {
+        "pagePath": "pages/friend/news/news",
+        "text": "消息",
+        "iconPath": "static/img/msg.png",
+        "selectedIconPath": "static/img/msg_a.png"
+      },
+      {
+        "pagePath": "pages/friend/FriendList/FriendList",
+        "text": "联系人",
+        "iconPath": "static/img/extend.png",
+        "selectedIconPath": "static/img/extend_a.png"
+      },
+      {
+        "pagePath": "pages/friend/find/find",
+        "text": "发现",
+        "iconPath": "static/img/my.png",
+        "selectedIconPath": "static/img/my_a.png"
+      },
+      {
+        "pagePath": "pages/user/My/My",
+        "text": "我的",
+        "iconPath": "static/img/list.png",
+        "selectedIconPath": "static/img/list_a.png"
+      }
+    ]
+  },
+  "usingComponents": {}
+}
