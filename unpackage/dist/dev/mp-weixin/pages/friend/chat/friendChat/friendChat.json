@@ -1,6 +1,0 @@
-{
-  "navigationBarTitleText": "聊天记录",
-  "usingComponents": {
-    "tui-icon": "/components/icon"
-  }
-}

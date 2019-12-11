@@ -30,7 +30,7 @@
 </template>
 
 <script>
-	import storage from '@/api/storage.js'
+	import storage from '@/api/storage.js';
 	import api from '@/api/api.js';
 	import util from '@/common/util.js';
 	import md5 from '@/common/md5.js';

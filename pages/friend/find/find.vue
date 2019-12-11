@@ -139,7 +139,8 @@ export default{
 			pass(passid, passstatus){
 				let this_ = this;//保存
 				uni.showModal({
-					title:"您确定通过Ta的好友验证吗？",
+					title:"提示",
+					content:"您确定通过Ta的好友验证吗？",
 					success(res){
 						if(res.confirm){
 							let data1 = {

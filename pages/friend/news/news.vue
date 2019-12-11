@@ -1,7 +1,7 @@
 <template>
 	<view class="content">
 	  <block v-for="(item, index) in list" :key="index">
-        <listcell :last="true" class="row"  @tap="chat(item.friendAccount, item.img, index ,item)">
+        <listcell :last="true" class="row"  @tap="chat(item.friendAccount, item.img, item.title ,item)">
 			<view class="news_left">
 				<image :src="item.img" mode="widthFix" class="user_img"></image>  <!-- 好友的头像 -->
 				<view class="news_info">
@@ -20,10 +20,12 @@
 </template>
 
 <script>
-import tuiBadge from "@/components/badge/badge"
-import listcell from "@/components/list-cell/list-cell"
-import storage from '@/api/storage.js'
+import tuiBadge from "@/components/badge/badge";
+import listcell from "@/components/list-cell/list-cell";
+import storage from '@/api/storage.js';
 import api from '@/api/api.js';
+import util from '@/common/util.js';
+
 export default{
 		components: {
 			tuiBadge,
@@ -48,19 +50,22 @@ export default{
 			this.getMsgList(data);
 		},
 		methods:{
-			chat(friendNickTip, head ,index ,item){
-				let msg = storage.getMsg();
-				let Index = msg[index].msgIndex  //旧数据
-				// console.log(item.msgIndex);  //新数据
-				let newIndex  = item.msgIndex - Index;
-				if(newIndex === 0){   //没有新数据时
-					item.msgIndex = '';
-					item.level = 0;
-				} else{  //有新数据时
-					storage.setMsg(item);
-					item.msgIndex = newIndex;
-					item.level = 1;
-				}
+			chat(account, head ,friendNickTip ,item){
+				uni.navigateTo({
+					url:'/pages/friend/chat/friendChat/friendChat?friendNick='+account+'&friendHead='+head
+				})
+				// let msg = storage.getMsg();
+				// let Index = msg[index].msgIndex  //旧数据
+				// // console.log(item.msgIndex);  //新数据
+				// let newIndex  = item.msgIndex - Index;
+				// if(newIndex === 0){   //没有新数据时
+				// 	item.msgIndex = '';
+				// 	item.level = 0;
+				// } else{  //有新数据时
+				// 	storage.setMsg(item);
+				// 	item.msgIndex = newIndex;
+				// 	item.level = 1;
+				// }
 				// uni.navigateTo({
 				// 	url:'/pages/friend/chat/friendChat/friendChat?friendNick='+friendNickTip+'&friendHead='+head
 				// })
@@ -70,6 +75,7 @@ export default{
 				api.getLastMsgByAccount(postData, res=>{
 					let data = api.getData(res).data;
 					storage.setMsg(data);
+					if (util.isEmpty(data)) return;
 					data.forEach(function(e){
 						if(e.type === 0){
 							if(e.sendAccount === _this.userEn.account){

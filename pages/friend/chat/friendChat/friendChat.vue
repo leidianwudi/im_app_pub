@@ -12,7 +12,7 @@
 				<tui-icon name="imface" :size="26" color='#333'></tui-icon>
 			</view>
 			<view hover-class="tui-opcity" :hover-stay-time="150" class="tui-pr">
-				<tui-icon name="add" :ize="30" color='#333'></tui-icon>
+				<tui-icon name="add" :ize="30" color='#333' @tap="send"></tui-icon>
 			</view>
 		</view>
 		<!-- 底部输入框 -->

@@ -1,6 +1,0 @@
-{
-  "navigationBarTitleText": "发现",
-  "usingComponents": {
-    "cell": "/components/list-cell/list-cell"
-  }
-}
