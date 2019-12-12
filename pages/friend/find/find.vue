@@ -180,6 +180,7 @@ export default{
 			}
 		},
 		onShow(){
+			this.search_box = false;
 			this.userEn = storage.getMyInfo();
 			this.newFriend = [];
 			let data = {

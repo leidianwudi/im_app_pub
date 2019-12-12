@@ -4,11 +4,14 @@
             "path": "pages/friend/news/news",
             "style": {
                 "navigationBarTitleText": "消息",
-        		"enablePullDownRefresh": true,
-        		"app-plus": {
-        			//app页面不显示滚动条
-        			"scrollIndicator": "none"
-        		}
+				"app-plus": {
+				    "titleNView": {    
+					    "splitLine": {  
+							"color":"#000000"  
+					    }    
+					}    
+			    },
+        		"enablePullDownRefresh": true
             }
         },{
             "path": "pages/group/addGroupUser/addGroupUser",
@@ -165,7 +168,8 @@
     },
     "globalStyle": {
         "navigationBarTextStyle": "black",
-        "navigationBarBackgroundColor": "#FFFFFF",  //1AAC19
+        "navigationBarBackgroundColor": "#F7F7F7",  //1AAC19
         "backgroundColor": "#fbf9fe"
+
     }
 }
