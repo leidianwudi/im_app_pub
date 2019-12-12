@@ -28,7 +28,8 @@
 	import api from '@/api/api.js';
 	import util from '@/common/util.js';
     import mInput from '@/components/m-input.vue';
-	import md5 from '@/common/md5.js'
+	import md5 from '@/common/md5.js';
+	import storage from '@/api/storage.js';
 
     export default {
         components: {
@@ -89,14 +90,15 @@
 					if(code === 0){
 						let data = api.getData(res);
 						let msg = api.getMsg(res);
+						storage.setMyInfo(data);//保存数据
 						uni.showToast({
-							title: msg,
+							title: "注册成功",
 							image:'/static/img/check-circle.png',
 							duration:2000,
 							success() {
 								setTimeout(function(){
 									uni.reLaunch({
-									    url: '../login/login',
+									    url: '/pages/friend/news/news',
 									});
 								},2000)
 							}
