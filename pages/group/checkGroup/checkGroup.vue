@@ -1,11 +1,11 @@
 <template>
 	<view class="content" style="background:#EDEDED; padding:0;">
 		<view class="group_user">
-			<view class="user_model" v-for="(item, index) in groupUser" :key="index">
-				<view class="">
-					<image :src="item.head" mode="widthFix"></image>
-				</view>
-				<text>{{item.account}}</text>
+			<view class="user_model" v-for="(item, index) in groupUser" :key="index" @tap="checkUser(item.account, item.job, 0)">
+                	<view class="">
+                		<image :src="item.head" mode="widthFix"></image>
+                	</view>
+                	<text>{{item.account}}</text>	
 			</view>
 			<view class="user_model add_user">
 				<image src="/static/img/add.png" mode="widthFix" @tap="addGroupUser"></image>
@@ -33,7 +33,8 @@
 		</view>
 		
 		<view class="out_group">
-			<button type="primary" @tap="apply">退出群聊</button>			
+			<button type="primary" @tap="outGroup" v-if="groupEn.job !== 2">退出群聊</button>
+			<button type="primary" @tap="outGroup" v-if="groupEn.job === 2">解散群聊</button>
 		</view>
 	</view>
 </template>
@@ -70,6 +71,14 @@ export default {
 		this.getGroupUser(data);
 	},
 	methods:{
+		checkUser(friendAccount, job, admin){
+			if(friendAccount === this.userEn.account) return;
+			if(this.groupEn.job === 2) admin = 2;
+			uni.navigateTo({
+				url:'/pages/friend/details/details?friendAccount='+friendAccount+'&job='+job+'&admin='+admin
+			})
+		},
+		//获取群内所有用户
 		getGroupUser(postData){
 			let _this = this;
 			api.getUserByGroupId(postData, res=>{
@@ -77,8 +86,83 @@ export default {
 				this.groupUser = data;
 			})
 		},
+		//拉好友进群
 		addGroupUser(){
+			let groupUserList = [];
+			this.groupUser.forEach(function(el){
+				groupUserList.push(el.account);
+			});
+			uni.navigateTo({
+				url:'/pages/group/addGroupUser/addGroupUser?List='+groupUserList
+			})
+		},
+		// 用户自己退出群 or 群主解散群
+		outGroup(){
+			let data = {
+				groupId: this.groupEn.groupId,
+				account: this.userEn.account
+			}
+			let data1 = {
+				id: this.groupEn.groupId,
+				hostAccount: this.userEn.account				
+			}
+			let _this = this;
+			// 判断当前用户是否是群主
+			if(this.groupEn.job !== 2) {
+				uni.showModal({
+					title:'群提示',
+					content:'您确定要退出群聊吗？',
+					success(res){
+						if(res.confirm) _this.outGroupUser(data);
+					}
+				})
+		    } else {
+				uni.showModal({
+					title:'群提示',
+					content:'您确定要解散群聊吗？',
+					success(res){
+						if(res.confirm) _this.delGroup(data1);
+					}
+				})
+			}
 			
+		},
+		outGroupUser(postData){
+		     api.outGroupByUser(postData, res=>{
+				 console.log(res);
+				let code = api.getCode(res);
+				let msg = api.getMsg(res);
+				if(code === 0){
+					uni.showToast({
+						title: msg,
+						image:'/static/img/check-circle.png',
+						duration:2000
+					})
+                    setTimeout(function(){
+						uni.navigateBack({
+							delta: 2
+						})
+					},500)
+				}			 
+		})
+		},
+		delGroup(postData){
+			api.dissolveGroup(postData, res=>{
+				let code = api.getCode(res);
+				let msg = api.getMsg(res);
+				if(code === 0){
+					uni.showToast({
+						title: msg,
+						image:'/static/img/check-circle.png',
+						duration:2000
+					})
+                    setTimeout(function(){
+						uni.navigateBack({
+							delta: 2
+						})
+					},2000)
+				}
+			})
 		}
 	}
 

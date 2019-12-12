@@ -26,6 +26,8 @@
             	<button type="primary" @tap="sendMsg(friendEn.account, friendEn.head)" v-if="delFriend">发送消息</button>
             	<button type="primary" @tap="del" v-if="delFriend">删除好友</button>
             </view>
+			
+			<button type="primary" @tap="outGroupUserByAdmin" v-if="outGroupByAdmin">移出群聊</button>
 		</view>
 		
 		<modal :show="modal9" @cancel="hide9" :custom="true" :fadein="true">
@@ -58,14 +60,17 @@ export default{
 			userEn: null,
 			addFriend:false,
 			delFriend:false,
-			friendEn:null
+			outGroupByAdmin:false,
+			friendEn:null,
+			groupEn:null
 		}
 	},
 	onLoad(res){
 		this.userEn = storage.getMyInfo();
         if(res.friendAccount){
-			this.delFriend = true;
-		} else{
+			if(!res.job) this.delFriend = true;
+			if(res.admin === '2') this.outGroupByAdmin = true;
+		}else{
 			this.addFriend = true;
 		}
 		let data = {
@@ -74,6 +79,41 @@ export default{
 		this.reqFirendInfo(data);
 	},
 	methods:{
+		outGroupUserByAdmin(){
+			this.groupEn = storage.getGroupInfo();
+			let _this = this;
+			let data = {
+				groupId: this.groupEn.groupId,
+				account: this.userEn.account,
+				friendAccount: this.fr_name
+			}
+			uni.showModal({
+				title:'群提示',
+				content:'您确定要将'+_this.fr_name+'移出群聊？',
+				success(res){
+					if(res.confirm) _this.outUser(data);
+				}
+			})
+		},
+		outUser(postData){
+            api.outGroupByAdmin(postData, res=>{
+				let code = api.getCode(res);
+				let msg = api.getMsg(res);
+				if(code === 0){
+					uni.showToast({
+						title: msg,
+						image:'/static/img/check-circle.png',
+						duration:2000
+					})
+				    setTimeout(function(){
+						uni.navigateBack({
+							delta: 2
+						})
+					},500)
+				}
+			})
+
+		},
 		sendMsg(account, head){
 			uni.navigateTo({
 				url:'/pages/friend/chat/friendChat/friendChat?friendNick='+account+'&friendHead='+head

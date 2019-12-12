@@ -29,6 +29,12 @@ module.exports = {
 	//搜索用户
 	getUserByAccount: function(postData, funSuccess) {httpUtil.post('user/getUserByAccount', postData, funSuccess);},
 	
+	//用户修改自己信息
+	updMyInfo: function(postData, funSuccess) {httpUtil.post('user/updMyInfo', postData, funSuccess);},
+	
+	//查询自己信息
+	getMyInfo: function(postData, funSuccess) {httpUtil.post('user/getMyInfo', postData, funSuccess);},
+	
 	//申请添加好友
 	applyFriend: function(postData, funSuccess) {httpUtil.post('friend/applyFriend', postData, funSuccess);},
 	
@@ -40,12 +46,15 @@ module.exports = {
 	
 	//通过好友申请
 	applyFriendAudit: function(postData, funSuccess) {httpUtil.post('friend/applyFriendAudit', postData, funSuccess);},
-
-	//用户修改自己信息
-	updMyInfo: function(postData, funSuccess) {httpUtil.post('user/updMyInfo', postData, funSuccess);},
 	
-	//查询自己信息
-	getMyInfo: function(postData, funSuccess) {httpUtil.post('user/getMyInfo', postData, funSuccess);},
+	//获取我的好友列表
+	getFriendByAccount: function(postData, funSuccess) {httpUtil.post('friend/getFriendByAccount', postData, funSuccess);},
+	
+	//发送消息
+	sendMsgToFriend: function(postData, funSuccess) {httpUtil.post('friend/sendMsgToFriend', postData, funSuccess);},
+	
+	//查询和好友的聊天记录
+	getFriendMsg: function(postData, funSuccess) {httpUtil.post('friend/getFriendMsg', postData, funSuccess);},
 	
 	//创建群聊
 	createGroup: function(postData, funSuccess) {httpUtil.post('group/createGroup', postData, funSuccess);},
@@ -56,15 +65,24 @@ module.exports = {
 	//查询群内所有成员
 	getUserByGroupId: function(postData, funSuccess) {httpUtil.post('group/getUserByGroupId', postData, funSuccess);},
 	
-	//获取我的好友列表
-	getFriendByAccount: function(postData, funSuccess) {httpUtil.post('friend/getFriendByAccount', postData, funSuccess);},
+	//拉好友进群
+	friendJoinGroup: function(postData, funSuccess) {httpUtil.post('group/friendJoinGroup', postData, funSuccess);},
 	
-	//发送消息
-	sendMsgToFriend: function(postData, funSuccess) {httpUtil.post('friend/sendMsgToFriend', postData, funSuccess);},
+	//用户自己退出群
+	outGroupByUser: function(postData, funSuccess) {httpUtil.post('group/outGroupByUser', postData, funSuccess);},
+	
+	//群主把用户移出群
+	outGroupByAdmin: function(postData, funSuccess) {httpUtil.post('group/outGroupByAdmin', postData, funSuccess);},
+	
+	//群主解散群
+	dissolveGroup: function(postData, funSuccess) {httpUtil.post('group/dissolveGroup', postData, funSuccess);},
+	
+	//群内发消息
+	sendMsgToGroup: function(postData, funSuccess) {httpUtil.post('group/sendMsgToGroup', postData, funSuccess);},
+		
+	//查询群聊天记录
+	getGroupMsg: function(postData, funSuccess) {httpUtil.post('group/getGroupMsg', postData, funSuccess);},
 	
 	//查询所有最后一条聊天记录
 	getLastMsgByAccount: function(postData, funSuccess) {httpUtil.post('msg/getLastMsgByAccount', postData, funSuccess);},
-	
-	//查询和好友的聊天记录
-	getFriendMsg: function(postData, funSuccess) {httpUtil.post('friend/getFriendMsg', postData, funSuccess);},
 } 

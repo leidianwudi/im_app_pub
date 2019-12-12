@@ -6,7 +6,7 @@
 				<view hover-class="tui-opcity" :hover-stay-time="150" class="tui-voice">
 					<tui-icon name="voice" :size="34" color='#333'></tui-icon>
 				</view>
-				<input class="tui-chat-input" v-model="send_info" @confirm='send'></input>
+				<input class="tui-chat-input" v-model="send_info" @confirm='sendGroupMsg' :disabled="inputDisabled"></input>
 			</view>
 			<view hover-class="tui-opcity" :hover-stay-time="150">
 				<tui-icon name="imface" :size="26" color='#333'></tui-icon>
@@ -17,13 +17,13 @@
 		</view>
 		<!-- 底部输入框 -->
 		
-<!-- 		<view class="chat_info">
+		<view class="chat_info">
 			<scroll-view scroll-y>
 				<view class="tui-chat-content">
-					<view class="tui-label">你们已成为好友</view> 
+					<view class="tui-label">{{system}}</view> 
 					<view class="tui-chat-center">星期四 11:02</view>  
 					
-					<view class="msgList" v-for="(item, index) in msgList" :key="index">
+					<view class="msgList" v-for="(item, index) in groupMsgList" :key="index">
 						
 						<view class="tui-chat-right" v-if="item.Mymsg">  
 							<view class="tui-chatbox tui-chatbox-right">{{item.Mymsg}}</view>
@@ -39,7 +39,7 @@
 					
 				</view>
 			</scroll-view>
-		</view> -->
+		</view>
 		
 	</view>
 </template>
@@ -56,17 +56,91 @@ export default {
 		data() {
 			return {
 				send_info:'',
-				groupEn:null
+				groupEn:null,
+				userEn:null,
+				system:'',  //系统消息内容
+				groupMsgList:[],
+				inputDisabled:false  //输入框是否禁用
 			}
 		},
+		//点击右上角的更多群信息
 		onNavigationBarButtonTap(e) {
 			uni.navigateTo({
 				url:'/pages/group/checkGroup/checkGroup'
 			})		
 		},
 		onLoad(){
+			this.userEn = storage.getMyInfo();
 			this.groupEn = storage.getGroupInfo();
 			util.setBarTitle(this.groupEn.groupName);
+		},
+		onShow() {
+			this.groupMsgList = [];
+			let data = {
+				id: 1,
+				groupId: this.groupEn.groupId,
+				account: this.userEn.account,
+				page: 1,
+				count: 10
+			}
+			this.getGroupMsg(data);
+		},
+		methods:{
+			//获取群的聊天记录
+			getGroupMsg(postData){
+				let _this = this;
+				api.getGroupMsg(postData, res=>{
+					let code = api.getCode(res);
+					let msg = api.getMsg(res);
+					//群被解散时输入框禁用
+					if(code === -10011){
+						_this.system = msg;
+						_this.inputDisabled = true;
+					}else {
+						let data = api.getData(res).data.reverse(); //倒取群消息
+						data.forEach(function(el){
+							if(el.account === _this.userEn.account){
+								el.Mymsg = el.msg;
+							}else if(el.account === '' || el.account === null){
+								_this.system = el.msg
+								return;
+							}else {
+								el.Frmsg = el.msg;
+							}
+							_this.groupMsgList.push(el);
+						})
+					}
+				})
+			},
+			//群内发送消息
+			sendGroupMsg(){
+				let data = {
+					groupId: this.groupEn.groupId,
+					account: this.userEn.account,
+					type: 0,
+					msg: this.send_info
+				}
+				this.sendMyMsg(data);
+			},
+			sendMyMsg(postData){
+				let _this = this;
+				api.sendMsgToGroup(postData, res=>{
+					let code = api.getCode(res);
+					let data = api.getData(res);
+					if(code === 0){
+						_this.send_info = '';
+						_this.groupMsgList = [];
+						let data = {
+							id: 1,
+							groupId: this.groupEn.groupId,
+							account: this.userEn.account,
+							page: 1,
+							count: 10
+						}
+						this.getGroupMsg(data);
+					}
+				})
+			}
 		}
 }
 </script>

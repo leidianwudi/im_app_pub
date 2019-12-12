@@ -1,12 +1,12 @@
 <template>
 	<view class="content">
 	  <block v-for="(item, index) in list" :key="index">
-        <listcell :last="true" class="row"  @tap="chat(item.friendAccount, item.img, index ,item)">
+        <listcell :last="true" class="row"  @tap="chat(item.friendAccount, item.img, index ,item)" style="padding-left:15upx;">
 			<view class="news_left">
 				<image :src="item.img" mode="widthFix" class="user_img"></image>  <!-- 好友的头像 -->
 				<view class="news_info">
 					<view class="name">{{item.title}}</view>  <!-- 好友昵称 -->
-					<view class="content">{{item.msg}}</view>	<!-- 好友发送的消息 -->			
+					<view class="msg">{{item.msg}}</view>	<!-- 好友发送的消息 -->			
 				</view>
 			</view>  
 			
@@ -134,7 +134,7 @@ export default{
 		line-height: 1;
 		color: #262b3a;
 	}
-	.content {
+	.msg {
 		overflow: hidden;
 		white-space: nowrap;
 		text-overflow: ellipsis;
