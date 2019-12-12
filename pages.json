@@ -5,12 +5,16 @@
             "style": {
                 "navigationBarTitleText": "消息",
 				"app-plus": {
-				    "titleNView": {    
-					    "splitLine": {  
-							"color":"#000000"  
-					    }    
-					}    
-			    },
+					"bounce": "none", //关闭窗口回弹效果
+					"titleNView": {
+						"buttons": [ //原生标题栏按钮配置,
+							  {
+								"type":"menu",
+								"float":"right"
+							  }
+						]
+					}
+				},
         		"enablePullDownRefresh": true
             }
         },{
@@ -83,6 +87,11 @@
             "path": "pages/user/My/My",
             "style": {
                 "navigationBarTitleText": "我的"
+            }
+        },{
+            "path": "pages/friend/newFriend/newFriend",
+            "style": {
+                "navigationBarTitleText": "新的朋友"
             }
         },{
             "path": "pages/friend/find/find",

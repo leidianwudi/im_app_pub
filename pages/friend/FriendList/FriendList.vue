@@ -14,6 +14,16 @@
 	        	<view class="more"><micon type="arrowright" size=18></micon></view>
 	        </view>
 		</view>
+		
+		<view class="cell_divider createG" @tap="newFriend">
+		    <view>
+		    	<view class="myGroup">
+		    		<micon type="chatbubble-filled" size=25 color="#81D842"></micon>
+		    		<text>新的朋友</text>
+		    	</view>
+		    	<view class="more"><micon type="arrowright" size=18></micon></view>
+		    </view>
+		</view>
  <!--我的群聊-->
 		<view class="list">
 		    <block v-for="(item, index) in friengList" :key="index">
@@ -123,6 +133,11 @@
 				uni.navigateTo({
 				    url:'/pages/group/myGroup/myGroup'				
 				})
+			},
+			newFriend(){
+				uni.navigateTo({
+				    url:'/pages/friend/newFriend/newFriend'				
+				})				
 			},
 			touchStart(e) {  //点击首字母导航条时
 				this.touchmove = true

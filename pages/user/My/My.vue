@@ -39,7 +39,7 @@ import utilCore from '@/api/utilCore.js';
 				isLogin:false
 			}
 		},
-		onLoad(){
+		onShow(){
 			this.userEn = storage.getMyInfo();
 			this.isLogin = utilCore.isLogin();
 		},
