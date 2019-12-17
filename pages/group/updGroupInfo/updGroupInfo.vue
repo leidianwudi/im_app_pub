@@ -2,9 +2,6 @@
 	<view class="content">
 		<view class="modify_box">
 			<input type="text" v-model="val" />
-			<picker :range="six" @change="sixChange">
-			    {{ six[val] }} 
-			</picker>
 		</view>
 		<view class="modify_test">
 			请修改信息
@@ -23,35 +20,39 @@ import util from '@/common/util.js';
 export default{
 	data() {
 		return {
-			val:'',
-			type:'',
-			six:['保密','男', '女'],
+			val: '',
+			type: ''
 		}
 	},
+	onLoad(res) {
+		this.type = res.type;
+		this.val = res.value;
+		util.setBarTitle('修改' + res.title);
+	},
 	methods:{
-		sixChange:function(e){
-			this.val = e.detail.value;
-		},
 		apply(){
 			if(this.val === ''){
 				uni.showToast({
 					title:"信息不能为空！",
 					image:'/static/img/info-circle.png',
 				})
-			}else {
+			} else{
 				let data = {};
-				data["account"] = storage.getMyInfo().account;
+				data["id"] = storage.getGroupInfo();
+				data["hostAccount"] = storage.getMyInfo().account;
 				data[this.type]= this.val;
-                this.tijiao(data);
+				this.apply1(data);
 			}
 		},
-		tijiao(postData){
+		apply1(postData){
 			let _this = this;
-			api.updMyInfo(postData, res => {
+			api.updGroupByHost(postData, res=>{
 				let code = api.getCode(res);
 				let msg = api.getMsg(res);
 				if(code === 0){
-					_this.updateMyInfo();
+					uni.navigateBack({
+						delta: 1
+					})
 				}else{
 					uni.showToast({
 						title: msg,
@@ -61,22 +62,6 @@ export default{
 				}
 			})
 		},
-		updateMyInfo(){
-			let account = storage.getMyInfo().account;
-			api.getMyInfo({account:account}, res =>
-			{
-				let data = api.getData(res);
-				storage.setMyInfo(data);
-				uni.navigateBack();
-			}			
-			);
-			
-		}
-	},
-	onLoad(res){
-		this.type = res.type;
-		this.val = res.value;
-		util.setBarTitle('修改' + res.title);
 	}
 }
 </script>
@@ -99,9 +84,5 @@ export default{
 	}
 	.apply_friend{
 		margin-top:100rpx;
-	},
-	input{
-		display:none;
 	}
 </style>
-

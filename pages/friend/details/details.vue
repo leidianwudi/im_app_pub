@@ -80,12 +80,14 @@ export default{
 	},
 	methods:{
 		outGroupUserByAdmin(){
-			this.groupEn = storage.getGroupInfo();
+		    let groupId = storage.getGroupInfo();
 			let _this = this;
+			api.getGroupById({id: groupId}, res=>{
+				_this.groupEn = api.getData(res);
 			let data = {
-				groupId: this.groupEn.groupId,
-				account: this.userEn.account,
-				friendAccount: this.fr_name
+				groupId: _this.groupEn.id,
+				account: _this.userEn.account,
+				friendAccount: _this.fr_name
 			}
 			uni.showModal({
 				title:'群提示',
@@ -93,6 +95,7 @@ export default{
 				success(res){
 					if(res.confirm) _this.outUser(data);
 				}
+			})				
 			})
 		},
 		outUser(postData){

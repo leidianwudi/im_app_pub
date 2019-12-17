@@ -47,7 +47,10 @@ module.exports = {
 	//通过好友申请
 	applyFriendAudit: function(postData, funSuccess) {httpUtil.post('friend/applyFriendAudit', postData, funSuccess);},
 	
-	//获取我的好友列表
+	//查询我的好友列表
+	getFriendsByAccount: function(postData, funSuccess) {httpUtil.post('friend/getFriendsByAccount', postData, funSuccess);},
+	
+	//查询特定好友
 	getFriendByAccount: function(postData, funSuccess) {httpUtil.post('friend/getFriendByAccount', postData, funSuccess);},
 	
 	//发送消息
@@ -82,6 +85,12 @@ module.exports = {
 		
 	//查询群聊天记录
 	getGroupMsg: function(postData, funSuccess) {httpUtil.post('group/getGroupMsg', postData, funSuccess);},
+	
+	//查询群的详细信息
+	getGroupById: function(postData, funSuccess) {httpUtil.post('group/getGroupById', postData, funSuccess);},
+	
+	//修改群信息
+	updGroupByHost: function(postData, funSuccess) {httpUtil.post('group/updGroupByHost', postData, funSuccess);},
 	
 	//查询所有最后一条聊天记录
 	getLastMsgByAccount: function(postData, funSuccess) {httpUtil.post('msg/getLastMsgByAccount', postData, funSuccess);},

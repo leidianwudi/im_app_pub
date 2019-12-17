@@ -69,21 +69,25 @@ export default {
 				url:'/pages/group/checkGroup/checkGroup'
 			})		
 		},
-		onLoad(){
+		onLoad(res){
 			this.userEn = storage.getMyInfo();
-			this.groupEn = storage.getGroupInfo();
-			util.setBarTitle(this.groupEn.groupName);
 		},
 		onShow() {
-			this.groupMsgList = [];
-			let data = {
-				id: 1,
-				groupId: this.groupEn.groupId,
-				account: this.userEn.account,
-				page: 1,
-				count: 10
-			}
-			this.getGroupMsg(data);
+			let groupId = storage.getGroupInfo();
+			let _this = this;
+			api.getGroupById({id: groupId}, res=>{
+				_this.groupEn = api.getData(res);
+				util.setBarTitle(_this.groupEn.groupName);
+				_this.groupMsgList = [];
+				let data = {
+					id: 1,
+					groupId: _this.groupEn.id,
+					account: _this.userEn.account,
+					page: 1,
+					count: 10
+				}
+				_this.getGroupMsg(data);
+			})
 		},
 		methods:{
 			//获取群的聊天记录
@@ -115,7 +119,7 @@ export default {
 			//群内发送消息
 			sendGroupMsg(){
 				let data = {
-					groupId: this.groupEn.groupId,
+					groupId: this.groupEn.id,
 					account: this.userEn.account,
 					type: 0,
 					msg: this.send_info
@@ -132,7 +136,7 @@ export default {
 						_this.groupMsgList = [];
 						let data = {
 							id: 1,
-							groupId: this.groupEn.groupId,
+							groupId: this.groupEn.id,
 							account: this.userEn.account,
 							page: 1,
 							count: 10

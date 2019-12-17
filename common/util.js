@@ -76,7 +76,13 @@ module.exports = {
 	
 	 //判断是否为空
 	isEmpty: function(val){
-         return (val === null) || (val === '') ? true : false;
+		//判断是否为数组
+		if(this.isArray(val)) return (val.length <= 0);
+        return (val === null) || (val === '') ? true : false;
+	},
+	//判断是否为数组
+	isArray: function(o){
+		return Object.prototype.toString.call(o)== '[object Array]';
 	},
 	
 	//修改标题

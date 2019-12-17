@@ -37,17 +37,17 @@ module.exports = {
 	 	return uni.getStorageSync(groupInfo);
 	 },
 	 
-	 // 保存聊天记录
-	 setMsg: function(data){uni.setStorage({
-		key:'setMsg',
+	 
+	 // 保存最后一条聊天记录
+	 setLastMsgIndex: function(data){uni.setStorage({
+		key:'setmsg',
 		data:data
 	})},
 	
-	//获取聊天记录
-	// getLastMsgIndex: function(type, groupId, friendAccount){
-		
-	// 	return uni.getStorageSync('setMsg');
-	// },
+	// 获取最后一条聊天记录
+	getLastMsgIndex: function(type, groupId, friendAccount){
+		return uni.getStorageSync('setmsg');
+	},
 	
 	// getLastMsgIndex_key: function(type, groupId, friendAccount){
 	// 	switch (type){

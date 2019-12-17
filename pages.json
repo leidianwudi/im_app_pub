@@ -39,6 +39,11 @@
                 "navigationBarTitleText": "我的群聊"
             }			
         },{
+            "path": "pages/group/updGroupInfo/updGroupInfo",
+            "style": {
+                "navigationBarTitleText": "修改群信息"
+            }			
+        },{
             "path": "pages/group/checkGroup/checkGroup",
             "style": {
                 "navigationBarTitleText": "群信息",

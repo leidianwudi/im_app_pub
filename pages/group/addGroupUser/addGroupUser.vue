@@ -71,10 +71,14 @@
 		},
 		onLoad(res) {
 			this.userEn = storage.getMyInfo();
-			this.groupEn = storage.getGroupInfo();
 			this.whiteList = tran.str2Arr(res.List, ",")
 		},
 		onShow() {
+			let groupId = storage.getGroupInfo();
+			let _this = this;
+			api.getGroupById({id: groupId}, res=>{
+				_this.groupEn = api.getData(res);
+			})
 			this.friengList = [];
 			let data = {
 				account: this.userEn.account,
@@ -100,7 +104,7 @@
 		onNavigationBarButtonTap(e) {
 			let accounts = 	tran.arr2Str(this.selectAccounts, "|");	
 			let data = {
-				groupId: this.groupEn.groupId,
+				groupId: this.groupEn.id,
 				account: this.userEn.account,
 				friendAccount: accounts
 			}

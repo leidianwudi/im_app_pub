@@ -12,7 +12,7 @@
 			</view>
 		</view>
 		<view class="group_info">
-			<view class="group_bar">
+			<view class="group_bar" @tap="updGroupInfo('groupName', group_name, '群名称')">
                 <view class="border_bottom">
                 	<text>群聊名称</text>
                 	<view class="group_name">
@@ -21,7 +21,7 @@
                 	</view>
                 </view>
 			</view>
-			<view class="group_bar">
+			<view class="group_bar"  @tap="updGroupInfo('notice', group_notice, '群公告')">
 				<view class="border_bottom">
 					<text>群公告</text>
 					<view class="group_name">
@@ -33,8 +33,8 @@
 		</view>
 		
 		<view class="out_group">
-			<button type="primary" @tap="outGroup" v-if="groupEn.job !== 2">退出群聊</button>
-			<button type="primary" @tap="outGroup" v-if="groupEn.job === 2">解散群聊</button>
+			<button type="primary" @tap="outGroup" v-if="isNAdmin">退出群聊</button>
+			<button type="primary" @tap="outGroup" v-if="isAdmin">解散群聊</button>
 		</view>
 	</view>
 </template>
@@ -53,27 +53,54 @@ export default {
 			group_notice:'',
 			groupEn:null,
 			groupUser:[],
-			userEn: null
+			userEn: null,
+			isNAdmin:false,
+			isAdmin: false
 		}
 	},
 	onLoad() {
-		this.groupEn = storage.getGroupInfo();
 		this.userEn = storage.getMyInfo();
-		this.group_name = this.groupEn.groupName;
 	},
 	onShow() {
-		let data = {
-			groupId: this.groupEn.groupId,
-			account: this.userEn.account,
-			page: 1,
-			count: 20
-		}
-		this.getGroupUser(data);
+		let groupId = storage.getGroupInfo();
+		let _this = this;
+		api.getGroupById({id: groupId}, res=>{
+			_this.groupEn = api.getData(res);
+            let data1 = {
+            	id: _this.groupEn.id
+            }  
+            _this.getGroupInfo(data1);
+            //请求群内成员数据
+            let data = {
+            	groupId: _this.groupEn.id,
+            	account: _this.userEn.account,
+            	page: 1,
+            	count: 20
+            }
+            _this.getGroupUser(data);
+			if(this.groupEn.hostAccount !== this.userEn.account) this.isNAdmin = true;
+			if(this.groupEn.hostAccount === this.userEn.account) this.isAdmin = true;
+		})
 	},
 	methods:{
+		updGroupInfo(type, value, title){
+			uni.navigateTo({
+				url:'/pages/group/updGroupInfo/updGroupInfo?type='+type+'&value='+value+'&title='+title
+			})
+		},
+		getGroupInfo(postData){
+		    let _this = this;
+			api.getGroupById(postData, res=>{
+				let data = api.getData(res);
+				_this.group_name = data.groupName,
+			    _this.group_notice = data.notice
+			})
+		},
 		checkUser(friendAccount, job, admin){
+			//判断是否点击的是自己的头像
 			if(friendAccount === this.userEn.account) return;
-			if(this.groupEn.job === 2) admin = 2;
+			//判断当前用户是否是群主
+			if(this.groupEn.hostAccount === this.userEn.account) admin = 2;
 			uni.navigateTo({
 				url:'/pages/friend/details/details?friendAccount='+friendAccount+'&job='+job+'&admin='+admin
 			})
@@ -99,16 +126,16 @@ export default {
 		// 用户自己退出群 or 群主解散群
 		outGroup(){
 			let data = {
-				groupId: this.groupEn.groupId,
+				groupId: this.groupEn.id,
 				account: this.userEn.account
 			}
 			let data1 = {
-				id: this.groupEn.groupId,
+				id: this.groupEn.id,
 				hostAccount: this.userEn.account				
 			}
 			let _this = this;
 			// 判断当前用户是否是群主
-			if(this.groupEn.job !== 2) {
+			if(this.groupEn.hostAccount !== this.userEn.account) {
 				uni.showModal({
 					title:'群提示',
 					content:'您确定要退出群聊吗？',

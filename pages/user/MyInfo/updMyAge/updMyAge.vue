@@ -7,7 +7,7 @@
 			</picker>
 		</view>
 		<view class="modify_test">
-			请修改您的信息
+			请修改信息
 		</view>
 		
 		<view class="apply_friend">

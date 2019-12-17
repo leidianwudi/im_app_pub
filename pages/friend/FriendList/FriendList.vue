@@ -8,7 +8,9 @@
 		<view class="cell_divider createG" @tap="myGroup">
 	        <view>
 	        	<view class="myGroup">
-	        		<micon type="chatbubble-filled" size=25 color="#81D842"></micon>
+                    <view class="adduser_img">
+                    	<image src="/static/img/group.png" mode="widthFix"></image>
+                    </view>
 	        		<text>我的群聊</text>
 	        	</view>
 	        	<view class="more"><micon type="arrowright" size=18></micon></view>
@@ -18,7 +20,9 @@
 		<view class="cell_divider createG" @tap="newFriend">
 		    <view>
 		    	<view class="myGroup">
-		    		<micon type="chatbubble-filled" size=25 color="#81D842"></micon>
+		    		<view class="adduser_img">
+		    			<image src="/static/img/adduser.png" mode="widthFix"></image>
+		    		</view>
 		    		<text>新的朋友</text>
 		    	</view>
 		    	<view class="more"><micon type="arrowright" size=18></micon></view>
@@ -61,9 +65,9 @@
 	import chinapy from '@/common/chinapy.js';
 	import api from '@/api/api.js';
 	import util from '@/common/util.js';
-	import storage from '@/api/storage.js'
+	import storage from '@/api/storage.js';
 	import cell from '@/components/list-cell/list-cell';
-	import micon from '@/components/m-icon/m-icon'
+	import micon from '@/components/m-icon/m-icon';
 	export default {
 		components: {
 			cell,
@@ -311,6 +315,9 @@
 	}
 	.createG{
 		background:#fff;
+		padding:50rpx 0;
+		box-sizing:border-box;
+		margin-bottom:20rpx;
 	}
 	.createG>view{
 		width:100%;
@@ -318,12 +325,27 @@
 		justify-content:space-between;
 		align-items: center;
 		border-bottom:1px solid #F0F0F0;
-		height:100%;
 	}
 	.list{
 		margin-top:20rpx;
 	}
+	.myGroup{
+		display:flex;
+		align-items:center;
+		padding:10rpx 0;
+	}
 	.myGroup>text{
-		vertical-align:super;
+		margin-left:20rpx;
+		color:#000000;
+		font-size:14px;
+		font-weight:normal;
+	}
+	.adduser_img{
+		width:100rpx;
+		height:100rpx;
+	}
+	.adduser_img>image{
+		width:100%;
+		height:auto;
 	}
 </style>

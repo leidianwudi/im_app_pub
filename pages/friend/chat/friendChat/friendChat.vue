@@ -16,121 +16,149 @@
 			</view>
 		</view>
 		<!-- 底部输入框 -->
-		
+
 		<view class="chat_info">
-			<scroll-view scroll-y>
-				<view class="tui-chat-content">
-					<view class="tui-label">你们已成为好友</view> 
-					<view class="tui-chat-center">星期四 11:02</view>  <!-- 时间 -->
-					
-					<view class="msgList" v-for="(item, index) in msgList" :key="index">
-						
-						<view class="tui-chat-right" v-if="item.Mymsg">  <!-- 我发送的消息 -->
-							<view class="tui-chatbox tui-chatbox-right">{{item.Mymsg}}</view>
-							<image :src="userEn.head" class="tui-user-pic tui-left"></image>
-						</view>
-						
-						<view class="tui-chat-left" v-if="item.Frmsg">   <!-- 好友发送的消息 -->
-							<image :src="friendHead" class="tui-user-pic tui-right"></image>
-							<view class="tui-chatbox tui-chatbox-left">{{item.Frmsg}}</view>
-						</view>
-						
+			<scroll-view class="msg-list" scroll-y="true" scroll-with-animation=false :scroll-into-view="scrollToView">
+				<view class="tui-chat-content" v-for="(item, index) in msgList" :key="index" :id="'msg'+item.id">
+					<view class="tui-chat-right" v-if="item.Mymsg">
+						<!-- 我发送的消息 -->
+						<view class="tui-chatbox tui-chatbox-right">{{item.Mymsg}}</view>
+						<image :src="userEn.head" class="tui-user-pic tui-left"></image>
 					</view>
-					
+
+					<view class="tui-chat-left" v-if="item.Frmsg">
+						<!-- 好友发送的消息 -->
+						<image :src="friendEn.friendHead" class="tui-user-pic tui-right" @tap="toFriendInfo(item.account)"></image>
+						<view class="tui-chatbox tui-chatbox-left">{{item.Frmsg}}</view>
+					</view>
+
 				</view>
 			</scroll-view>
 		</view>
-		
+
 	</view>
 </template>
 
 <script>
-import tuiIcon from '@/components/icon.vue'
-import api from '@/api/api.js';
-import storage from '@/api/storage.js';
-import util from '@/common/util.js';
-export default {
-	components:{
-		tuiIcon
-	},
-	data() {
-		return {
-			friendNick:'',
-			userEn:null,
-			send_info:'',
-			friendHead:'',
-			msgList:[]
-		}
-	},
-	onLoad(res){
-		this.msgList = [];
-		util.setBarTitle(res.friendNick);
-		this.friendNick = res.friendNick;
-		this.friendHead = res.friendHead;
-		this.userEn = storage.getMyInfo();
-		const head = this.userEn.head;
-	},
-	onShow() {
-        this.getMsgList();
-	},
-	methods:{
-		getMsgList(){
-			this.msgList = [];
-			let data = {
-				account: this.userEn.account,
-				toAccount: this.friendNick,
-				id: 0
-			}
-			this.getMsg(data);
+	import tuiIcon from '@/components/icon.vue';
+	import api from '@/api/api.js';
+	import storage from '@/api/storage.js';
+	import util from '@/common/util.js';
+	export default {
+		components: {
+			tuiIcon
 		},
-		getMsg(postData){
-			let _this = this;
-			api.getFriendMsg(postData, res=>{
-				let data = api.getData(res).data.reverse();
-				data.forEach(function(e){
-					if(e.account === _this.userEn.account){
-						e.Mymsg = e.msg;
-					}else {
-						e.Frmsg = e.msg;
-					}
-					_this.msgList.push(e);
+		data() {
+			return {
+				friendAccount:"",  	//好友账号
+				friendEn: '',      	//好友详细信息
+				userEn: null,  		//我的详细信息
+				send_info: '',  	//发送内容
+				msgList: [],    	//消息列表
+				scrollToView: '' 	//滚动列表位置
+			}
+		},
+		onLoad(res) {
+			this.userEn = storage.getMyInfo();
+			this.friendAccount = res.friendAccount;  //获取好友账号
+			this.getFriendInfo(this.userEn.account, this.friendAccount); //查询特定好友详细信息
+			this.getMsgList();  //获取与好友的消息记录
+		},
+		onShow() {
+			// this.getMsgList();
+		},
+		methods: {
+			//获取好友详细信息
+			getFriendInfo(account, friendAccount){
+				api.getFriendByAccount({account: account, friendAccount: friendAccount}, res=>{
+						this.friendEn = api.getData(res);
+						util.setBarTitle(this.friendEn.friendNickTip);  //设置标题栏文字为好友的昵称
+					})
+			},
+			//跳转到好友信息页面
+			toFriendInfo(friendAccount) {
+				uni.navigateTo({
+					url: '/pages/friend/details/details?friendAccount=' + friendAccount
 				})
-			})
-		},
-		send(){
-			if(this.send_info === '') return
-			let data = {
-				account: this.userEn.account,
-				toAccount: this.friendNick,
-				type: 0,
-				msg: this.send_info
-			}
-			this.sendInfo(data);
-		},
-		sendInfo(postData){
-			let _this = this;
-			api.sendMsgToFriend(postData, res=>{
-				let code = api.getCode(res);
-				let data = api.getData(res);
-				if(code === 0){
-					_this.send_info = '';
-					_this.msgList = [];
-					let data = {
-						account: _this.userEn.account,
-						toAccount: _this.friendNick,
-						id: 0
-					}
-					_this.getMsg(data);
+			},
+			getMsgList() {
+				let data = {
+					account: this.userEn.account,
+					toAccount: this.friendAccount,
+					id: 0
 				}
-			})
-		}		
-	}　
-}
+				this.getMsg(data);
+			},
+			getMsg(postData) {
+				let _this = this;
+				api.getFriendMsg(postData, res => {
+					let data = api.getData(res).data.reverse();
+					data.forEach(function(item) {
+						if (item.account === _this.userEn.account) {
+							item.Mymsg = item.msg;
+						} else {
+							item.Frmsg = item.msg;
+						}
+						if(_this.isNewMsg(item.id, _this.msgList))
+							_this.msgList.push(item);	
+					})
+					_this.$nextTick(function() {
+						let i = _this.msgList.length - 1;
+						// 滚动到底
+						_this.scrollToView = 'msg' + _this.msgList[i].id;
+					});
+					// let msg = storage.getLastMsgIndex(0, )
+				})
+			},
+			
+			//判断消息id是否是新消息
+			isNewMsg(ids, msgList){
+				if(util.isEmpty(msgList)) return true;
+				let i = msgList.length - 1;
+				return (ids > msgList[i].id);
+			},
+
+			//发送信息
+			send() {
+				if (this.send_info === '') return
+				let data = {
+					account: this.userEn.account,
+					toAccount: this.friendAccount,
+					type: 0,
+					msg: this.send_info
+				}
+				this.sendInfo(data);
+			},
+			sendInfo(postData) {
+				let _this = this;
+				api.sendMsgToFriend(postData, res => {
+					let code = api.getCode(res);
+					let data = api.getData(res);
+					if (code === 0) {
+						_this.send_info = '';
+						let data = {
+							account: _this.userEn.account,
+							toAccount: _this.friendAccount,
+							id: 0
+						}
+						_this.getMsg(data);
+					}
+				})
+			}
+		}
+	}
 </script>
 
-<style>
+<style lang="scss">
 	page {
 		background: #ebedf6;
+	}
+	//滚动条的scroll-into-view需要用到position: absolute;
+    .msg-list{
+		width: 100%;
+		position: absolute;
+		top: 0;
+		bottom: 100upx;		
 	}
 
 	.container {
@@ -178,7 +206,8 @@ export default {
 		/* padding-right: 18upx; */
 		/* box-sizing: border-box; */
 	}
-	.tui-pr{
+
+	.tui-pr {
 		padding-right: 16rpx;
 	}
 
@@ -201,6 +230,7 @@ export default {
 		padding-right: 20upx;
 		flex: 1;
 	}
+
 	.tui-opcity {
 		opacity: 0.5;
 	}
@@ -209,7 +239,7 @@ export default {
 
 	/*chatbox*/
 	.tui-chat-content {
-		width: 100%;
+		width: 95%;
 	}
 
 	.tui-chatbox {
@@ -377,7 +407,9 @@ export default {
 	.tui-flex-reverse {
 		flex-direction: row-reverse;
 	}
-	.chat_info{
-		flex:1;
+
+	.chat_info {
+		flex: 1;
 	}
+	 
 </style>

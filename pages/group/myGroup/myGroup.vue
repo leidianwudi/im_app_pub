@@ -7,7 +7,7 @@
 		
 		<view class="list">
 		    <block v-for="(item, index) in groupList" :key="index">
-				<cell @tap="goGroupChat(item)">
+				<cell @tap="goGroupChat(item.groupId)">
 					<image src="/static/img/2.jpg" class="img"></image>
 					<view class="name">{{item.groupName}}</view>
 				</cell>

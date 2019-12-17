@@ -1,7 +1,7 @@
 <template>
 	<view class="content">
 	  <block v-for="(item, index) in list" :key="index">
-        <listcell :last="true" class="row"  @tap="chat(item.friendAccount, item.img, item.title ,item)" style="padding-left:15upx;">
+        <listcell :last="true" class="row"  @tap="onChat(item.type, item.friendAccount, item.groupId)" style="padding-left:15upx;">
 			<view class="news_left">
 				<image :src="item.img" mode="widthFix" class="user_img"></image>  <!-- 好友的头像 -->
 				<view class="news_info">
@@ -50,31 +50,27 @@ export default{
 			this.getMsgList(data);
 		},
 		methods:{
-			chat(account, head ,friendNickTip ,item){
-				uni.navigateTo({
-					url:'/pages/friend/chat/friendChat/friendChat?friendNick='+account+'&friendHead='+head
-				})
-				// let msg = storage.getMsg();
-				// let Index = msg[index].msgIndex  //旧数据
-				// // console.log(item.msgIndex);  //新数据
-				// let newIndex  = item.msgIndex - Index;
-				// if(newIndex === 0){   //没有新数据时
-				// 	item.msgIndex = '';
-				// 	item.level = 0;
-				// } else{  //有新数据时
-				// 	storage.setMsg(item);
-				// 	item.msgIndex = newIndex;
-				// 	item.level = 1;
-				// }
-				// uni.navigateTo({
-				// 	url:'/pages/friend/chat/friendChat/friendChat?friendNick='+friendNickTip+'&friendHead='+head
-				// })
+			onChat(type, friendAccount, groupId){
+				switch (type){
+					case 0:  //好友聊天
+						uni.navigateTo({
+							url:'/pages/friend/chat/friendChat/friendChat?friendAccount='+friendAccount
+						});					
+						break;
+					case 1:  //群聊天
+						uni.navigateTo({
+							url:'/pages/friend/chat/groupChat/groupChat?groupId='+groupId
+						});
+						break;
+					default:
+						break;
+				}
 			},
 			getMsgList(postData){
 				let _this = this;
 				api.getLastMsgByAccount(postData, res=>{
 					let data = api.getData(res).data;
-					storage.setMsg(data);
+					storage.setLastMsgIndex(data);
 					if (util.isEmpty(data)) return;
 					data.forEach(function(e){
 						if(e.type === 0){
@@ -85,11 +81,15 @@ export default{
 								e.level = 1;
 								e.msgNum = e.msgIndex;
 							}
-							let timer = e.updTime.split(" ");
-							timer = timer[1].slice(0, timer.length-5)
-							e.time = timer;
-							_this.list.push(e);
+						}else{
+							e.level = 1;
+							e.msgNum = e.msgIndex;	
+							e.img = '/static/img/1.png';
 						}
+						let timer = e.updTime.split(" ");
+						timer = timer[1].slice(0, timer.length-5)
+						e.time = timer;
+						_this.list.push(e);
 					})
 				})
 			},

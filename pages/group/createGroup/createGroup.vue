@@ -36,7 +36,6 @@ export default{
 	},
 	methods:{
 		apply(){
-			console.log(this.groupName);
 			if(this.groupName === null || this.groupName === ''){
 				uni.showToast({
 					title:'群名称不能为空！',
