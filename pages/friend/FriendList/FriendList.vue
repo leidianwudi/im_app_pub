@@ -90,20 +90,29 @@
 		onLoad() {
 			this.userEn = storage.getMyInfo();
 		},
-		// onReachBottom() {
-		// 	this.friengList = [];
-		// 	let data = {
-		// 		account: this.userEn.account,
-		// 		page: 1,
-		// 		count: this.count += 6
-		// 	}
-		// 	this.reqFirendList(data);
-		// },
-		// onPullDownRefresh() {
-		// 	uni.startPullDownRefresh({
-				
-		// 	})
-		// }
+		onPullDownRefresh(){
+			this.friengList = [];
+			let data = {
+				account: this.userEn.account,
+				page: 1,
+				count: 20
+			};
+			this.reqFirendList(data);
+			const that = this;
+			setTimeout(() => {
+				uni.getSystemInfo({
+					success: function(res) {
+						let winHeight = res.windowHeight;  //获取设备的可使用窗口高度
+						let barHeight = winHeight - uni.upx2px(232); //uni.upx2px 尺寸单位转换方法
+						that.winHeight = winHeight;
+						that.indexBarHeight = barHeight;
+						that.indexBarItemHeight = barHeight / 25;
+						that.titleHeight = uni.upx2px(132);
+						that.lists = that.friengList;
+					}
+				})
+			}, 10)
+		},
 		onShow(){
 			this.friengList = [];
 			let data = {
@@ -172,13 +181,14 @@
 			},
 			reqFirendList(data){
 				let _this = this;
-				api.getFriendByAccount(data, res=>{
+				api.getFriendsByAccount(data, res=>{
 					let data = api.getData(res).data;
 					data.forEach(function(e){				
 						let fristKey = chinapy.makePy(e.friendNickTip);
 						_this.addFriend(fristKey, e);
 					});
 				});
+				uni.stopPullDownRefresh();
 			},
 			addFriend(fristKey, value){
 				//如果首字母不存在就添加首字母+添加数据

@@ -43,10 +43,9 @@ export default{
 		}
 	},
 	methods:{
-		goGroupChat(item){
-			storage.setGroupInfo(item);
+		goGroupChat(groupId){
 			uni.navigateTo({
-				url:'/pages/friend/chat/groupChat/groupChat'
+				url:'/pages/friend/chat/groupChat/groupChat?groupId=' + groupId
 			})
 		},
 		reqMyGroupList(postData){

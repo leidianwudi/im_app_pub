@@ -18,7 +18,7 @@
 		<!-- 底部输入框 -->
 
 		<view class="chat_info">
-			<scroll-view class="msg-list" scroll-y="true" scroll-with-animation=false :scroll-into-view="scrollToView">
+			<scroll-view class="msg-list" scroll-y="true" scroll-with-animation=false :scroll-into-view="scrollToView" :show-scrollbar="true">
 				<view class="tui-chat-content" v-for="(item, index) in msgList" :key="index" :id="'msg'+item.id">
 					<view class="tui-chat-right" v-if="item.Mymsg">
 						<!-- 我发送的消息 -->
@@ -61,11 +61,10 @@
 		onLoad(res) {
 			this.userEn = storage.getMyInfo();
 			this.friendAccount = res.friendAccount;  //获取好友账号
-			this.getFriendInfo(this.userEn.account, this.friendAccount); //查询特定好友详细信息
 			this.getMsgList();  //获取与好友的消息记录
 		},
 		onShow() {
-			// this.getMsgList();
+			this.getFriendInfo(this.userEn.account, this.friendAccount); //查询特定好友详细信息
 		},
 		methods: {
 			//获取好友详细信息
@@ -107,7 +106,6 @@
 						// 滚动到底
 						_this.scrollToView = 'msg' + _this.msgList[i].id;
 					});
-					// let msg = storage.getLastMsgIndex(0, )
 				})
 			},
 			
@@ -158,18 +156,18 @@
 		width: 100%;
 		position: absolute;
 		top: 0;
-		bottom: 100upx;		
+		left:5rpx;
+		bottom: 100upx;
+		padding-left:20rpx;
+		box-sizing:border-box;
 	}
-
 	.container {
 		padding-left: 20upx;
 		padding-right: 20upx;
 		padding-bottom: 146upx;
 		box-sizing: border-box;
 	}
-
 	/*--tabbar--*/
-
 	.tui-operation {
 		width: 100%;
 		height: 100upx;
@@ -291,7 +289,7 @@
 	.tui-chat-right {
 		display: flex;
 		align-items: flex-start;
-		padding-top: 36upx;
+		padding-top: 40upx;
 	}
 
 	.tui-user-pic {
@@ -411,5 +409,4 @@
 	.chat_info {
 		flex: 1;
 	}
-	 
 </style>

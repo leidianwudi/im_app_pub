@@ -1,7 +1,7 @@
 <template>
 	<view class="content" style="background:#EDEDED; padding:0;">
 		<view class="group_user">
-			<view class="user_model" v-for="(item, index) in groupUser" :key="index" @tap="checkUser(item.account, item.job, 0)">
+			<view class="user_model" v-for="(item, index) in groupUser" :key="index" @tap="checkUser(item.account, 0)">
                 	<view class="">
                 		<image :src="item.head" mode="widthFix"></image>
                 	</view>
@@ -12,7 +12,7 @@
 			</view>
 		</view>
 		<view class="group_info">
-			<view class="group_bar" @tap="updGroupInfo('groupName', group_name, '群名称')">
+			<view class="group_bar" @tap="updGroupInfo('groupName')">
                 <view class="border_bottom">
                 	<text>群聊名称</text>
                 	<view class="group_name">
@@ -21,7 +21,7 @@
                 	</view>
                 </view>
 			</view>
-			<view class="group_bar"  @tap="updGroupInfo('notice', group_notice, '群公告')">
+			<view class="group_bar"  @tap="updGroupInfo('notice')">
 				<view class="border_bottom">
 					<text>群公告</text>
 					<view class="group_name">
@@ -49,27 +49,27 @@ export default {
 	},
 	data() {
 		return {
-			group_name:'',
-			group_notice:'',
-			groupEn:null,
-			groupUser:[],
-			userEn: null,
-			isNAdmin:false,
-			isAdmin: false
+			groupId:null,   //群id
+			group_name:'',   //群名称
+			group_notice:'',   //群公告
+			groupEn:null,      //群的详细信息
+			groupUser:[],      //群内所有用户
+			userEn: null,     //我的详细信息
+			isNAdmin:false,  // 退出群聊按钮
+			isAdmin: false   // 解散群聊按钮
 		}
 	},
-	onLoad() {
+	onLoad(res) {
 		this.userEn = storage.getMyInfo();
+		this.groupId = res.groupId;
 	},
 	onShow() {
-		let groupId = storage.getGroupInfo();
 		let _this = this;
-		api.getGroupById({id: groupId}, res=>{
+		   //获取群详细信息
+		api.getGroupById({id: this.groupId}, res=>{
 			_this.groupEn = api.getData(res);
-            let data1 = {
-            	id: _this.groupEn.id
-            }  
-            _this.getGroupInfo(data1);
+			_this.group_name = _this.groupEn.groupName;
+			_this.group_notice = _this.groupEn.notice;
             //请求群内成员数据
             let data = {
             	groupId: _this.groupEn.id,
@@ -77,32 +77,26 @@ export default {
             	page: 1,
             	count: 20
             }
+			 //判断当前用户是否为群主，用来控制显示的按钮(解散群聊 or 退出群聊)
             _this.getGroupUser(data);
 			if(this.groupEn.hostAccount !== this.userEn.account) this.isNAdmin = true;
 			if(this.groupEn.hostAccount === this.userEn.account) this.isAdmin = true;
 		})
 	},
 	methods:{
-		updGroupInfo(type, value, title){
+		//去修改群信息页面
+		updGroupInfo(type){
 			uni.navigateTo({
-				url:'/pages/group/updGroupInfo/updGroupInfo?type='+type+'&value='+value+'&title='+title
+				url:'/pages/group/updGroupInfo/updGroupInfo?type='+type+'&groupId='+this.groupId
 			})
 		},
-		getGroupInfo(postData){
-		    let _this = this;
-			api.getGroupById(postData, res=>{
-				let data = api.getData(res);
-				_this.group_name = data.groupName,
-			    _this.group_notice = data.notice
-			})
-		},
-		checkUser(friendAccount, job, admin){
+		checkUser(friendAccount, type){
 			//判断是否点击的是自己的头像
 			if(friendAccount === this.userEn.account) return;
 			//判断当前用户是否是群主
-			if(this.groupEn.hostAccount === this.userEn.account) admin = 2;
+			if(this.groupEn.hostAccount === this.userEn.account) type = 2;
 			uni.navigateTo({
-				url:'/pages/friend/details/details?friendAccount='+friendAccount+'&job='+job+'&admin='+admin
+				url:'/pages/friend/details/details?friendAccount='+friendAccount+'&type='+type
 			})
 		},
 		//获取群内所有用户
@@ -115,12 +109,8 @@ export default {
 		},
 		//拉好友进群
 		addGroupUser(){
-			let groupUserList = [];
-			this.groupUser.forEach(function(el){
-				groupUserList.push(el.account);
-			});
 			uni.navigateTo({
-				url:'/pages/group/addGroupUser/addGroupUser?List='+groupUserList
+				url:'/pages/group/addGroupUser/addGroupUser?groupId=' + this.groupId
 			})
 		},
 		// 用户自己退出群 or 群主解散群
@@ -156,7 +146,6 @@ export default {
 		},
 		outGroupUser(postData){
 		     api.outGroupByUser(postData, res=>{
-				 console.log(res);
 				let code = api.getCode(res);
 				let msg = api.getMsg(res);
 				if(code === 0){

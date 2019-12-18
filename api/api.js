@@ -59,6 +59,9 @@ module.exports = {
 	//查询和好友的聊天记录
 	getFriendMsg: function(postData, funSuccess) {httpUtil.post('friend/getFriendMsg', postData, funSuccess);},
 	
+	//修改好友备注昵称
+	updFriendNickTip: function(postData, funSuccess) {httpUtil.post('friend/updFriendNickTip', postData, funSuccess);},
+	
 	//创建群聊
 	createGroup: function(postData, funSuccess) {httpUtil.post('group/createGroup', postData, funSuccess);},
 	

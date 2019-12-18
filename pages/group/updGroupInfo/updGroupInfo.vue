@@ -21,13 +21,27 @@ export default{
 	data() {
 		return {
 			val: '',
-			type: ''
+			type: '',
+			groupId: null,
+			groupEn: null
 		}
 	},
 	onLoad(res) {
 		this.type = res.type;
-		this.val = res.value;
-		util.setBarTitle('修改' + res.title);
+		this.groupId = res.groupId;
+	},
+	onShow() {
+		let _this = this;
+	    api.getGroupById({id: this.groupId}, res=>{
+			_this.groupEn = api.getData(res);
+			if(this.type === 'groupName'){
+				util.setBarTitle('修改群名称');
+				_this.val = _this.groupEn.groupName;
+			}else if(this.type === 'notice'){
+				util.setBarTitle('修改群公告');
+				_this.val = _this.groupEn.notice;
+			}
+		})	
 	},
 	methods:{
 		apply(){
@@ -38,9 +52,9 @@ export default{
 				})
 			} else{
 				let data = {};
-				data["id"] = storage.getGroupInfo();
+				data["id"] = this.groupId;
 				data["hostAccount"] = storage.getMyInfo().account;
-				data[this.type]= this.val;
+				data[this.type] = this.val;
 				this.apply1(data);
 			}
 		},

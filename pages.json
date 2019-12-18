@@ -56,7 +56,6 @@
             "path": "pages/friend/chat/groupChat/groupChat",
             "style": {
                 "navigationBarTitleText": "群聊天",
-        		"enablePullDownRefresh": true,
 				"app-plus": {
 					"bounce": "none", //关闭窗口回弹效果
 					"titleNView": {
@@ -82,11 +81,7 @@
         },{
             "path": "pages/friend/chat/friendChat/friendChat",
             "style": {
-                "navigationBarTitleText": "聊天记录",
-				"app-plus": {
-					//app页面不显示滚动条
-					"scrollIndicator": "none"
-				}
+                "navigationBarTitleText": "聊天记录"
             }
         },{
             "path": "pages/user/My/My",
@@ -135,7 +130,18 @@
 		},{
 	    	"path":"pages/friend/details/details",
 	    	"style": {
-	    		"navigationBarTitleText": "用户详情"
+	    		"navigationBarTitleText": "用户详情",
+				"app-plus": {
+					"bounce": "none", //关闭窗口回弹效果
+					"titleNView": {
+						"buttons": [ //原生标题栏按钮配置,
+							  {
+								"type":"menu",
+								"float":"right"
+							  }
+						]
+					}
+				}
 	    	}
 	    },{
             "path": "pages/user/login/login",

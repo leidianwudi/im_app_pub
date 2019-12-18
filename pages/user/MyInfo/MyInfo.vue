@@ -87,9 +87,9 @@
 </template>
 
 <script>
-	import storage from '@/api/storage.js'
+	import storage from '@/api/storage.js';
 	import api from '@/api/api.js';
-	import micon from '@/components/m-icon/m-icon'
+	import micon from '@/components/m-icon/m-icon';
 	export default {
 		components: {
 			micon

@@ -8,24 +8,33 @@
 		<view class="friend_info">
 			<view class="friend_name">
 				<text>账号</text>
-				<text>{{fr_name}}</text>				
+				<view class="nick_more">
+				    <text>{{fr_name}}</text>
+					<micon type="arrowright" size=20></micon>
+				</view>
 			</view>
-			<view class="friend_nick">
-				<text>昵称</text>	
-				<text>{{fr_nick}}</text>
+			<view class="friend_nick" @tap="toUpdFriendNick">
+				<text>昵称</text>
+                <view class="nick_more nick_show">
+					<text>{{fr_nick}}</text>
+					<micon type="arrowright" size=20></micon>
+				</view>
 			</view>
 			<view class="friend_signature">
 				<text>签名</text>	
-				<text>{{fr_text}}</text>
+				<view class="nick_more">
+				    <text>{{fr_text}}</text>
+					<micon type="arrowright" size=20></micon>
+				</view>
 			</view>
 		</view>
 		
 		<view class="apply_friend">
 			<button type="primary" @tap="apply" v-if="addFriend">加为好友</button>
-            <view class="friendInfoBtn">
-            	<button type="primary" @tap="sendMsg(friendEn.account, friendEn.head)" v-if="delFriend">发送消息</button>
+<!--            <view class="friendInfoBtn">
+            	<button type="primary" @tap="sendMsg(friendEn.account)" v-if="delFriend">发送消息</button>
             	<button type="primary" @tap="del" v-if="delFriend">删除好友</button>
-            </view>
+            </view> -->
 			
 			<button type="primary" @tap="outGroupUserByAdmin" v-if="outGroupByAdmin">移出群聊</button>
 		</view>
@@ -37,6 +46,11 @@
 				<button @tap="send_info">立即提交</button>
 			</view>
 		</modal>
+		
+		<view class="menu" v-if="menu">
+			<text></text>
+			<view class="delFriend" @tap="del"><micon type="trash" size=22></micon><text>删除好友</text></view>
+		</view>
 	</view>
 </template>
 
@@ -45,9 +59,11 @@ import api from '@/api/api.js';
 import util from '@/common/util.js';
 import modal from "@/components/modal/modal";
 import storage from '@/api/storage.js';
+import micon from '@/components/m-icon/m-icon';
 export default{
 	components: {
-		modal
+		modal,
+		micon
 	},
 	data(){
 		return {
@@ -59,17 +75,19 @@ export default{
 			info:'',
 			userEn: null,
 			addFriend:false,
-			delFriend:false,
+			menu:false,
 			outGroupByAdmin:false,
 			friendEn:null,
-			groupEn:null
+			groupEn:null,
+			friendAccount:''
 		}
 	},
 	onLoad(res){
+		this.menu = false;
 		this.userEn = storage.getMyInfo();
+		this.friendAccount = res.friendAccount;
         if(res.friendAccount){
-			if(!res.job) this.delFriend = true;
-			if(res.admin === '2') this.outGroupByAdmin = true;
+			if(res.type === '2') this.outGroupByAdmin = true;
 		}else{
 			this.addFriend = true;
 		}
@@ -78,7 +96,26 @@ export default{
 		}
 		this.reqFirendInfo(data);
 	},
+	onShow() {
+		let _this = this;
+		api.getFriendByAccount({
+			account: this.userEn.account,
+			friendAccount: this.friendAccount
+		},res=>{
+			_this.fr_nick = api.getData(res).friendNickTip;
+		})
+	},
+	// 右上角更多按钮的显示切换
+	onNavigationBarButtonTap(){
+	    this.menu = this.menu === true ? false : true;
+	},
 	methods:{
+		//跳转到修改好友备注界面
+		toUpdFriendNick(){
+			uni.navigateTo({
+				url:"/pages/user/MyInfo/updMytext/updMytext?friendAccount=" + this.fr_name
+			})
+		},
 		outGroupUserByAdmin(){
 		    let groupId = storage.getGroupInfo();
 			let _this = this;
@@ -117,11 +154,12 @@ export default{
 			})
 
 		},
-		sendMsg(account, head){
-			uni.navigateTo({
-				url:'/pages/friend/chat/friendChat/friendChat?friendNick='+account+'&friendHead='+head
-			})
-		},
+		//发送消息
+		// sendMsg(account, head){
+		// 	uni.navigateTo({
+		// 		url:'/pages/friend/chat/friendChat/friendChat?friendNick='+account+'&friendHead='+head
+		// 	})
+		// },
 		del(){
 			let _this = this;
             uni.showModal({
@@ -149,7 +187,6 @@ export default{
 				_this.friendEn = data;
 				_this.fr_name = data.account;
 				_this.fr_img = data.head;
-				_this.fr_nick = data.nick;
 				_this.fr_text = data.signature;
 			})
 		},
@@ -197,6 +234,47 @@ export default{
 </script>
 
 <style>
+	.nick_more>text{
+		vertical-align:bottom;
+		color: #717171;
+		font-size:18px;
+		margin-right:15rpx;
+	}
+	.nick_more>.m-icon-arrowright{
+		visibility:hidden;
+	}
+	.nick_show>.m-icon-arrowright{
+		visibility:visible;
+	}	
+	.menu{
+		width:250rpx;
+		height:auto;
+		position:fixed;
+		top:60px;
+		right:5px;
+		background:#4C4C4C;
+		border-radius:7px;
+	}
+	.menu>text{
+		display:inline-block;
+		border-top: 10px transparent dashed;
+		border-left: 10px transparent dashed;
+		border-bottom: 10px #4C4C4C solid;
+		border-right: 10px transparent dashed;
+		position:absolute;
+		top:-17px;
+		right:10px;
+	}
+	.menu>view{
+		border-radius:7px;
+		margin:0 auto;
+		padding:36rpx;
+		color: #FEFEFE;
+		text-align:center;
+		display:flex;
+		justify-content:space-between;
+		align-items:center;
+	}
 	.content{
 		width:100%;
 	}

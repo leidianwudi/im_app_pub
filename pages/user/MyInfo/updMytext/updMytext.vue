@@ -23,7 +23,8 @@ export default{
 		return {
 			val:'',
 			type:'',
-			userEn:null
+			userEn:null,
+			friendAccount:''
 		}
 	},
 	methods:{
@@ -34,7 +35,22 @@ export default{
 					image:'/static/img/info-circle.png',
 				})
 			}else {
-                if(this.type === 'tel'){
+				if(this.friendAccount !== ''){
+					api.updFriendNickTip({
+						account: this.userEn.account,
+						friendAccount: this.friendAccount,
+						friendNickTip: this.val
+					}, res=>{
+						let code = api.getCode(res);
+                        if(code === 0){
+							uni.navigateBack({
+								delta:1
+							})
+						}
+					})
+					return;
+				}
+                else if(this.type === 'tel'){
 					var re = /^1\d{10}$/
 					  if (re.test(this.val)) {
 					    this.apply1();
@@ -112,7 +128,11 @@ export default{
 	onLoad(res){
 		this.type = res.type;
 		this.val = res.value;
-		util.setBarTitle('修改' + res.title);
+		if(res.friendAccount) {
+			util.setBarTitle('修改好友备注');
+			this.friendAccount = res.friendAccount;
+		}
+		else util.setBarTitle('修改' + res.title);
 	}
 }
 </script>

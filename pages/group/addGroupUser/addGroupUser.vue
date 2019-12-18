@@ -55,6 +55,7 @@
 			return {
 				friengList: [],
 				userEn: null,
+				groupId: null,
 				groupEn:null,
 				lists: [],
 				touchmove: false, // 是否在索引表上滑动
@@ -71,13 +72,23 @@
 		},
 		onLoad(res) {
 			this.userEn = storage.getMyInfo();
-			this.whiteList = tran.str2Arr(res.List, ",")
+			this.groupId = res.groupId;
 		},
 		onShow() {
-			let groupId = storage.getGroupInfo();
 			let _this = this;
-			api.getGroupById({id: groupId}, res=>{
+			api.getGroupById({id: this.groupId}, res=>{
 				_this.groupEn = api.getData(res);
+			});
+			api.getUserByGroupId({
+				groupId: this.groupId,
+				account: this.userEn.account,
+				page: 1,
+				count: 99
+			}, res=>{
+				let data = api.getData(res).data;
+				data.forEach(function(item){
+					_this.whiteList.push(item.account);
+				});				
 			})
 			this.friengList = [];
 			let data = {
@@ -141,7 +152,7 @@
 			},
 			reqFirendList(data) {
 				let _this = this;
-				api.getFriendByAccount(data, res => {
+				api.getFriendsByAccount(data, res => {
 					let data = api.getData(res).data;
 					data.forEach(function(uiFriend) {
 						// 剔除已经在群内的好友
