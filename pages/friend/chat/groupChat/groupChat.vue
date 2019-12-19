@@ -28,9 +28,9 @@
                         		<view class="tui-chatbox tui-chatbox-right">{{item.Mymsg}}</view>
                         		<image :src="userEn.head" class="tui-user-pic tui-left"></image>
                         	</view>
-                        	
+							
                         	<view class="tui-chat-left" v-if="item.Frmsg"> 
-                        		<image :src="friendHead" class="tui-user-pic tui-right" @tap="toGroupUserInfo(item.account)"></image>
+                        		<image :src="friendHead" class="tui-user-pic tui-right" @tap="toGroupUserInfo(item.nickTip)"></image>
                         	    <view class="chat_infos">
                         	        <view class="msgbox">
                         	     		<text>{{item.account}}</text>

@@ -65,6 +65,7 @@
 /* 		background-color:rgba(238,235,233,.3); */
 		padding: 20upx;
 		background:#fff;
+		box-sizing: border-box;
 	}
 
 	.input-group {
@@ -104,14 +105,16 @@
 	}
 
 	.input-row .title {
-		width: 20%;
+		width: 30%;
 		height: 50upx;
 		min-height: 50upx;
 		padding: 15upx 0;
 		padding-left: 30upx;
 		line-height: 50upx;
 	}
-
+	.input-row .login_info {
+		width:20%;
+	}
 	.input-row.border::after {
 		position: absolute;
 		right: 0;

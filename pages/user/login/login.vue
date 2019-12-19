@@ -2,13 +2,13 @@
     <view class="content">
         <view class="input-group">
             <view class="input-row border">
-                <text class="title">账号：</text>
+                <text class="title login_info">账号：</text>
                 <m-input class="m-input" type="text" clearable focus v-model="account" placeholder="请输入账号"></m-input>
             </view>
 			
 			
             <view class="input-row">
-                <text class="title">密码：</text>
+                <text class="title login_info">密码：</text>
                 <m-input type="password" displayable v-model="password" placeholder="请输入密码"></m-input>
             </view>
 			
@@ -90,6 +90,11 @@
 			// 请求登录
 			onLogin(postData){
 				api.userLogin(postData, res => {
+					uni.showToast({
+						title: res,
+						image:'/static/img/fail-circle.png',
+						duration:2500
+					});
 					let code = api.getCode(res);
 					if(code === 0){
 						let data = api.getData(res);

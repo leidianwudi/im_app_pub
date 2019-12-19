@@ -1,7 +1,7 @@
 <template>
-	<view class="content">
+	<view class="content" @tap="onMenuHide" style="padding:0;">
 	    <block v-for="(item, index) in list" :key="index">
-			<listcell :last="true" class="row"  @tap="onChat(item.type, item.friendAccount, item.groupId)" style="padding-left:15upx;">
+			<listcell :last="true" class="row"  @tap="onChat(item.type, item.friendAccount, item.groupId)">
 				<view class="news_left">
 					<image :src="item.img" mode="widthFix" class="user_img"></image>  <!-- 好友的头像 -->
 					<view class="news_info">
@@ -19,7 +19,9 @@
 	  
 		<view class="menu" v-if="menu">
 			<text></text>
-		  	<view class="addFriend" @tap="toAddFriend"><micon type="personadd-filled" size=20></micon><text>添加好友</text></view>
+		  	<view class="addFriend" @tap="toAddFriend"><micon type="personadd" size=23></micon><text>添加好友</text></view>
+			<view class="addFriend" @tap="toScanCode"><micon type="scan" size=20></micon><text>扫码发现</text></view>
+			<view class="addFriend" @tap="toMyqrcode"><micon type="scan" size=20></micon><text>我的二维码</text></view>			
 		</view>
 	</view>
 </template>
@@ -59,15 +61,44 @@ export default{
 		},
 		// 右上角更多按钮的显示切换
 		onNavigationBarButtonTap(){
+			console.log(1);
 		    this.menu = this.menu === true ? false : true;
 		},
 		methods:{
+			onMenuHide(){
+				this.menu = false;
+			},
+			//打开扫码
+			toScanCode(){
+				uni.scanCode({
+					onlyFromCamera: true,
+					scanType: ['qrCode'],
+					success(res) {  
+						// res.result是string类型。返回的数据是用户账号
+						api.getUserByAccount({account: res.result}, res=>{
+							let account = api.getData(res).account;
+							uni.navigateTo({
+								url:'/pages/friend/details/details?userAccount=' + account
+							})
+						})
+					}
+				})
+			},
+			//跳转到我的二维码名片界面
+			toMyqrcode(){
+				uni.navigateTo({
+					url:'/pages/user/Myqrcode/Myqrcode'
+				})
+			},
+			// 跳转到添加好友界面
 			toAddFriend(){
 				uni.navigateTo({
 					url:'/pages/friend/newFriend/newFriend'
 				})
 			},
+			//点击进入聊天界面
 			onChat(type, friendAccount, groupId){
+				if(this.menu === true) return;
 				switch (type){
 					case 0:  //好友聊天
 						uni.navigateTo({
@@ -83,6 +114,7 @@ export default{
 						break;
 				}
 			},
+			//获取最后一条消息
 			getMsgList(postData){
 				let _this = this;
 				api.getLastMsgByAccount(postData, res=>{
@@ -118,6 +150,7 @@ export default{
 				});
 				uni.stopPullDownRefresh();
 			},
+			//下拉刷新重新请求聊天数据
 			onPullDownRefresh(){
 				this.list = [];
 				let data = {
@@ -136,7 +169,8 @@ export default{
 		width:250rpx;
 		height:auto;
 		position:fixed;
-		top:60px;
+		z-index:10;
+		top:50px;
 		right:5px;
 		background:#4C4C4C;
 		border-radius:7px;
@@ -154,17 +188,27 @@ export default{
 	.menu>view{
 		border-radius:7px;
 		margin:0 auto;
-		padding:36rpx;
+		width:100%;
+		height:120rpx;
 		color: #FEFEFE;
 		text-align:center;
 		display:flex;
-		justify-content:space-between;
 		align-items:center;
+		font-size:14px;
+		padding:0 20rpx;
+		box-sizing:border-box;
+	}
+	.menu>view>text{
+		margin-left:10rpx;
+	}
+	.menu>view:nth-child(3) text, .menu>view:nth-child(4) text{
+		margin-bottom:3px;
 	}
 	.row{
 		display:flex;
         flex-direction: row;
-		padding:10upx 15upx;
+/* 		padding:10upx 15upx;
+		box-sizing: border-box; */
 	}
 	.news_left{
 		display:flex;
@@ -201,6 +245,7 @@ export default{
 		line-height: 1;
 		color: #9397a4;
 		padding:10rpx 4rpx;
+		box-sizing: border-box;
 	}
 	.news_right {
 		max-width: 120upx;

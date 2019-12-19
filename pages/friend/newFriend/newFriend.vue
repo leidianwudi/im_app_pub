@@ -111,7 +111,7 @@ export default{
 			},
 			Apply(){
                 uni.navigateTo({
-                	url:'../details/details?account='+this.search_name
+                	url:'../details/details?userAccount=' + this.search_name
                 })
 			},
 			show(postData){

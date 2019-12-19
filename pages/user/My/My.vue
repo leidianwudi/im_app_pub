@@ -76,6 +76,7 @@ import utilCore from '@/api/utilCore.js';
 	.user_info{
 		width:100%;
 		padding:15rpx 13rpx;
+		box-sizing:border-box;
 		display:flex;
 		flex-direction:row;
 	}

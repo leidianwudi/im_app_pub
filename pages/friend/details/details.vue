@@ -1,5 +1,5 @@
 <template>
-	<view class="content">
+	<view class="content" @tap="onMenuHide">
 		<view class="header">
 			<view class="header_img">
 				<image :src="fr_img" mode="widthFix"></image>
@@ -10,32 +10,40 @@
 				<text>账号</text>
 				<view class="nick_more">
 				    <text>{{fr_name}}</text>
-					<micon type="arrowright" size=20></micon>
+					<view class="hide">
+						<micon type="arrowright" size=20></micon>
+					</view>
 				</view>
 			</view>
-			<view class="friend_nick" @tap="toUpdFriendNick">
-				<text>昵称</text>
+			<view class="friend_signature">
+				<text>昵称</text>	
+				<view class="nick_more">
+				    <text>{{fr_nick}}</text>
+					<view class="hide">
+						<micon type="arrowright" size=20></micon>
+					</view>
+				</view>
+			</view>
+			<view class="friend_nick" @tap="toUpdFriendNick" v-if="userAccount">
+				<text>备注</text>
                 <view class="nick_more nick_show">
-					<text>{{fr_nick}}</text>
-					<micon type="arrowright" size=20></micon>
+					<text>{{fr_friendNickTip}}</text>
+					<micon type="arrowright" size=20 v-if="userAccount"></micon>
 				</view>
 			</view>
 			<view class="friend_signature">
 				<text>签名</text>	
 				<view class="nick_more">
 				    <text>{{fr_text}}</text>
-					<micon type="arrowright" size=20></micon>
+					<view class="hide">
+						<micon type="arrowright" size=20></micon>
+					</view>
 				</view>
 			</view>
 		</view>
 		
 		<view class="apply_friend">
 			<button type="primary" @tap="apply" v-if="addFriend">加为好友</button>
-<!--            <view class="friendInfoBtn">
-            	<button type="primary" @tap="sendMsg(friendEn.account)" v-if="delFriend">发送消息</button>
-            	<button type="primary" @tap="del" v-if="delFriend">删除好友</button>
-            </view> -->
-			
 			<button type="primary" @tap="outGroupUserByAdmin" v-if="outGroupByAdmin">移出群聊</button>
 		</view>
 		
@@ -67,32 +75,38 @@ export default{
 	},
 	data(){
 		return {
-			fr_name:'',
-			fr_img:'',
-			fr_nick:'',
-			fr_text:'',
-			modal9: false,
-			info:'',
-			userEn: null,
-			addFriend:false,
-			menu:false,
+			fr_name:'',  			//用户账号
+			fr_img:'',				//用户头像
+			fr_nick:'',				//用户昵称
+			fr_friendNickTip:'',	//我给好友添加的备注
+			fr_text:'',				//用户签名
+			modal9: false,			//控制添加好友时的验证信息弹窗
+			info:'',  				//获取添加好友时的验证信息
+			userEn: null, 			//我的详细信息
+			addFriend:false, 
+			menu:false, 
 			outGroupByAdmin:false,
-			friendEn:null,
+			friendEn:null,			//好友的详细信息
 			groupEn:null,
-			friendAccount:''
+			friendAccount:'',		//群聊的详细信息
+			userAccount: false
 		}
 	},
+	//res可能有：userAccount(不是好友) friendAccount(是好友)
 	onLoad(res){
 		this.menu = false;
 		this.userEn = storage.getMyInfo();
-		this.friendAccount = res.friendAccount;
+		this.friendAccount = res.friendAccount ? res.friendAccount : res.userAccount;
         if(res.friendAccount){
 			if(res.type === '2') this.outGroupByAdmin = true;
+			this.userAccount = true;
 		}else{
+			this.userAccount = false;
 			this.addFriend = true;
+			this.toUpdFriendNick
 		}
 		let data = {
-			account: res.friendAccount ? res.friendAccount : res.account
+			account: res.friendAccount ? res.friendAccount : res.userAccount
 		}
 		this.reqFirendInfo(data);
 	},
@@ -102,18 +116,25 @@ export default{
 			account: this.userEn.account,
 			friendAccount: this.friendAccount
 		},res=>{
-			_this.fr_nick = api.getData(res).friendNickTip;
+			_this.fr_friendNickTip = api.getData(res).friendNickTip;
 		})
 	},
 	// 右上角更多按钮的显示切换
 	onNavigationBarButtonTap(){
+		if(this.userAccount === false) return;
 	    this.menu = this.menu === true ? false : true;
 	},
 	methods:{
+		// 右上角更多按钮隐藏
+		onMenuHide(){
+			this.menu = false;
+		},
 		//跳转到修改好友备注界面
 		toUpdFriendNick(){
+			if(this.userAccount === false) return;
+		    if(this.menu === true) return;
 			uni.navigateTo({
-				url:"/pages/user/MyInfo/updMytext/updMytext?friendAccount=" + this.fr_name
+				url:"/pages/user/MyInfo/updMytext/updMytext?friendAccount=" + this.fr_name + '&value=' + this.fr_friendNickTip
 			})
 		},
 		outGroupUserByAdmin(){
@@ -154,12 +175,6 @@ export default{
 			})
 
 		},
-		//发送消息
-		// sendMsg(account, head){
-		// 	uni.navigateTo({
-		// 		url:'/pages/friend/chat/friendChat/friendChat?friendNick='+account+'&friendHead='+head
-		// 	})
-		// },
 		del(){
 			let _this = this;
             uni.showModal({
@@ -186,6 +201,7 @@ export default{
 				let data = api.getData(res);
 				_this.friendEn = data;
 				_this.fr_name = data.account;
+				_this.fr_nick = data.nick;
 				_this.fr_img = data.head;
 				_this.fr_text = data.signature;
 			})
@@ -234,17 +250,15 @@ export default{
 </script>
 
 <style>
+	.nick_more{
+		display:flex;
+		justify-content:space-between;
+	}
 	.nick_more>text{
 		vertical-align:bottom;
 		color: #717171;
 		font-size:18px;
 		margin-right:15rpx;
-	}
-	.nick_more>.m-icon-arrowright{
-		visibility:hidden;
-	}
-	.nick_show>.m-icon-arrowright{
-		visibility:visible;
 	}	
 	.menu{
 		width:250rpx;
@@ -274,6 +288,7 @@ export default{
 		display:flex;
 		justify-content:space-between;
 		align-items:center;
+		font-size:14px;
 	}
 	.content{
 		width:100%;
@@ -337,5 +352,8 @@ export default{
 	}
 	.friendInfoBtn>button{
 		width:40%;
+	}
+	.hide{
+		visibility:hidden;
 	}
 </style>

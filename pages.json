@@ -34,6 +34,11 @@
 				}
             }			
 		},{
+            "path": "pages/user/Myqrcode/Myqrcode",
+            "style": {
+                "navigationBarTitleText": "我的二维码名片"
+            }			
+        },{
             "path": "pages/group/myGroup/myGroup",
             "style": {
                 "navigationBarTitleText": "我的群聊"

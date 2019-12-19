@@ -71,6 +71,15 @@
 					</view>
 				</view>
 			</view>
+			<view>
+				<text>所在地区</text>
+				<view class="info_color">
+					<text class="info_color name_style">{{userEn !== null ? userEn.area : ""}}</text>
+					<view class="more hide">
+						<micon type="arrowright" size=18></micon>
+					</view>
+				</view>
+			</view>
 			<view @tap="xiugai('address', userEn.address, '居住地')">
 				<text>居住地</text>
 				<view class="info_color">
