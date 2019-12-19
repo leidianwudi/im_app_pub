@@ -43,11 +43,7 @@ import utilCore from '@/api/utilCore.js';
 			this.userEn = storage.getMyInfo();
 			this.isLogin = utilCore.isLogin();
 		},
-        computed: {
-            ...mapState(['hasLogin', 'forcedLogin'])
-        },
         methods: {	
-            ...mapMutations(['logout']),
             bindLogin() {
                 uni.navigateTo({
                     url: '../login/login',
