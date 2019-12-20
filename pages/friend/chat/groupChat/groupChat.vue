@@ -97,37 +97,37 @@ export default {
 			})
 		},
 		methods:{
-			//上拉获取更多消息记录
-			// loadHistory(){
-			// 	if(this.isHistoryLoading){
-			// 		return ;
-			// 	}
-			// 	this.isHistoryLoading = true;//参数作为进入请求标识，防止重复请求
-			// 	this.scrollAnimation = false;//关闭滑动动画
-			// 	let Viewid = this.groupMsgList[0].id;//记住第一个信息ID
-			// 	let _this = this;
-			// 	api.getGroupMsg({
-			// 		id: 1,
-			// 		groupId: _this.groupEn.id,
-			// 		account: _this.userEn.account,
-			// 		page: _this.page++,
-			// 		count: 15
-			// 	}, res=>{
-			// 		let newMsg = api.getData(res).data;
-			// 		console.log(newMsg);
-			// 		newMsg.forEach(function(item){
-			// 		   _this.groupMsgList.unshift(item);						
-			// 		})
-			// 	});
-			// 	//这段代码很重要，不然每次加载历史数据都会跳到顶部
-			// 	this.$nextTick(function() {
-			// 		this.scrollToView = 'msg'+Viewid;//跳转上次的第一行信息位置
-			// 		this.$nextTick(function() {
-			// 			this.scrollAnimation = true;//恢复滚动动画
-			// 		});
-			// 	});
-			// 	this.isHistoryLoading = false;
-			// },
+			// 上拉获取更多消息记录
+			loadHistory(){
+				if(this.isHistoryLoading){
+					return ;
+				}
+				this.isHistoryLoading = true;//参数作为进入请求标识，防止重复请求
+				this.scrollAnimation = false;//关闭滑动动画
+				let Viewid = this.groupMsgList[0].id;//记住第一个信息ID
+				let _this = this;
+				api.getGroupMsg({
+					id: 1,
+					groupId: _this.groupEn.id,
+					account: _this.userEn.account,
+					page: _this.page++,
+					count: 15
+				}, res=>{
+					let newMsg = api.getData(res).data;
+					console.log(newMsg);
+					newMsg.forEach(function(item){
+					   _this.groupMsgList.unshift(item);						
+					})
+				});
+				//这段代码很重要，不然每次加载历史数据都会跳到顶部
+				this.$nextTick(function() {
+					this.scrollToView = 'msg'+Viewid;//跳转上次的第一行信息位置
+					this.$nextTick(function() {
+						this.scrollAnimation = true;//恢复滚动动画
+					});
+				});
+				this.isHistoryLoading = false;
+			},
 			//点击群成员头像跳转至个人信息页面
 			toGroupUserInfo(friendAccount){
 				uni.navigateTo({

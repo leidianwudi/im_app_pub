@@ -56,7 +56,7 @@ export default{
 				account: this.userEn.account,
 				page: 1,
 				count: 6
-			}
+			};
 			this.getMsgList(data);
 		},
 		// 右上角更多按钮的显示切换

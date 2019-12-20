@@ -1,11 +1,17 @@
 <template>
 	<view class="content">
-		<view class="header">
-			<view class="header_img" @tap="updImg(head)">
-				<image :src="userEn.head" mode="widthFix"></image>
-			</view>
-		</view>
-		<view class="friend_info">
+		<view class="friend_info headImgBar">
+			<view  @tap="updImg" style="padding:0;">
+				<text>头像</text>
+				<view class="info_color">
+					<view class="header_img" @tap.stop="checkImg">
+						<image :src="userEn.head" mode="widthFix" class="image"></image>
+					</view>
+					<view class="more">
+						<micon type="arrowright" size=18></micon>
+					</view>
+				</view>
+			</view>			
 			<view>
 				<text>账号</text>
 				<view class="info_color">
@@ -90,42 +96,46 @@
 				</view>
 			</view>
 		</view>
-
-	</view>
 	</view>
 </template>
 
 <script>
-	import storage from '@/api/storage.js';
-	import api from '@/api/api.js';
-	import micon from '@/components/m-icon/m-icon';
+import storage from '@/api/storage.js';
+import api from '@/api/api.js';
+import micon from '@/components/m-icon/m-icon';
+import kpsImageCutter from "@/components/ksp-image-cutter/ksp-image-cutter.vue";
 	export default {
 		components: {
-			micon
+			micon,
+			kpsImageCutter
 		},
 		data() {
 			return {
-				userEn: null,
-				// address:'this is address',
-				// nick:'',
-				// qq:'',
-				// weiXin:'',
-				// email:'',
-				// tel:'',
-				// signature:'',
-				// nick:''
+				userEn: null
 			}
 		},
 		onShow() {
-			// uni.switchTab({
-			// 	url:'/pages/friend/news/news.vue'
-			// });
-			this.userEn = storage.getMyInfo();			
+			this.userEn = storage.getMyInfo();	
+			let _this = this;
+			api.getMyInfo({account: this.userEn.account}, res=>{
+				let data = api.getData(res);
+				_this.userEn = data;
+				storage.setMyInfo(_this.userEn);
+			});
 		},
 		methods: {
-			result: function(e) {
-				this.imageData = e.imgArr;
+			//查看大头像
+			checkImg(){
+				uni.previewImage({
+					urls: [this.userEn.head],
+				});
 			},
+			updImg(){
+                uni.navigateTo({
+                	url:'/pages/user/MyInfo/updMyHeadImg/updMyHeadImg'
+                });
+			},
+			//修改文字信息
 			xiugai(type, value, title) {
 				if (type === 'age') {
 					uni.navigateTo({
@@ -143,25 +153,6 @@
 					url: "./updMytext/updMytext?type=" + type + '&value=' + value + '&title=' + title
 				});
 			}
-			// updImg(type){
-			// 	let _this = this;
-			// 	uni.chooseImage({
-			// 		count:1,
-			// 		sourceType:['album'],
-			// 		success(res) {
-			// 			let imgUrl = res.tempFiles[0]; //.path.slice(5)
-
-			// 			uni.saveFile({
-			// 				tempFilePath:imgUrl,
-			// 				success(res) {
-			// 					console.log(res.savedFilePath);
-			// 				}
-			// 			})
-			// 			// _this.userEn.head = imgUrl;
-			// 			// console.log(imgUrl);
-			// 		}
-			// 	})
-			// }
 		}
 	}
 </script>
@@ -170,21 +161,13 @@
 	.content {
 		width: 100%;
 	}
-
-	.header {
-		width: 100%;
-		height: 350rpx;
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		margin-bottom: 20rpx;
-	}
-
 	.header_img {
-		width: 250rpx;
-		height: 250rpx;
-		border-radius: 50%;
+		width: 150rpx;  /*150  75 50%*/
+		height: 200rpx;  /*150  50  33%*/
+		border-radius:7px;
 		overflow: hidden;
+        display:flex;
+		align-items:center;
 	}
 
 	.header_img>image {
@@ -199,7 +182,6 @@
 		box-sizing: border-box;
 		margin-bottom: 20rpx;
 	}
-
 	.friend_info>view {
 		display: flex;
 		justify-content: space-between;
@@ -207,7 +189,6 @@
 		padding: 30rpx 0;
 		border-bottom: 1px solid #F3F3F3;
 	}
-
 	.friend_info>view>text:nth-child(1) {
 		font-size: 18px;
 	}
@@ -241,6 +222,7 @@
 		color: #999999;
 		font-size: 16px;
 		display: flex;
+		align-items:center;
 	}
 
 	.more {
@@ -255,5 +237,9 @@
 
 	.hide {
 		visibility: hidden;
+	}
+	.image {
+		width: 200px;
+		height: 200px;
 	}
 </style>

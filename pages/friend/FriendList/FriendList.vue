@@ -336,6 +336,10 @@
 		align-items: center;
 		border-bottom:1px solid #F0F0F0;
 	}
+	.createG>view:hover{}
+	.createG>view:active{
+		background: #f7f7f9 !important;
+	}
 	.list{
 		margin-top:20rpx;
 	}

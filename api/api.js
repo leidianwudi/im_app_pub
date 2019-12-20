@@ -14,6 +14,9 @@ module.exports = {
 	//取返回数据内,page分页的列表数据.只返回分页列表数据,不返回总页数等数据
 	getPageList: function(res) {return res.data.data.data},
 	
+	//上传文件
+	uploadFileToCache: function(path, funSuccess) {httpUtil.upload('external/uploadFileToCache', path, 'file', funSuccess);},
+	
 	//查询广告轮播图
 	getCarousel: function(funSuccess) {httpUtil.post('carousel/getCarousel', {}, funSuccess);},
 	

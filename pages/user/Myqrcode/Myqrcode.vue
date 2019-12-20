@@ -29,6 +29,9 @@
 import tkiQrcode from '@/components/tki-qrcode/tki-qrcode.vue';
 import storage from '@/api/storage.js'
 export default {
+	components: {
+		tkiQrcode
+	},
 	data() {
 		return {
 			myimg: null,
@@ -56,6 +59,7 @@ export default {
 		this.myAccount = this.userEn.account;
 	},
 	onReady(){
+		// this.selectIcon();
 		this.creatQrcode();		
 	},
 	methods: {
@@ -93,11 +97,7 @@ export default {
 				}
 			});
 		}
-	},
-	components: {
-		tkiQrcode
-	},
-	onLoad: function () { },
+	}
 }
 </script>
 

@@ -14,8 +14,8 @@
 			
 			
         </view>
-       <view class="btn-row">
-            <button class="primary" @tap="bindLogin">登录</button>
+        <view class="btn-row">
+            <button class="primary" @tap="bindLogin" hover-class="onbutton">登录</button>
         </view>
 		
 		
@@ -132,6 +132,9 @@
 	}
 	.btn-row>button{
 	    background:#1AAC19;
+	}
+	.onbutton{
+		opacity: 0.7;
 	}
     .action-row navigator {
         color:#3981B2;

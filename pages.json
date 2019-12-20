@@ -10,7 +10,8 @@
 						"buttons": [ //原生标题栏按钮配置,
 							  {
 								"type":"menu",
-								"float":"right"
+								"float":"right",
+								"color":"#000"
 							  }
 						]
 					}
@@ -42,6 +43,11 @@
             "path": "pages/group/myGroup/myGroup",
             "style": {
                 "navigationBarTitleText": "我的群聊"
+            }			
+        },{
+            "path": "pages/user/MyInfo/updMyHeadImg/updMyHeadImg",
+            "style": {
+                "navigationBarTitleText": "头像"
             }			
         },{
             "path": "pages/group/updGroupInfo/updGroupInfo",

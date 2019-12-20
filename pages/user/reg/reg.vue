@@ -19,7 +19,7 @@
             </view>
         </view>
         <view class="btn-row">
-            <button class="primary" @tap="register">注册</button>
+            <button class="primary" @tap="register" hover-class="onbutton">注册</button>
         </view>
     </view>
 </template>
@@ -133,5 +133,8 @@
 	.btn-row>button{
 	    background:#1AAC19;
 		color:rgb(255, 255, 255);
+	}
+	.onbutton{
+		opacity: 0.7;
 	}
 </style>

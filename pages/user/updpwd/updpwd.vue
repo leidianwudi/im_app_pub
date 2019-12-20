@@ -8,7 +8,7 @@
         </view>
 
         <view class="btn-row">
-            <button type="primary" class="primary" @tap="findPassword">提交</button>
+            <button type="primary" class="primary" @tap="findPassword" hover-class="onbutton">提交</button>
         </view>
     </view>
 </template>
@@ -63,5 +63,8 @@
 	.btn-row>button{
 	    background:#1AAC19;
 		color:rgb(255, 255, 255);
+	}
+	.onbutton{
+		opacity: 0.7;
 	}
 </style>

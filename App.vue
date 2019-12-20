@@ -57,7 +57,6 @@
 		min-height: 100%;
 		display: flex;
 	}
-
 	.content {
 		display: flex;
 		flex: 1;

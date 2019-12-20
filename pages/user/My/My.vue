@@ -4,20 +4,20 @@
 			<view class="img_box" @tap="revise">
 				<image :src="userEn.head" class="user_img" mode="widthFix"></image>
 			</view>  
-			<view class="user_test">
+			<view class="user_test" @tap="toMyInfo">
                 <view class="user_nick">
                 	<view class="user_nicheng">{{userEn.nick}}</view>
-                	<view class="xiugai" @tap="revise">
+                	<view class="xiugai">
                 		<image src="/static/img/xiugai.png" mode="widthFix"></image>
                 	</view>
                 </view>
 				<view class="user_name">用户账号：{{userEn.account}}</view>
-				<view class="user_text">{{userEn.signature}}</view>
+				<view class="user_text">{{userEn.signature ? userEn.signature : '暂无设置签名'}}</view>
 			</view>
 		</view>
         <view class="btn-row">
-            <button v-if="!isLogin" type="primary" class="primary" @tap="bindLogin">登录</button>
-            <button v-if="isLogin" type="default" @tap="bindLogout">退出登录</button>
+            <button v-if="!isLogin" type="primary" class="primary" @tap="bindLogin" hover-class="onbutton">登录</button>
+            <button v-if="isLogin" type="default" @tap="bindLogout" hover-class="onbutton">退出登录</button>
         </view>
     </view>
 </template>
@@ -60,8 +60,13 @@ import utilCore from '@/api/utilCore.js';
                 });
             },
 			revise(){
+				uni.previewImage({
+					urls: [this.userEn.head],
+				});
+			},
+			toMyInfo(){
 				uni.navigateTo({
-					url:'../MyInfo/MyInfo'
+					url:'/pages/user/MyInfo/MyInfo'
 				})
 			}
         }
@@ -123,5 +128,8 @@ import utilCore from '@/api/utilCore.js';
 	}
 	.user_text{
 		font-size:16px;
+	}
+	.onbutton{
+		opacity: 0.7;
 	}
 </style>
