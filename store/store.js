@@ -1,5 +1,6 @@
-import Vue from 'vue'
-import Vuex from 'vuex'
+import Vue from 'vue';
+import Vuex from 'vuex';
+import ws from "@/store/ws.js";
 
 Vue.use(Vuex)
 
@@ -10,7 +11,8 @@ const store = new Vuex.Store({
          */
         forcedLogin: false,
         hasLogin: false,
-		userEn: null	//用户信息
+		userEn: null,	//用户信息
+		ws: ws
     },
     mutations: {
         login(state, userEn) {

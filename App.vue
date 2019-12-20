@@ -2,9 +2,10 @@
 	export default {
 		onLaunch: function() {
 			console.log('App Launch');
+			this.$store.state.ws.open();//开始连接服务器
 		},
 		onShow: function() {
-			console.log('App Show');
+			console.log('App Show');			
 		},
 		onHide: function() {
 			console.log('App Hide');
