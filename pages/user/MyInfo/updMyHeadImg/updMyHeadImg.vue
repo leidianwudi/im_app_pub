@@ -9,6 +9,7 @@
 import storage from '@/api/storage.js';
 import kpsImageCutter from "@/components/ksp-image-cutter/ksp-image-cutter.vue";
 import api from '@/api/api.js';
+import util from '@/common/util.js';
 	export default {
 		components: {
 			kpsImageCutter
@@ -23,6 +24,7 @@ import api from '@/api/api.js';
 		},
 		onShow() {
 			this.userEn = storage.getMyInfo();
+			util.setBarTitle('修改头像');
 			uni.chooseImage({
 				success: (res) => {
 					// 设置url的值，显示控件
