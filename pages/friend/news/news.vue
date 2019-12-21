@@ -61,7 +61,6 @@ export default{
 		},
 		// 右上角更多按钮的显示切换
 		onNavigationBarButtonTap(){
-			console.log(1);
 		    this.menu = this.menu === true ? false : true;
 		},
 		methods:{

@@ -14,6 +14,9 @@ module.exports = {
 	//取返回数据内,page分页的列表数据.只返回分页列表数据,不返回总页数等数据
 	getPageList: function(res) {return res.data.data.data},
 	
+	//登录到网关
+	loginGate: function(postData, funSuccess) {httpUtil.post('gate/loginGate', postData, funSuccess);},
+	
 	//上传文件
 	uploadFileToCache: function(path, funSuccess) {httpUtil.upload('external/uploadFileToCache', path, 'file', funSuccess);},
 	
@@ -67,6 +70,9 @@ module.exports = {
 	
 	//创建群聊
 	createGroup: function(postData, funSuccess) {httpUtil.post('group/createGroup', postData, funSuccess);},
+	
+	//进入某个群
+	groupIn: function(postData, funSuccess) {httpUtil.post('gate/groupIn', postData, funSuccess);},
 	
 	//获取用户所有的群
 	getGroupByAccount: function(postData, funSuccess) {httpUtil.post('group/getGroupByAccount', postData, funSuccess);},

@@ -2,6 +2,7 @@
 	export default {
 		onLaunch: function() {
 			console.log('App Launch');
+			this.$store.state.ws.init();//初始化
 			this.$store.state.ws.open();//开始连接服务器
 		},
 		onShow: function() {

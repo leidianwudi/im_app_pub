@@ -34,10 +34,6 @@
 	import api from '@/api/api.js';
 	import util from '@/common/util.js';
 	import md5 from '@/common/md5.js';
-    import {
-        mapState,
-        mapMutations
-    } from 'vuex'
     import mInput from '@/components/m-input.vue'
     export default {
         components: {
@@ -79,8 +75,10 @@
                 };
 				this.onLogin(data);
             },  //bindLogin()
-            toMain(userEn) {				
-                this.login(userEn);  //  登录成功时储存用户数据到Vuex中
+			//登录成功页面跳转到消息页面
+            toMain(account) {
+				this.$store.state.ws.setAccount(account);
+				this.$store.state.ws.autoLoginGate(); //尝试登录网关
                 uni.reLaunch({
                     url: '/pages/friend/news/news',
                 });
@@ -88,16 +86,11 @@
 			// 请求登录
 			onLogin(postData){
 				api.userLogin(postData, res => {
-					uni.showToast({
-						title: res,
-						image:'/static/img/fail-circle.png',
-						duration:2500
-					});
 					let code = api.getCode(res);
 					if(code === 0){
 						let data = api.getData(res);
 						storage.setMyInfo(data);
-						this.toMain(data);
+						this.toMain(data.account);   
 					}else{
 						let msg = api.getMsg(res);  //取错误提示信息
 						uni.showToast({

@@ -59,7 +59,7 @@ export default {
 		this.myAccount = this.userEn.account;
 	},
 	onReady(){
-		// this.selectIcon();
+		this.selectIcon();
 		this.creatQrcode();		
 	},
 	methods: {
@@ -83,19 +83,19 @@ export default {
 			this.ifShow = !this.ifShow
 		},
 		selectIcon() {
-			let that = this
-			uni.chooseImage({
-				count: 1, //默认9
-				sizeType: ['original', 'compressed'], //可以指定是原图还是压缩图，默认二者都有
-				sourceType: ['album'], //从相册选择
-				success: function (res) {
-					that.icon = res.tempFilePaths[0]
-					setTimeout(() => {
-						that.creatQrcode()
-					}, 100);
-					// console.log(res.tempFilePaths);
-				}
-			});
+			// let that = this
+			// uni.chooseImage({
+			// 	count: 1, //默认9
+			// 	sizeType: ['original', 'compressed'], //可以指定是原图还是压缩图，默认二者都有
+			// 	sourceType: ['album'], //从相册选择
+			// 	success: function (res) {
+			// 		that.icon = res.tempFilePaths[0]
+			// 		setTimeout(() => {
+			// 			that.creatQrcode()
+			// 		}, 100);
+			// 		// console.log(res.tempFilePaths);
+			// 	}
+			// });
 		}
 	}
 }

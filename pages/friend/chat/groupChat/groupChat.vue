@@ -6,97 +6,113 @@
 				<view hover-class="tui-opcity" :hover-stay-time="150" class="tui-voice">
 					<tui-icon name="voice" :size="34" color='#333'></tui-icon>
 				</view>
-				<input class="tui-chat-input" v-model="send_info" @confirm='sendGroupMsg' :disabled="inputDisabled"></input>
+				<input class="tui-chat-input" v-model="send_info" @confirm='sendGroupMsg' :disabled="inputDisabled" @input="onInput"
+				 @blur="isNFocal"></input>
 			</view>
 			<view hover-class="tui-opcity" :hover-stay-time="150">
 				<tui-icon name="imface" :size="26" color='#333'></tui-icon>
 			</view>
-			<view hover-class="tui-opcity" :hover-stay-time="150" class="tui-pr">
+			<view hover-class="tui-opcity" :hover-stay-time="150" class="tui-pr" v-if="input">
 				<tui-icon name="add" :ize="30" color='#333'></tui-icon>
+			</view>
+			<view class="tui-pr send_btn" hover-class="tui-opcity" :hover-stay-time="150" @tap="sendGroupMsg" v-if="!input">
+				<button type="primary">发送</button>
 			</view>
 		</view>
 		<!-- 底部输入框 -->
-		
+
 		<view class="chat_info">
-			<scroll-view class="msg-list" scroll-y="true" :scroll-with-animation="scrollAnimation" :scroll-into-view="scrollToView" 
-			@scrolltoupper="loadHistory" upper-threshold="50">
-					<view class="msgList" v-for="(item, index) in groupMsgList" :key="index" :id="'msg'+item.id">
-                        <view class="msg_main">
-                        	<view class="tui-label" v-if="item.system">{{item.system}}</view>
-                        	<!-- <view class="tui-chat-center">星期四 11:02</view> -->
-                        	<view class="tui-chat-right" v-if="item.Mymsg">  
-                        		<view class="tui-chatbox tui-chatbox-right">{{item.Mymsg}}</view>
-                        		<image :src="userEn.head" class="tui-user-pic tui-left"></image>
-                        	</view>
-							
-                        	<view class="tui-chat-left" v-if="item.Frmsg"> 
-                        		<image :src="friendHead" class="tui-user-pic tui-right" @tap="toGroupUserInfo(item.nickTip)"></image>
-                        	    <view class="chat_infos">
-                        	        <view class="msgbox">
-                        	     		<text>{{item.account}}</text>
-                        		        <view class="tui-chatbox tui-chatbox-left">{{item.Frmsg}}</view>
-                        	     	</view>
-                        	    </view>
-                        	</view>
-                        </view>
+			<scroll-view class="msg-list" scroll-y="true" :scroll-with-animation="scrollAnimation" :scroll-into-view="scrollToView"
+			 @scrolltoupper="loadHistory" upper-threshold="50">
+				<view class="msgList" v-for="(item, index) in groupMsgList" :key="index" :id="'msg'+item.id">
+					<view class="msg_main">
+						<view class="tui-label" v-if="item.system">{{item.system}}</view>
+						<!-- <view class="tui-chat-center">星期四 11:02</view> -->
+						<view class="tui-chat-right" v-if="item.Mymsg">
+							<view class="tui-chatbox tui-chatbox-right">{{item.Mymsg}}</view>
+							<image :src="userEn.head" class="tui-user-pic tui-left"></image>
+						</view>
+
+						<view class="tui-chat-left" v-if="item.Frmsg">
+							<image :src="friendHead" class="tui-user-pic tui-right" @tap="toGroupUserInfo(item.nickTip)"></image>
+							<view class="chat_infos">
+								<view class="msgbox">
+									<text>{{item.account}}</text>
+									<view class="tui-chatbox tui-chatbox-left">{{item.Frmsg}}</view>
+								</view>
+							</view>
+						</view>
 					</view>
+				</view>
 			</scroll-view>
 		</view>
-		
+
 	</view>
 </template>
 
 <script>
-import tuiIcon from '@/components/icon.vue'
-import api from '@/api/api.js';
-import storage from '@/api/storage.js';
-import util from '@/common/util.js';
-export default {
-		components:{
+	import tuiIcon from '@/components/icon.vue'
+	import api from '@/api/api.js';
+	import storage from '@/api/storage.js';
+	import util from '@/common/util.js';
+	import wsType from '@/api/msgType.js';
+	export default {
+		components: {
 			tuiIcon
 		},
 		data() {
 			return {
-				friendHead: '',  //群用户头像
-				send_info: '',   //输入框的内容
-				groupId: null,   //群id
-				groupEn: null,  //群的详细资料
-				userEn: null,  //我的详细资料
-				groupMsgList: [],  //群消息列表
-				inputDisabled: false  ,//输入框是否禁用
-				scrollToView: '' 	,//滚动列表位置
-				isHistoryLoading:false,
+				friendHead: '', //群用户头像
+				send_info: '', //输入框的内容
+				groupId: null, //群id
+				groupEn: null, //群的详细资料
+				userEn: null, //我的详细资料
+				groupMsgList: [], //群消息列表
+				inputDisabled: false, //输入框是否禁用
+				scrollToView: '', //滚动列表位置
+				isHistoryLoading: false,
 				scrollAnimation: false,
-				page: 1
+				page: 1,
+				input: true //控制发送按钮显示
 			}
 		},
 		//点击右上角的更多群信息
 		onNavigationBarButtonTap() {
 			uni.navigateTo({
-				url:'/pages/group/checkGroup/checkGroup?groupId=' + this.groupId
-			})		
-		},
-		onLoad(res){
-			this.userEn = storage.getMyInfo();  //获取我的详细信息
-			this.groupId = parseInt(res.groupId);  		//保存群id
-		},
-		onShow() {
-			let _this = this;
-			//通过群id获取群的详细信息
-			api.getGroupById({id: this.groupId}, res=>{
-				_this.groupEn = api.getData(res);
-				util.setBarTitle(_this.groupEn.groupName);
-				let data = {
-					id: 1,
-					groupId: _this.groupEn.id,
-					account: _this.userEn.account,
-					page: _this.page,
-					count: 15
-				}
-				_this.getGroupMsg(data);
+				url: '/pages/group/checkGroup/checkGroup?groupId=' + this.groupId
 			})
 		},
-		methods:{
+		onLoad(res) {
+			this.userEn = storage.getMyInfo(); //获取我的详细信息
+			this.groupId = parseInt(res.groupId); //保存群id
+			this.getGroupMsg();
+			api.groupIn({account: this.userEn.account, groupId: this.groupId});
+			this.getGroupInfo();
+			this.$store.state.ws.addLister(wsType.group_chat, this.onWebScoketGroupMsg.bind(this));			
+		},
+		onUnload() {
+			this.$store.state.ws.removeLister(wsType.group_chat, this.onWebScoketGroupMsg.bind(this));
+		},
+		methods: {
+            getGroupInfo(){
+				let _this = this;
+				//通过群id获取群的详细信息
+				api.getGroupById({
+					id: this.groupId
+				}, res => {
+					console.log(res);
+					_this.groupEn = api.getData(res);
+					util.setBarTitle(_this.groupEn.groupName);
+				});
+			},
+			isNFocal() {
+				if (this.send_info === '') this.input = true;
+			},
+			//输入时显示发送按钮
+			onInput(e) {
+				if (e.detail.value === '') this.input = true;
+				else this.input = false;
+			},
 			// 上拉获取更多消息记录
 			loadHistory(){
 				if(this.isHistoryLoading){
@@ -114,7 +130,7 @@ export default {
 					count: 15
 				}, res=>{
 					let newMsg = api.getData(res).data;
-					console.log(newMsg);
+					// console.log(newMsg);
 					newMsg.forEach(function(item){
 					   _this.groupMsgList.unshift(item);						
 					})
@@ -129,51 +145,66 @@ export default {
 				this.isHistoryLoading = false;
 			},
 			//点击群成员头像跳转至个人信息页面
-			toGroupUserInfo(friendAccount){
+			toGroupUserInfo(friendAccount) {
 				uni.navigateTo({
-					url:'/pages/friend/details/details?friendAccount=' + friendAccount
+					url: '/pages/friend/details/details?friendAccount=' + friendAccount
 				})
 			},
 			//获取群的聊天记录
-			getGroupMsg(postData){
+			getGroupMsg() {
+				let postData = {
+					id: 1,
+					groupId: this.groupId,
+					account: this.userEn.account,
+					page: this.page,
+					count: 15
+				}
 				let _this = this;
-				api.getGroupMsg(postData, res=>{
+				api.getGroupMsg(postData, res => {
 					let code = api.getCode(res);
 					let msg = api.getMsg(res);
 					//群被解散时输入框禁用
-					if(code === -10011){
+					if (code === -10011) {
 						_this.system = msg;
 						_this.inputDisabled = true;
-					}else {
+					} else {
 						let data = api.getData(res).data.reverse(); //倒取群消息
-						data.forEach(function(item){
-							if(item.account === _this.userEn.account){
-								item.Mymsg = item.msg;
-							}else if(item.account === '' || item.account === null){
-								item.system = item.msg;
-							}else {
-								item.Frmsg = item.msg;
-							}
-							_this.friendHead = item.head;
-							if(_this.isNewMsg(item.id, _this.groupMsgList))
-								_this.groupMsgList.push(item);
+						data.forEach(function(item) {
+							_this.autoPushGroupMsg(item, _this);
 						});
 						_this.$nextTick(function() {
 							let i = _this.groupMsgList.length - 1;
+							if (i < 0) return;
 							// 滚动到底
 							_this.scrollToView = 'msg' + _this.groupMsgList[i].id;
 						});
 					}
 				})
 			},
+			//自动获取群消息
+			autoPushGroupMsg(item, _this) {
+				if((_this.groupMsgList.length > 0) &&
+				 (item.groupId != _this.groupMsgList[0].groupId)) return;
+				 
+				if (item.account === _this.userEn.account) {
+					item.Mymsg = item.msg;
+				} else if (item.account === '' || item.account === null) {
+					item.system = item.msg;
+				} else {
+					item.Frmsg = item.msg;
+				}
+				_this.friendHead = item.head;
+				if (_this.isNewMsg(item.id, _this.groupMsgList))
+					_this.groupMsgList.push(item);
+			},
 			//判断消息id是否是新消息
-			isNewMsg(ids, groupMsgList){
-				if(util.isEmpty(groupMsgList)) return true;
+			isNewMsg(ids, groupMsgList) {
+				if (util.isEmpty(groupMsgList)) return true;
 				let i = groupMsgList.length - 1;
 				return (ids > groupMsgList[i].id);
 			},
 			//群内发送消息
-			sendGroupMsg(){
+			sendGroupMsg() {
 				let data = {
 					groupId: this.groupEn.id,
 					account: this.userEn.account,
@@ -182,43 +213,51 @@ export default {
 				}
 				this.sendMyMsg(data);
 			},
-			sendMyMsg(postData){
+			sendMyMsg(postData) {
 				let _this = this;
-				api.sendMsgToGroup(postData, res=>{
+				api.sendMsgToGroup(postData, res => {
 					let code = api.getCode(res);
 					let data = api.getData(res);
-					if(code === 0){
+					if (code === 0) {
 						_this.send_info = '';
-						let data = {
-							id: 1,
-							groupId: this.groupEn.id,
-							account: this.userEn.account,
-							page: 1,
-							count: 9
-						}
-						this.getGroupMsg(data);
+						//this.getGroupMsg();
 					}
 				})
+			},
+			//监听webscoket返回的数据
+			onWebScoketGroupMsg(res) {
+				console.log(res);
+				this.autoPushGroupMsg(res, this);
+				this.$nextTick(function() {
+					let i = this.groupMsgList.length - 1;
+					if (i < 0) return;
+					// 滚动到底
+					this.scrollToView = 'msg' + this.groupMsgList[i].id;
+				});
 			}
 		}
-}
+	}
 </script>
 
 <style>
 	page {
 		background: #ebedf6;
 	}
-	.msg-list{
+
+	.msg-list {
 		width: 98%;
 		position: absolute;
 		top: 0;
-		bottom: 100upx;		
-		display:flex;
+		bottom: 100upx;
+		display: flex;
 	}
-	.msg_main{
-		flex:1;
-	    padding-right:20rpx;
+
+	.msg_main {
+		flex: 1;
+		padding-right: 20rpx;
+		box-sizing:border-box;
 	}
+
 	.container {
 		padding-left: 20upx;
 		padding-right: 20upx;
@@ -262,10 +301,12 @@ export default {
 	.tui-chat-operation {
 		background: #f6f6f6 !important;
 		/* padding-right: 18upx; */
-		/* box-sizing: border-box; */
+		box-sizing: border-box;
 	}
-	.tui-pr{
+
+	.tui-pr {
 		padding-right: 16rpx;
+		box-sizing:border-box;
 	}
 
 	.tui-right-flex {
@@ -287,6 +328,7 @@ export default {
 		padding-right: 20upx;
 		flex: 1;
 	}
+
 	.tui-opcity {
 		opacity: 0.5;
 	}
@@ -308,20 +350,24 @@ export default {
 		word-break: break-all;
 		word-wrap: break-word;
 	}
-	.chat_infos{
-		display:flex;
-		flex-direction:row;
-		justify-content:flex-start;
-		width:100%;
+
+	.chat_infos {
+		display: flex;
+		flex-direction: row;
+		justify-content: flex-start;
+		width: 100%;
 	}
-	.msgbox{
-		display:flex;
+
+	.msgbox {
+		display: flex;
 		flex-direction: column;
 	}
-	.msgbox>text{
-		font-size:13px;
-		color:#A8A8A8;
+
+	.msgbox>text {
+		font-size: 13px;
+		color: #A8A8A8;
 	}
+
 	.tui-chatbox::before {
 		content: "";
 		position: absolute;
@@ -358,9 +404,9 @@ export default {
 	.tui-chat-left,
 	.tui-chat-right {
 		display: flex;
-		align-items:center;
+		align-items: center;
 		padding-top: 40upx;
-		justify-content:flex-start;
+		justify-content: flex-start;
 	}
 
 	.tui-user-pic {
@@ -476,7 +522,15 @@ export default {
 	.tui-flex-reverse {
 		flex-direction: row-reverse;
 	}
-	.chat_info{
-		flex:1;
+
+	.chat_info {
+		flex: 1;
+	}
+
+	.send_btn>button {
+		width: 75rpx;
+		height: 60rpx;
+		font-size: 10px;
+		padding: 0;
 	}
 </style>

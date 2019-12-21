@@ -189,6 +189,10 @@ import kpsImageCutter from "@/components/ksp-image-cutter/ksp-image-cutter.vue";
 		padding: 30rpx 0;
 		border-bottom: 1px solid #F3F3F3;
 	}
+	.friend_info>view:hover{}
+	.friend_info>view:active{
+		background: #f7f7f9 !important;
+	}
 	.friend_info>view>text:nth-child(1) {
 		font-size: 18px;
 	}

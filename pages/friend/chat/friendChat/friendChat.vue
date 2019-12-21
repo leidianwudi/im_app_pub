@@ -6,13 +6,16 @@
 				<view hover-class="tui-opcity" :hover-stay-time="150" class="tui-voice">
 					<tui-icon name="voice" :size="34" color='#333'></tui-icon>
 				</view>
-				<input class="tui-chat-input" v-model="send_info" @confirm='send'></input>
+				<input class="tui-chat-input" v-model="send_info" @confirm='send' @input="onInput" @blur="isNFocal"></input>
 			</view>
 			<view hover-class="tui-opcity" :hover-stay-time="150">
 				<tui-icon name="imface" :size="26" color='#333'></tui-icon>
 			</view>
-			<view hover-class="tui-opcity" :hover-stay-time="150" class="tui-pr">
-				<tui-icon name="add" :ize="30" color='#333' @tap="send"></tui-icon>
+			<view hover-class="tui-opcity" :hover-stay-time="150" class="tui-pr" v-if="input">
+				<tui-icon name="add" :ize="30" color='#333'></tui-icon>
+			</view>
+			<view class="tui-pr send_btn" hover-class="tui-opcity" :hover-stay-time="150" @tap="send" v-if="!input">
+				<button type="primary">发送</button>
 			</view>
 		</view>
 		<!-- 底部输入框 -->
@@ -44,6 +47,7 @@
 	import api from '@/api/api.js';
 	import storage from '@/api/storage.js';
 	import util from '@/common/util.js';
+	import wsType from '@/api/msgType.js';
 	export default {
 		components: {
 			tuiIcon
@@ -55,18 +59,29 @@
 				userEn: null,  		//我的详细信息
 				send_info: '',  	//发送内容
 				msgList: [],    	//消息列表
-				scrollToView: '' 	//滚动列表位置
+				scrollToView: '' 	,//滚动列表位置
+				input: true     	//控制发送按钮显示
 			}
 		},
 		onLoad(res) {
 			this.userEn = storage.getMyInfo();
 			this.friendAccount = res.friendAccount;  //获取好友账号
-			this.getMsgList();  //获取与好友的消息记录
-		},
-		onShow() {
 			this.getFriendInfo(this.userEn.account, this.friendAccount); //查询特定好友详细信息
+			this.getMsgList();  //获取与好友的消息记录
+			this.$store.state.ws.addLister(wsType.friend_chat, this.onWebScoketMsg.bind(this));
+		},
+		onUnload(){
+		    this.$store.state.ws.removeLister(wsType.friend_chat, this.onWebScoketMsg.bind(this));	
 		},
 		methods: {
+			isNFocal(){
+				if(this.send_info === '') this.input = true;
+			},
+			//输入时显示发送按钮
+			onInput(e){
+				if(e.detail.value === '') this.input = true;
+				else this.input = false;
+			},
 			//获取好友详细信息
 			getFriendInfo(account, friendAccount){
 				api.getFriendByAccount({account: account, friendAccount: friendAccount}, res=>{
@@ -93,20 +108,26 @@
 				api.getFriendMsg(postData, res => {
 					let data = api.getData(res).data.reverse();
 					data.forEach(function(item) {
-						if (item.account === _this.userEn.account) {
-							item.Mymsg = item.msg;
-						} else {
-							item.Frmsg = item.msg;
-						}
-						if(_this.isNewMsg(item.id, _this.msgList))
-							_this.msgList.push(item);	
+						_this.autoPushMsg(item, _this); //自动添加聊天数据
 					})
 					_this.$nextTick(function() {
 						let i = _this.msgList.length - 1;
+						if(i < 0) return;
 						// 滚动到底
 						_this.scrollToView = 'msg' + _this.msgList[i].id;
 					});
 				})
+			},
+			
+			//自动添加消息数据
+			autoPushMsg(item, _this){
+				if (item.account === _this.userEn.account) {
+					item.Mymsg = item.msg;
+				} else {
+					item.Frmsg = item.msg;
+				}
+				if(_this.isNewMsg(item.id, _this.msgList))
+					_this.msgList.push(item);
 			},
 			
 			//判断消息id是否是新消息
@@ -134,14 +155,19 @@
 					let data = api.getData(res);
 					if (code === 0) {
 						_this.send_info = '';
-						let data = {
-							account: _this.userEn.account,
-							toAccount: _this.friendAccount,
-							id: 0
-						}
-						_this.getMsg(data);
 					}
 				})
+			},
+			//监听webscoket返回的数据
+			onWebScoketMsg(res){
+				console.log(res);
+				this.autoPushMsg(res, this);
+				this.$nextTick(function() {
+					let i = this.msgList.length - 1;
+					if(i < 0) return;
+					// 滚动到底
+					this.scrollToView = 'msg' + this.msgList[i].id;
+				});
 			}
 		}
 	}
@@ -207,6 +233,7 @@
 
 	.tui-pr {
 		padding-right: 16rpx;
+		box-sizing:border-box;
 	}
 
 	.tui-right-flex {
@@ -408,5 +435,11 @@
 
 	.chat_info {
 		flex: 1;
+	}
+	.send_btn>button{
+		width:75rpx;
+		height:60rpx;
+		font-size:10px;
+		padding:0;
 	}
 </style>

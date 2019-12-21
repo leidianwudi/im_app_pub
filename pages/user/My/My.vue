@@ -50,7 +50,8 @@ import utilCore from '@/api/utilCore.js';
                 });
             },
             bindLogout() {
-                storage.outLogin();
+                storage.outLogin(); //删除本地用户数据
+				this.$store.state.ws.setAccount(''); //清空ws内的用户账号
                 uni.reLaunch({
                     url: '../login/login'
                 });
