@@ -79,5 +79,21 @@ module.exports = {
 	//获取ws链接id
 	getClientId(){
 		return uni.getStorageSync(clientId);
+	},
+	
+	//封装聊天计数的key
+	getMsgKey(type, accORid){
+		if(type === 0) return accORid + "_" + type;
+		if(type === 1) return accORid + "_" + type;
+	},
+	
+	//保存聊天计数
+	saveMsgIndex(type, accORid, msgIndex){
+		uni.setStorageSync(this.getMsgKey(type, accORid), msgIndex);
+	},
+		
+	//获取聊天计数
+	getMsgIndex(type, accORid){
+		return uni.getStorageSync(this.getMsgKey(type, accORid));		
 	}
 }

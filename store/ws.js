@@ -147,7 +147,7 @@ export default {
 		//设置定时器
 		setInterval(() => {		
 			this.autoTryDo(); //执行自动操作
-		}, 2000);
+		}, 20000);
 	},
 
 	//执行自动操作

@@ -43,7 +43,8 @@ export default{
 			return{
 				list:[],
 				userEn:null,
-				menu:false
+				menu:false,
+				msgIndex: 0
 			}
 		},
 		onLoad() {
@@ -55,7 +56,7 @@ export default{
 			let data = {
 				account: this.userEn.account,
 				page: 1,
-				count: 6
+				count: 99
 			};
 			this.getMsgList(data);
 		},
@@ -97,6 +98,7 @@ export default{
 			},
 			//点击进入聊天界面
 			onChat(type, friendAccount, groupId){
+				
 				if(this.menu === true) return;
 				switch (type){
 					case 0:  //好友聊天
@@ -122,32 +124,62 @@ export default{
 					if (util.isEmpty(data)) return;
 					data.forEach(function(item){
 						if(item.type === 0){
-							if(item.sendAccount === _this.userEn.account){
-							    item.level = 0;
-								item.msgNum = '';
-							} else{
-								item.level = 1;
-								item.msgNum = item.msgIndex;
-							}
+                            _this.countMsg(item);
 							api.getFriendByAccount({
 								account: _this.userEn.account,
 								friendAccount: item.title
 							}, res=>{
 								let data = api.getData(res);
-								item.title = data.friendNickTip !== '' ? data.friendNickTip : item.title;
+								item.title = data.friendNickTip ? data.friendNickTip : item.title;
 							});
-						}else{
-							item.level = 1;
-							item.msgNum = item.msgIndex;	
+						}else{	
 							item.img = '/static/img/1.png';
+							_this.countMsg(item);
 						}
+						//添加时间
 						let timer = item.updTime.split(" ");
 						timer = timer[1].slice(0, timer.length-5)
 						item.time = timer;
+						// 添加消息栏
 						_this.list.push(item);
 					})
 				});
 				uni.stopPullDownRefresh();
+			},
+			//消息提示计算
+			countMsg(item){
+				//如果最后一条消息发送者为自己，不显示红点消息提示
+				if (item.sendAccount === this.userEn.account) {
+					item.level = 0;
+					item.msgNum = '';
+					//如果最后一条消息发送者不为自己时显示红点消息提示
+				} else {
+					// 如果storage中取不到数据时
+					if (!storage.getMsgIndex(item.type, item.friendAccount ? item.friendAccount : item.groupId)) {
+						//是否有新消息
+						if (item.msgIndex - this.msgIndex > 0) {
+							let count = item.msgIndex - this.msgIndex; //计数新msgIndex减去旧msgIndex的差值
+							item.level = 1;
+							item.msgNum = count;
+						} else {
+							item.level = 0;
+							item.msgNum = '';
+						}
+						//能从storage中取到数据时
+					} else {
+						this.msgIndex = storage.getMsgIndex(item.type, item.friendAccount != null? item.friendAccount : item.groupId);
+						if (item.msgIndex - this.msgIndex > 0) {
+							let count = item.msgIndex - this.msgIndex; //计数新msgIndex减去旧msgIndex的差值
+							item.level = 1;
+							item.msgNum = count;
+						} else {
+							item.level = 0;
+							item.msgNum = '';
+						}
+					}
+				}
+				storage.saveMsgIndex(item.type, item.friendAccount != null ? item.friendAccount : item.groupId, item.msgIndex);
+				this.msgIndex = 0;
 			},
 			//下拉刷新重新请求聊天数据
 			onPullDownRefresh(){
