@@ -80,7 +80,7 @@ export default {
 	onMessage() {
 		//接收消息监听
 		uni.onSocketMessage((res) => {
-			console.log('收到服务器内容1' + res);
+			//console.log('收到服务器内容1' + res);
 			let resObj = tran.json2Obj(res.data);
 			console.log('收到服务器内容2' + resObj);
 			let type = resObj.type; //类型	
@@ -121,6 +121,7 @@ export default {
 
 	//添加监听
 	addLister(type, func) {
+		//console.log("监听" + type + "_" + func)
 		if (this.mapFun.has(type)) {
 			this.mapFun.get(type).push(func); //添加到数组最后
 			
@@ -133,10 +134,11 @@ export default {
 	removeLister(type, func) {
 		if (!this.mapFun.has(type)) return;
 
+		//console.log("删除监听" + type + "_" + func)
 		let arr = this.mapFun.get(type); //回调函数数组
 		for (let i = 0; i < arr.length; ++i) {
 			if (arr[i] === func) {
-				arr.splice(i, 1); //把值删除
+				this.mapFun.set(type, arr.splice(i, 1)); //把值删除
 				return;
 			}
 		}
