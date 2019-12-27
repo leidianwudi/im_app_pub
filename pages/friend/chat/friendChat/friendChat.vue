@@ -1,44 +1,71 @@
 <template>
-	<view class="content" style="background: #ebedf6;padding-bottom: 100upx;box-sizing: border-box;">
-		<!-- 底部输入框 -->
-		<view class="tui-operation tui-chat-operation">
-			<view class='tui-right-flex tui-input-box'>
-				<view hover-class="tui-opcity" :hover-stay-time="150" class="tui-voice">
-					<tui-icon name="voice" :size="34" color='#333'></tui-icon>
+	<view class="content" @tap="hideDrawer" style="background: #ebedf6;padding: 0rpx;padding-bottom: 100upx;box-sizing: border-box;">
+		<!-- 底部输入栏 -->
+		<view class="input-box" :class="popupLayerClass" @touchmove.stop.prevent="discard">
+			<!-- H5下不能录音，输入栏布局改动一下 -->
+			<!-- #ifndef H5 -->
+			<view class="voice">
+				<view class="icon" :class="isVoice?'jianpan':'yuyin'" @tap="switchVoice"></view>
+			</view>
+			<!-- #endif -->
+			<!-- #ifdef H5 -->
+			<view class="more" @tap="showMore">
+				<view class="icon add"></view>
+			</view>
+			<!-- #endif -->
+			<view class="textbox">
+				<view class="voice-mode" :class="[isVoice?'':'hidden',recording?'recording':'']" @touchstart="voiceBegin" @touchmove.stop.prevent="voiceIng" @touchend="voiceEnd" @touchcancel="voiceCancel">{{voiceTis}}</view>
+				<view class="text-mode"  :class="isVoice?'hidden':''">
+					<view class="box">
+						<textarea auto-height="true" v-model="textMsg" @focus="textareaFocus"/>
+					</view>
+					<view class="em" @tap.stop="chooseEmoji">
+						<view class="icon biaoqing"></view>
+					</view>
 				</view>
-				<input class="tui-chat-input" v-model="send_info" @confirm='send' @input="onInput" @blur="isNFocal"></input>
 			</view>
-			<view hover-class="tui-opcity" :hover-stay-time="150">
-				<tui-icon name="imface" :size="26" color='#333'></tui-icon>
+			<!-- #ifndef H5 -->
+			<view class="more" @tap="showMore">
+				<view class="icon add"></view>
 			</view>
-			<view hover-class="tui-opcity" :hover-stay-time="150" class="tui-pr" v-if="input">
-				<tui-icon name="add" :ize="30" color='#333'></tui-icon>
-			</view>
-			<view class="tui-pr send_btn" hover-class="tui-opcity" :hover-stay-time="150" @tap="send" v-if="!input">
-				<button type="primary">发送</button>
+			<!-- #endif -->
+			<view class="send" :class="isVoice?'hidden':''" @tap="sendText">
+				<view class="btn">发送</view>
 			</view>
 		</view>
-		<!-- 底部输入框 -->
-
+		<!-- 底部输入栏 -->
+		<!-- 消息显示 -->
 		<view class="chat_info">
-			<scroll-view class="msg-list" scroll-y="true" scroll-with-animation=false :scroll-into-view="scrollToView" :show-scrollbar="true">
+			<scroll-view class="msg-list" scroll-y="true" :scroll-with-animation="scrollAnimation" :scroll-into-view="scrollToView"
+			 :show-scrollbar="true">
 				<view class="tui-chat-content" v-for="(item, index) in msgList" :key="index" :id="'msg'+item.id">
 					<view class="tui-chat-right" v-if="item.Mymsg">
 						<!-- 我发送的消息 -->
-						<view class="tui-chatbox tui-chatbox-right">{{item.Mymsg}}</view>
+						<rich-text class="tui-chatbox tui-chatbox-right" :nodes="item.Mymsg" style="word-break : break-all;"></rich-text>
 						<image :src="userEn.head" class="tui-user-pic tui-left"></image>
 					</view>
 
 					<view class="tui-chat-left" v-if="item.Frmsg">
 						<!-- 好友发送的消息 -->
-						<image :src="friendEn.friendHead" class="tui-user-pic tui-right" @tap="toFriendInfo(item.account)"></image>
-						<view class="tui-chatbox tui-chatbox-left">{{item.Frmsg}}</view>
+						<image :src="friendEn.friendHead" class="tui-user-pic tui-right" @tap="toFriendInfo(friendAccount)"></image>
+						<rich-text class="tui-chatbox tui-chatbox-right" :nodes="item.Frmsg" style="word-break : break-all;"></rich-text>
 					</view>
-
 				</view>
 			</scroll-view>
 		</view>
-
+		<!-- 消息显示 -->
+		<!-- 抽屉 -->
+        <view class="popup-layer" :class="popupLayerClass" @touchstart.stop.prevent="discard">
+        	<!-- 表情 --> 
+        	<swiper class="emoji-swiper" :class="{hidden:hideEmoji}" indicator-dots="true" duration="150">
+        		<swiper-item v-for="(page,pid) in emojiList" :key="pid">
+        			<view v-for="(em,eid) in page" :key="eid" @touchstart="addEmoji(em)">
+        				<image mode="widthFix" :src="'/static/img/emoji/'+em.url"></image>
+        			</view>
+        		</swiper-item>
+        	</swiper>
+        </view>
+		<!-- 抽屉 -->
 	</view>
 </template>
 
@@ -48,46 +75,121 @@
 	import storage from '@/api/storage.js';
 	import util from '@/common/util.js';
 	import wsType from '@/api/msgType.js';
+	import em from '@/common/em.js';
 	export default {
 		components: {
 			tuiIcon
 		},
 		data() {
 			return {
-				friendAccount:"",  	//好友账号
-				friendEn: '',      	//好友详细信息
-				userEn: null,  		//我的详细信息
-				send_info: '',  	//发送内容
-				msgList: [],    	//消息列表
-				scrollToView: '' 	,//滚动列表位置
-				input: true     	//控制发送按钮显示
+				friendAccount: "", //好友账号
+				friendEn: '', //好友详细信息
+				userEn: null, //我的详细信息
+				textMsg: '', //发送内容
+				msgList: [], //消息列表
+				scrollToView: '', //滚动列表位置
+				input: true ,//控制发送按钮显示
+				emojiList: em.emojiList  ,//表情列表
+				popupLayerClass:'', 	// 抽屉参数
+				hideEmoji:true, 		//表情定义
+				isVoice:false,
+				voiceTis:'按住 说话',
+				recordTis:"手指上滑 取消发送",
+				recording:false,
+				scrollAnimation: false
 			}
 		},
 		onLoad(res) {
 			this.userEn = storage.getMyInfo();
-			this.friendAccount = res.friendAccount;  //获取好友账号
+			this.friendAccount = res.friendAccount; //获取好友账号
 			this.getFriendInfo(this.userEn.account, this.friendAccount); //查询特定好友详细信息
-			this.getMsgList();  //获取与好友的消息记录
+			this.getMsgList(); //获取与好友的消息记录
 			this.$store.state.ws.addLister(wsType.friend_chat, this.onWebScoketMsg.bind(this));
 		},
-		onUnload(){
-		    this.$store.state.ws.removeLister(wsType.friend_chat, this.onWebScoketMsg.bind(this));	
+		onUnload() {
+			this.$store.state.ws.removeLister(wsType.friend_chat, this.onWebScoketMsg.bind(this));
 		},
 		methods: {
-			isNFocal(){
-				if(this.send_info === '') this.input = true;
+			//获取焦点，如果不是选表情ing,则关闭抽屉
+			textareaFocus(){
+				if(this.popupLayerClass=='showLayer' && this.hideMore == false){
+					this.hideDrawer();
+				}
+			},
+			// 发送文字消息
+			sendText(){
+				this.hideDrawer();//隐藏抽屉
+				if(!this.textMsg){
+					return;
+				}
+				let content = this.replaceEmoji(this.textMsg);
+				this.send(content);
+				this.textMsg = '';//清空输入框
+			},
+			//替换表情符号为图片
+			replaceEmoji(str){
+				let replacedStr = str.replace(/\[([^(\]|\[)]*)\]/g,(item, index)=>{
+					console.log("item: " + item);
+					for(let i=0;i<this.emojiList.length;i++){
+						let row = this.emojiList[i];
+						for(let j=0;j<row.length;j++){
+							let EM = row[j];
+							if(EM.alt==item){
+								//在线表情路径，图文混排必须使用网络路径，请上传一份表情到你的服务器后再替换此路径 
+								//比如你上传服务器后，你的100.gif路径为https://www.xxx.com/emoji/100.gif 则替换onlinePath填写为https://www.xxx.com/emoji/
+								let onlinePath = '/static/img/emoji'
+								let imgstr = '<img src="'+onlinePath+'/'+EM.url+'">';
+								console.log("imgstr: " + imgstr);
+								return imgstr;
+							}
+						}
+					}
+				});
+				return '<div style="display: flex;align-items: center;word-wrap:break-word;">'+replacedStr+'</div>';;
+			},
+			// 选择表情
+			chooseEmoji(){
+				this.hideMore = true;
+				if(this.hideEmoji){
+					this.hideEmoji = false;
+					this.openDrawer();
+				}else{
+					this.hideDrawer();
+				}
+			},
+			//添加表情
+			addEmoji(em){
+				console.log(1);
+				this.textMsg+=em.alt;
+			},
+			// 打开抽屉
+			openDrawer(){
+				this.popupLayerClass = 'showLayer';
+			},
+			// 隐藏抽屉
+			hideDrawer(){
+				this.popupLayerClass = '';
+				setTimeout(()=>{
+					this.hideEmoji = true;
+				},150);
+			},
+			isNFocal() {
+				if (this.textMsg === '') this.input = true;
 			},
 			//输入时显示发送按钮
-			onInput(e){
-				if(e.detail.value === '') this.input = true;
+			onInput(e) {
+				if (e.detail.value === '') this.input = true;
 				else this.input = false;
 			},
 			//获取好友详细信息
-			getFriendInfo(account, friendAccount){
-				api.getFriendByAccount({account: account, friendAccount: friendAccount}, res=>{
-						this.friendEn = api.getData(res);
-						util.setBarTitle(this.friendEn.friendNickTip);  //设置标题栏文字为好友的昵称
-					})
+			getFriendInfo(account, friendAccount) {
+				api.getFriendByAccount({
+					account: account,
+					friendAccount: friendAccount
+				}, res => {
+					this.friendEn = api.getData(res);
+					util.setBarTitle(this.friendEn.friendNickTip); //设置标题栏文字为好友的昵称
+				})
 			},
 			//跳转到好友信息页面
 			toFriendInfo(friendAccount) {
@@ -112,39 +214,41 @@
 					})
 					_this.$nextTick(function() {
 						let i = _this.msgList.length - 1;
-						if(i < 0) return;
+						if (i < 0) return;
 						// 滚动到底
 						_this.scrollToView = 'msg' + _this.msgList[i].id;
 					});
 				})
 			},
-			
+
 			//自动添加消息数据
-			autoPushMsg(item, _this){
+			autoPushMsg(item, _this) {
 				if (item.account === _this.userEn.account) {
 					item.Mymsg = item.msg;
 				} else {
 					item.Frmsg = item.msg;
 				}
-				if(_this.isNewMsg(item.id, _this.msgList))
+				if (_this.isNewMsg(item.id, _this.msgList))
 					_this.msgList.push(item);
 			},
-			
+
 			//判断消息id是否是新消息
-			isNewMsg(ids, msgList){
-				if(util.isEmpty(msgList)) return true;
+			isNewMsg(ids, msgList) {
+				if (util.isEmpty(msgList)) return true;
 				let i = msgList.length - 1;
 				return (ids > msgList[i].id);
 			},
 
 			//发送信息
-			send() {
-				if (this.send_info === '') return
+			send(content) {
+				console.log(content);
+				// return;
+				if (this.textMsg === '') return
 				let data = {
 					account: this.userEn.account,
 					toAccount: this.friendAccount,
 					type: 0,
-					msg: this.send_info
+					msg: content
 				}
 				this.sendInfo(data);
 			},
@@ -154,45 +258,52 @@
 					let code = api.getCode(res);
 					let data = api.getData(res);
 					if (code === 0) {
-						_this.send_info = '';
+						_this.textMsg = '';
 					}
 				})
 			},
 			//监听webscoket返回的数据
-			onWebScoketMsg(res){
+			onWebScoketMsg(res) {
+				this.scrollAnimation = true;  //开启滑动动画
 				console.log(res);
 				this.autoPushMsg(res, this);
 				this.$nextTick(function() {
 					let i = this.msgList.length - 1;
-					if(i < 0) return;
+					if (i < 0) return;
 					// 滚动到底
 					this.scrollToView = 'msg' + this.msgList[i].id;
 				});
+			},
+			discard(){
+				return;
 			}
 		}
 	}
 </script>
 
 <style lang="scss">
+
 	page {
 		background: #ebedf6;
 	}
+
 	//滚动条的scroll-into-view需要用到position: absolute;
-    .msg-list{
-		width: 100%;
-		position: absolute;
-		top: 0;
-		left:5rpx;
-		bottom: 100upx;
-		padding-left:20rpx;
-		box-sizing:border-box;
-	}
+	// .msg-list {
+	// 	width: 100%;
+	// 	position: absolute;
+	// 	top: 0;
+	// 	bottom: 100upx;
+	// 	box-sizing: border-box;
+	// 	background:#fff;
+	// }
+
 	.container {
 		padding-left: 20upx;
 		padding-right: 20upx;
 		padding-bottom: 146upx;
 		box-sizing: border-box;
 	}
+
 	/*--tabbar--*/
 	.tui-operation {
 		width: 100%;
@@ -233,7 +344,7 @@
 
 	.tui-pr {
 		padding-right: 16rpx;
-		box-sizing:border-box;
+		box-sizing: border-box;
 	}
 
 	.tui-right-flex {
@@ -436,10 +547,13 @@
 	.chat_info {
 		flex: 1;
 	}
-	.send_btn>button{
-		width:75rpx;
-		height:60rpx;
-		font-size:10px;
-		padding:0;
+
+	.send_btn>button {
+		width: 75rpx;
+		height: 60rpx;
+		font-size: 10px;
+		padding: 0;
 	}
+	
+@import "@/static/style/style.scss";
 </style>

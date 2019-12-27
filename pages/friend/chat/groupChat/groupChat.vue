@@ -1,22 +1,36 @@
 <template>
-	<view class="content" style="background: #ebedf6;padding-bottom: 100upx;box-sizing: border-box;">
+	<view class="content" @tap="hideDrawer" style="background: #ebedf6; padding: 0rpx; padding-bottom: 100upx;box-sizing: border-box;">
 		<!-- 底部输入框 -->
-		<view class="tui-operation tui-chat-operation">
-			<view class='tui-right-flex tui-input-box'>
-				<view hover-class="tui-opcity" :hover-stay-time="150" class="tui-voice">
-					<tui-icon name="voice" :size="34" color='#333'></tui-icon>
+		<view class="input-box" :class="popupLayerClass" @touchmove.stop.prevent="discard">
+			<!-- H5下不能录音，输入栏布局改动一下 -->
+			<!-- #ifndef H5 -->
+			<view class="voice">
+				<view class="icon" :class="isVoice?'jianpan':'yuyin'" @tap="switchVoice"></view>
+			</view>
+			<!-- #endif -->
+			<!-- #ifdef H5 -->
+			<view class="more" @tap="showMore">
+				<view class="icon add"></view>
+			</view>
+			<!-- #endif -->
+			<view class="textbox">
+				<view class="voice-mode" :class="[isVoice?'':'hidden',recording?'recording':'']" @touchstart="voiceBegin" @touchmove.stop.prevent="voiceIng" @touchend="voiceEnd" @touchcancel="voiceCancel">{{voiceTis}}</view>
+				<view class="text-mode"  :class="isVoice?'hidden':''">
+					<view class="box">
+						<textarea auto-height="true" v-model="textMsg" @focus="textareaFocus"/>
+					</view>
+					<view class="em" @tap.stop="chooseEmoji">
+						<view class="icon biaoqing"></view>
+					</view>
 				</view>
-				<input class="tui-chat-input" v-model="send_info" @confirm='sendGroupMsg' :disabled="inputDisabled" @input="onInput"
-				 @blur="isNFocal"></input>
 			</view>
-			<view hover-class="tui-opcity" :hover-stay-time="150">
-				<tui-icon name="imface" :size="26" color='#333'></tui-icon>
+			<!-- #ifndef H5 -->
+			<view class="more" @tap="showMore">
+				<view class="icon add"></view>
 			</view>
-			<view hover-class="tui-opcity" :hover-stay-time="150" class="tui-pr" v-if="input">
-				<tui-icon name="add" :ize="30" color='#333'></tui-icon>
-			</view>
-			<view class="tui-pr send_btn" hover-class="tui-opcity" :hover-stay-time="150" @tap="sendGroupMsg" v-if="!input">
-				<button type="primary">发送</button>
+			<!-- #endif -->
+			<view class="send" :class="isVoice?'hidden':''" @tap="sendText">
+				<view class="btn">发送</view>
 			</view>
 		</view>
 		<!-- 底部输入框 -->
@@ -24,21 +38,31 @@
 		<view class="chat_info">
 			<scroll-view class="msg-list" scroll-y="true" :scroll-with-animation="scrollAnimation" :scroll-into-view="scrollToView"
 			 @scrolltoupper="loadHistory" upper-threshold="50">
+			 <!-- 加载历史数据waitingUI -->
+				 <view class="loading" v-if="isHistoryLoading">
+					<view class="spinner">
+						<view class="rect1"></view>
+						<view class="rect2"></view>
+						<view class="rect3"></view>
+						<view class="rect4"></view>
+						<view class="rect5"></view>
+					</view>
+				 </view>
 				<view class="msgList" v-for="(item, index) in groupMsgList" :key="index" :id="'msg'+item.id">
 					<view class="msg_main">
 						<view class="tui-label" v-if="item.system">{{item.system}}</view>
 						<!-- <view class="tui-chat-center">星期四 11:02</view> -->
 						<view class="tui-chat-right" v-if="item.Mymsg">
-							<view class="tui-chatbox tui-chatbox-right">{{item.Mymsg}}</view>
-							<image :src="userEn.head" class="tui-user-pic tui-left"></image>
+							<rich-text class="tui-chatbox tui-chatbox-right" :nodes="item.Mymsg" style="word-break : break-all;"></rich-text>
+							<image :src="item.head" class="tui-user-pic tui-left"></image>
 						</view>
 
 						<view class="tui-chat-left" v-if="item.Frmsg">
-							<image :src="friendHead" class="tui-user-pic tui-right" @tap="toGroupUserInfo(item.nickTip)"></image>
+							<image :src="item.head" class="tui-user-pic tui-right" @tap="toGroupUserInfo(item.nickTip)"></image>
 							<view class="chat_infos">
 								<view class="msgbox">
 									<text>{{item.account}}</text>
-									<view class="tui-chatbox tui-chatbox-left">{{item.Frmsg}}</view>
+									<rich-text class="tui-chatbox tui-chatbox-right" :nodes="item.Frmsg" style="word-break : break-all;"></rich-text>
 								</view>
 							</view>
 						</view>
@@ -46,7 +70,18 @@
 				</view>
 			</scroll-view>
 		</view>
-
+        <!-- 抽屉 -->
+        <view class="popup-layer" :class="popupLayerClass" @touchstart.stop.prevent="discard">
+        	<!-- 表情 --> 
+        	<swiper class="emoji-swiper" :class="{hidden:hideEmoji}" indicator-dots="true" duration="150">
+        		<swiper-item v-for="(page,pid) in emojiList" :key="pid">
+        			<view v-for="(em,eid) in page" :key="eid" @touchstart="addEmoji(em)">
+        				<image mode="widthFix" :src="'/static/img/emoji/'+em.url"></image>
+        			</view>
+        		</swiper-item>
+        	</swiper>
+        </view>
+        <!-- 抽屉 -->
 	</view>
 </template>
 
@@ -56,6 +91,7 @@
 	import storage from '@/api/storage.js';
 	import util from '@/common/util.js';
 	import wsType from '@/api/msgType.js';
+	import em from '@/common/em.js';
 	export default {
 		components: {
 			tuiIcon
@@ -63,7 +99,7 @@
 		data() {
 			return {
 				friendHead: '', //群用户头像
-				send_info: '', //输入框的内容
+				textMsg: '', //输入框的内容
 				groupId: null, //群id
 				groupEn: null, //群的详细资料
 				userEn: null, //我的详细资料
@@ -73,7 +109,14 @@
 				isHistoryLoading: false,
 				scrollAnimation: false,
 				page: 1,
-				input: true //控制发送按钮显示
+				input: true ,//控制发送按钮显示
+				emojiList: em.emojiList  ,//表情列表
+				popupLayerClass:'', 	// 抽屉参数
+				hideEmoji:true, 		//表情定义
+				isVoice:false,
+				voiceTis:'按住 说话',
+				recordTis:"手指上滑 取消发送",
+				recording:false,
 			}
 		},
 		//点击右上角的更多群信息
@@ -94,6 +137,69 @@
 			this.$store.state.ws.removeLister(wsType.group_chat, this.onWebScoketGroupMsg.bind(this));
 		},
 		methods: {
+			//获取焦点，如果不是选表情ing,则关闭抽屉
+			textareaFocus(){
+				if(this.popupLayerClass=='showLayer' && this.hideMore == false){
+					this.hideDrawer();
+				}
+			},
+			// 发送文字消息
+			sendText(){
+				this.hideDrawer();//隐藏抽屉
+				if(!this.textMsg){
+					return;
+				}
+				let content = this.replaceEmoji(this.textMsg);
+				this.sendGroupMsg(content);
+				this.textMsg = '';//清空输入框
+			},
+			//替换表情符号为图片
+			replaceEmoji(str){
+				let replacedStr = str.replace(/\[([^(\]|\[)]*)\]/g,(item, index)=>{
+					console.log("item: " + item);
+					for(let i=0;i<this.emojiList.length;i++){
+						let row = this.emojiList[i];
+						for(let j=0;j<row.length;j++){
+							let EM = row[j];
+							if(EM.alt==item){
+								//在线表情路径，图文混排必须使用网络路径，请上传一份表情到你的服务器后再替换此路径 
+								//比如你上传服务器后，你的100.gif路径为https://www.xxx.com/emoji/100.gif 则替换onlinePath填写为https://www.xxx.com/emoji/
+								let onlinePath = '/static/img/emoji'
+								let imgstr = '<img src="'+onlinePath+'/'+EM.url+'">';
+								console.log("imgstr: " + imgstr);
+								return imgstr;
+							}
+						}
+					}
+				});
+				return '<div style="display: flex;align-items: center;word-wrap:break-word;">'+replacedStr+'</div>';;
+			},
+			// 选择表情
+			chooseEmoji(){
+				this.hideMore = true;
+				if(this.hideEmoji){
+					this.hideEmoji = false;
+					this.openDrawer();
+				}else{
+					this.hideDrawer();
+				}
+			},
+			//添加表情
+			addEmoji(em){
+				console.log(1);
+				this.textMsg+=em.alt;
+			},
+			// 打开抽屉
+			openDrawer(){
+				this.popupLayerClass = 'showLayer';
+			},
+			// 隐藏抽屉
+			hideDrawer(){
+				this.popupLayerClass = '';
+				setTimeout(()=>{
+					this.hideEmoji = true;
+				},150);
+			},
             getGroupInfo(){
 				let _this = this;
 				//通过群id获取群的详细信息
@@ -106,7 +212,7 @@
 				});
 			},
 			isNFocal() {
-				if (this.send_info === '') this.input = true;
+				if (this.textMsg === '') this.input = true;
 			},
 			//输入时显示发送按钮
 			onInput(e) {
@@ -126,14 +232,14 @@
 					id: 1,
 					groupId: _this.groupEn.id,
 					account: _this.userEn.account,
-					page: _this.page++,
+					page: ++_this.page,
 					count: 15
 				}, res=>{
-					let newMsg = api.getData(res).data;
-					// console.log(newMsg);
-					newMsg.forEach(function(item){
-					   _this.groupMsgList.unshift(item);						
-					})
+					this.isHistoryLoading = false;
+					let newMsg = api.getPageList(res);
+					newMsg.forEach(function(item){	
+					   _this.autoPushGroupMsg(item, _this, false);
+					});					
 				});
 				//这段代码很重要，不然每次加载历史数据都会跳到顶部
 				this.$nextTick(function() {
@@ -141,8 +247,7 @@
 					this.$nextTick(function() {
 						this.scrollAnimation = true;//恢复滚动动画
 					});
-				});
-				this.isHistoryLoading = false;
+				});				
 			},
 			//点击群成员头像跳转至个人信息页面
 			toGroupUserInfo(friendAccount) {
@@ -170,7 +275,7 @@
 					} else {
 						let data = api.getData(res).data.reverse(); //倒取群消息
 						data.forEach(function(item) {
-							_this.autoPushGroupMsg(item, _this);
+							_this.autoPushGroupMsg(item, _this, true);
 						});
 						_this.$nextTick(function() {
 							let i = _this.groupMsgList.length - 1;
@@ -181,8 +286,8 @@
 					}
 				})
 			},
-			//自动获取群消息
-			autoPushGroupMsg(item, _this) {
+			//自动获取群消息，isPush:true往后添加消息
+			autoPushGroupMsg(item, _this, isPush) {
 				if((_this.groupMsgList.length > 0) &&
 				 (item.groupId != _this.groupMsgList[0].groupId)) return;
 				 
@@ -193,23 +298,28 @@
 				} else {
 					item.Frmsg = item.msg;
 				}
-				_this.friendHead = item.head;
-				if (_this.isNewMsg(item.id, _this.groupMsgList))
-					_this.groupMsgList.push(item);
+				if (_this.isNewMsg(item.id, _this.groupMsgList, isPush)){
+					isPush ? _this.groupMsgList.push(item) : _this.groupMsgList.unshift(item);
+				}
+					
 			},
-			//判断消息id是否是新消息
-			isNewMsg(ids, groupMsgList) {
+			//判断消息id是否是新消息，isPush:true往后添加消息
+			isNewMsg(ids, groupMsgList, isPush) {
 				if (util.isEmpty(groupMsgList)) return true;
-				let i = groupMsgList.length - 1;
-				return (ids > groupMsgList[i].id);
+				if(isPush){
+					let i = groupMsgList.length - 1;
+					return (ids > groupMsgList[i].id);
+				}else{
+					return (ids < groupMsgList[0].id);
+				}
 			},
 			//群内发送消息
-			sendGroupMsg() {
+			sendGroupMsg(content) {
 				let data = {
 					groupId: this.groupEn.id,
 					account: this.userEn.account,
 					type: 0,
-					msg: this.send_info
+					msg: content
 				}
 				this.sendMyMsg(data);
 			},
@@ -219,13 +329,14 @@
 					let code = api.getCode(res);
 					let data = api.getData(res);
 					if (code === 0) {
-						_this.send_info = '';
+						_this.textMsg = '';
 						//this.getGroupMsg();
 					}
 				})
 			},
 			//监听webscoket返回的数据
 			onWebScoketGroupMsg(res) {
+				this.scrollAnimation = true;  //开启滚动动画
 				this.autoPushGroupMsg(res, this);
 				this.$nextTick(function() {
 					let i = this.groupMsgList.length - 1;
@@ -233,12 +344,15 @@
 					// 滚动到底
 					this.scrollToView = 'msg' + this.groupMsgList[i].id;
 				});
+			},
+			discard(){
+				return;
 			}
 		}
 	}
 </script>
 
-<style>
+<style lang="scss">
 	page {
 		background: #ebedf6;
 	}
@@ -532,4 +646,5 @@
 		font-size: 10px;
 		padding: 0;
 	}
+@import "@/static/style/style.scss";
 </style>

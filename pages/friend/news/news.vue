@@ -3,10 +3,10 @@
 	    <block v-for="(item, index) in list" :key="index">
 			<listcell :last="true" class="row"  @tap="onChat(item.type, item.friendAccount, item.groupId)">
 				<view class="news_left">
-					<image :src="item.img" mode="widthFix" class="user_img"></image>  <!-- 好友的头像 -->
+					<image :src="item.img" mode="widthFix" class="user_img" @tap.stop="test"></image>  <!-- 好友的头像 -->
 					<view class="news_info">
-						<view class="name">{{item.title}}</view>  <!-- 好友昵称 -->
-						<view class="msg">{{item.msg}}</view>	<!-- 好友发送的消息 -->			
+						<view class="name">{{item.title}}</view>  <!-- 好友昵称 -->	
+						<rich-text class="msg" :nodes="item.msg"></rich-text><!-- 好友发送的消息 -->
 					</view>
 				</view>  
 				
@@ -65,6 +65,9 @@ export default{
 		    this.menu = this.menu === true ? false : true;
 		},
 		methods:{
+			test(){
+				console.log("test执行");
+			},
 			onMenuHide(){
 				this.menu = false;
 			},
@@ -275,8 +278,9 @@ export default{
 		font-size: 28upx;
 		line-height: 1;
 		color: #9397a4;
-		padding:10rpx 4rpx;
+		padding:0 4rpx;
 		box-sizing: border-box;
+		margin-top:20rpx;
 	}
 	.news_right {
 		max-width: 120upx;

@@ -66,6 +66,7 @@ export default {
 	//关闭连接
 	close(){
 		uni.closeSocket();
+		this.mapFun = new Map(); //重新赋值清空旧数据
 	},
 	//ws连接成功
 	wsSuccess(){
