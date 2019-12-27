@@ -226,7 +226,6 @@
 			},
 			//监听webscoket返回的数据
 			onWebScoketGroupMsg(res) {
-				console.log(res);
 				this.autoPushGroupMsg(res, this);
 				this.$nextTick(function() {
 					let i = this.groupMsgList.length - 1;
