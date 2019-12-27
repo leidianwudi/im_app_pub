@@ -63,9 +63,12 @@ export default {
 		
 		console.log("ws已经开始连接");
 	},
+	//关闭连接
+	close(){
+		uni.closeSocket();
+	},
 	//ws连接成功
 	wsSuccess(){
-		console.log('wsSuccess');
 		this.isOpen = true;
 		this.isLoginGate = false;
 	},
