@@ -37,7 +37,16 @@
 		<!-- 消息显示 -->
 		<view class="chat_info">
 			<scroll-view class="msg-list" scroll-y="true" :scroll-with-animation="scrollAnimation" :scroll-into-view="scrollToView"
-			 :show-scrollbar="true">
+			 @scrolltoupper="loadHistory" upper-threshold="50">
+				 <view class="loading" v-if="isHistoryLoading">
+						<view class="spinner">
+							<view class="rect1"></view>
+							<view class="rect2"></view>
+							<view class="rect3"></view>
+							<view class="rect4"></view>
+							<view class="rect5"></view>
+						</view>
+				 </view>
 				<view class="tui-chat-content" v-for="(item, index) in msgList" :key="index" :id="'msg'+item.id">
 					<view class="tui-chat-right" v-if="item.Mymsg">
 						<!-- 我发送的消息 -->
@@ -76,6 +85,7 @@
 	import util from '@/common/util.js';
 	import wsType from '@/api/msgType.js';
 	import em from '@/common/em.js';
+	import lastMsg from '@/api/lastMsg.js';
 	export default {
 		components: {
 			tuiIcon
@@ -96,7 +106,9 @@
 				voiceTis:'按住 说话',
 				recordTis:"手指上滑 取消发送",
 				recording:false,
-				scrollAnimation: false
+				scrollAnimation: false,
+				isHistoryLoading: false,
+				page: 1
 			}
 		},
 		onLoad(res) {
@@ -108,6 +120,7 @@
 		},
 		onUnload() {
 			this.$store.state.ws.removeLister(wsType.friend_chat, this.onWebScoketMsg.bind(this));
+			lastMsg.lastMsgRead2(0, this.friendAccount);
 		},
 		methods: {
 			//获取焦点，如果不是选表情ing,则关闭抽屉
@@ -181,6 +194,36 @@
 				if (e.detail.value === '') this.input = true;
 				else this.input = false;
 			},
+			// 上拉获取更多消息记录
+			loadHistory(){
+				if(this.isHistoryLoading){
+					return ;
+				}
+				this.isHistoryLoading = true;//参数作为进入请求标识，防止重复请求
+				this.scrollAnimation = false;//关闭滑动动画
+				let Viewid = this.msgList[0].id;//记住第一个信息ID
+				let _this = this;
+				api.getFriendMsg({
+					account: _this.userEn.account,
+					toAccount: _this.friendAccount,
+					id: 1,
+					page: ++_this.page,
+					count: 15
+				}, res=>{
+					this.isHistoryLoading = false;
+					let newMsg = api.getPageList(res);
+					newMsg.forEach(function(item){	
+					   _this.autoPushMsg(item, _this, false);
+					});					
+				});
+				//这段代码很重要，不然每次加载历史数据都会跳到顶部
+				this.$nextTick(function() {
+					this.scrollToView = 'msg'+Viewid;//跳转上次的第一行信息位置
+					this.$nextTick(function() {
+						this.scrollAnimation = true;//恢复滚动动画
+					});
+				});				
+			},
 			//获取好友详细信息
 			getFriendInfo(account, friendAccount) {
 				api.getFriendByAccount({
@@ -194,14 +237,16 @@
 			//跳转到好友信息页面
 			toFriendInfo(friendAccount) {
 				uni.navigateTo({
-					url: '/pages/friend/details/details?friendAccount=' + friendAccount
+					url: '/pages/friend/details/details?friendAccount=' + friendAccount + "&uiType=3"
 				})
 			},
 			getMsgList() {
 				let data = {
 					account: this.userEn.account,
 					toAccount: this.friendAccount,
-					id: 0
+					id: 0,
+					page: this.page,
+					count: 15
 				}
 				this.getMsg(data);
 			},
@@ -210,7 +255,7 @@
 				api.getFriendMsg(postData, res => {
 					let data = api.getData(res).data.reverse();
 					data.forEach(function(item) {
-						_this.autoPushMsg(item, _this); //自动添加聊天数据
+						_this.autoPushMsg(item, _this, true); //自动添加聊天数据
 					})
 					_this.$nextTick(function() {
 						let i = _this.msgList.length - 1;
@@ -222,26 +267,29 @@
 			},
 
 			//自动添加消息数据
-			autoPushMsg(item, _this) {
+			autoPushMsg(item, _this, isPush) {
 				if (item.account === _this.userEn.account) {
 					item.Mymsg = item.msg;
 				} else {
 					item.Frmsg = item.msg;
 				}
-				if (_this.isNewMsg(item.id, _this.msgList))
-					_this.msgList.push(item);
+				if (_this.isNewMsg(item.id, _this.msgList, isPush))
+				    isPush ? _this.msgList.push(item) : _this.msgList.unshift(item);
 			},
 
 			//判断消息id是否是新消息
-			isNewMsg(ids, msgList) {
+			isNewMsg(ids, msgList, isPush) {
 				if (util.isEmpty(msgList)) return true;
-				let i = msgList.length - 1;
-				return (ids > msgList[i].id);
+				if(isPush){
+					let i = msgList.length - 1;
+					return (ids > msgList[i].id);
+				}else{
+					return (ids < msgList[0].id);
+				}
 			},
 
 			//发送信息
 			send(content) {
-				console.log(content);
 				// return;
 				if (this.textMsg === '') return
 				let data = {
@@ -265,7 +313,6 @@
 			//监听webscoket返回的数据
 			onWebScoketMsg(res) {
 				this.scrollAnimation = true;  //开启滑动动画
-				console.log(res);
 				this.autoPushMsg(res, this);
 				this.$nextTick(function() {
 					let i = this.msgList.length - 1;

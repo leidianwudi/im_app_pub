@@ -24,11 +24,11 @@
 					</view>
 				</view>
 			</view>
-			<view class="friend_nick" @tap="toUpdFriendNick" v-if="userAccount">
+			<view class="friend_nick" @tap="toUpdFriendNick" v-if="uiType == 1">
 				<text>备注</text>
                 <view class="nick_more nick_show">
 					<text>{{fr_friendNickTip}}</text>
-					<micon type="arrowright" size=20 v-if="userAccount"></micon>
+					<micon type="arrowright" size=20 v-if="uiType == 1"></micon>
 				</view>
 			</view>
 			<view class="friend_signature">
@@ -43,8 +43,9 @@
 		</view>
 		
 		<view class="apply_friend">
-			<button type="primary" @tap="apply" v-if="addFriend">加为好友</button>
-			<button type="primary" @tap="outGroupUserByAdmin" v-if="outGroupByAdmin">移出群聊</button>
+			<button type="primary" @tap="apply" v-if="uiType == 0">加为好友</button>
+			<button type="primary" @tap="outGroupUserByAdmin" v-if="uiType == 5">移出群聊</button>
+			<button type="primary" @tap="sendInfo" v-if="uiType == 1">发消息</button>
 		</view>
 		
 		<modal :show="modal9" @cancel="hide9" :custom="true" :fadein="true">
@@ -83,41 +84,46 @@ export default{
 			modal9: false,			//控制添加好友时的验证信息弹窗
 			info:'',  				//获取添加好友时的验证信息
 			userEn: null, 			//我的详细信息
-			addFriend:false, 
+			// addFriend:false, 
 			menu:false, 
-			outGroupByAdmin:false,
+			// outGroupByAdmin:false,
 			friendEn:null,			//好友的详细信息
 			groupEn:null,
 			friendAccount:'',		//群聊的详细信息
-			userAccount: false
+			// userAccount: false,   备注栏
+			// sendInfo: false   
+			uiType: 0   // 0:加为好友界面ui  1:好友列表内查看好友信息ui 3:私聊界面查看好友信息ui 4:普通用户群内查看群用户ui 5: 群管理员群内查看群用户ui
 		}
 	},
 	//res可能有：userAccount(不是好友) friendAccount(是好友)
 	onLoad(res){
+		let _this = this;
 		this.menu = false;
 		this.userEn = storage.getMyInfo();
 		this.friendAccount = res.friendAccount ? res.friendAccount : res.userAccount;
-        if(res.friendAccount){
-			if(res.type === '2') this.outGroupByAdmin = true;
-			this.userAccount = true;
-		}else{
-			this.userAccount = false;
-			this.addFriend = true;
-			this.toUpdFriendNick
+        this.uiType = res.uiType;
+		console.log(this.uiType);
+		api.getUserByAccount({account: res.friendAccount},res=>{
+			let data = api.getData(res);
+			_this.fr_img = data.head;
+			_this.fr_name = data.account;
+			_this.fr_nick = data.nick;
+			_this.fr_text = data.signature;
+		});
+		// 是好友的时候获取好友备注
+		if(res.uiType === 1 || res.uiType === 3){
+			let data = {
+				account: res.friendAccount ? res.friendAccount : res.userAccount
+			}
+			this.reqFirendInfo(data);
+			api.getFriendByAccount({
+				account: this.userEn.account,
+				friendAccount: this.friendAccount
+			},res=>{
+				let data = api.getData(res);
+				_this.fr_friendNickTip = data.friendNickTip;
+			})
 		}
-		let data = {
-			account: res.friendAccount ? res.friendAccount : res.userAccount
-		}
-		this.reqFirendInfo(data);
-	},
-	onShow() {
-		let _this = this;
-		api.getFriendByAccount({
-			account: this.userEn.account,
-			friendAccount: this.friendAccount
-		},res=>{
-			_this.fr_friendNickTip = api.getData(res).friendNickTip;
-		})
 	},
 	// 右上角更多按钮的显示切换
 	onNavigationBarButtonTap(){

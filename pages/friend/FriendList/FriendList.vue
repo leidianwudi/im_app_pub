@@ -139,7 +139,7 @@
 		methods:{
 			chat(friendAccount){
 				uni.navigateTo({
-					url:'/pages/friend/details/details?friendAccount='+friendAccount
+					url:'/pages/friend/details/details?friendAccount=' + friendAccount + "&uiType=1"
 				})
 			},
 			myGroup(){

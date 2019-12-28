@@ -58,7 +58,7 @@
 						</view>
 
 						<view class="tui-chat-left" v-if="item.Frmsg">
-							<image :src="item.head" class="tui-user-pic tui-right" @tap="toGroupUserInfo(item.nickTip)"></image>
+							<image :src="item.head" class="tui-user-pic tui-right" @tap="toGroupUserInfo(item.nickTip, item.job)"></image>
 							<view class="chat_infos">
 								<view class="msgbox">
 									<text>{{item.account}}</text>
@@ -92,6 +92,7 @@
 	import util from '@/common/util.js';
 	import wsType from '@/api/msgType.js';
 	import em from '@/common/em.js';
+	import lastMsg from '@/api/lastMsg.js';
 	export default {
 		components: {
 			tuiIcon
@@ -135,6 +136,7 @@
 		},
 		onUnload() {
 			this.$store.state.ws.removeLister(wsType.group_chat, this.onWebScoketGroupMsg.bind(this));
+			lastMsg.lastMsgRead2(1, this.groupId);
 		},
 		methods: {
 			//获取焦点，如果不是选表情ing,则关闭抽屉
@@ -186,7 +188,6 @@
 			},
 			//添加表情
 			addEmoji(em){
-				console.log(1);
 				this.textMsg+=em.alt;
 			},
 			// 打开抽屉
@@ -206,7 +207,6 @@
 				api.getGroupById({
 					id: this.groupId
 				}, res => {
-					console.log(res);
 					_this.groupEn = api.getData(res);
 					util.setBarTitle(_this.groupEn.groupName);
 				});
@@ -251,8 +251,9 @@
 			},
 			//点击群成员头像跳转至个人信息页面
 			toGroupUserInfo(friendAccount) {
+				let uiType = this.groupEn.hostAccount == this.userEn.account ? 5 : 4;
 				uni.navigateTo({
-					url: '/pages/friend/details/details?friendAccount=' + friendAccount
+					url: '/pages/friend/details/details?friendAccount=' + friendAccount + "&uiType=" + uiType
 				})
 			},
 			//获取群的聊天记录

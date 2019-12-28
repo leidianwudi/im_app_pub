@@ -83,8 +83,7 @@ module.exports = {
 	
 	//封装聊天计数的key
 	getMsgKey(type, accORid){
-		if(type === 0) return accORid + "_" + type;
-		if(type === 1) return accORid + "_" + type;
+		return this.lastMsgIndex + "_" + type + "_" + accORid;
 	},
 	
 	//保存聊天计数

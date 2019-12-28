@@ -94,9 +94,9 @@ export default {
 			//判断是否点击的是自己的头像
 			if(friendAccount === this.userEn.account) return;
 			//判断当前用户是否是群主
-			if(this.groupEn.hostAccount === this.userEn.account) type = 2;
+            let uiType = this.groupEn.hostAccount === this.userEn.account ? 5 : 4 ;
 			uni.navigateTo({
-				url:'/pages/friend/details/details?friendAccount='+friendAccount+'&type='+type
+				url:'/pages/friend/details/details?friendAccount='+friendAccount + "&uiType=" + uiType
 			})
 		},
 		//获取群内所有用户
