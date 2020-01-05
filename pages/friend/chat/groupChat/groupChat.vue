@@ -304,7 +304,7 @@
 				}
 					
 			},
-			//判断消息id是否是新消息，isPush:true往后添加消息
+			//判断消息id是否是新消息，isPush:true添加到后面，false添加到前面
 			isNewMsg(ids, groupMsgList, isPush) {
 				if (util.isEmpty(groupMsgList)) return true;
 				if(isPush){
@@ -338,7 +338,7 @@
 			//监听webscoket返回的数据
 			onWebScoketGroupMsg(res) {
 				this.scrollAnimation = true;  //开启滚动动画
-				this.autoPushGroupMsg(res, this);
+				this.autoPushGroupMsg(res, this, true);
 				this.$nextTick(function() {
 					let i = this.groupMsgList.length - 1;
 					if (i < 0) return;

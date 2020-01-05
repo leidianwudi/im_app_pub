@@ -77,9 +77,8 @@
             },  //bindLogin()
 			//登录成功页面跳转到消息页面
             toMain(account) {
-				this.$store.state.ws.open();//开始连接服务器
-				this.$store.state.ws.setAccount(account);
-				this.$store.state.ws.autoLoginGate(); //尝试登录网关
+				this.$store.state.ws.setAccount(account);//连设置账户
+				this.$store.state.ws.open();//开始连接ws服务器				
                 uni.reLaunch({
                     url: '/pages/friend/news/news',
                 });

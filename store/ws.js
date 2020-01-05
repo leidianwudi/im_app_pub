@@ -10,7 +10,7 @@ export default {
 	url: config.wsUrl,
 	// 连接状态
 	isOpen: false,
-	//是否登录到网关
+	//是否登录到逻辑网关
 	isLoginGate: false,
 	//ws连接Id
 	clientId: "",
@@ -21,9 +21,10 @@ export default {
 	mapFun: new Map(),
 	//初始化
     init(){
+		this.autoTry();	//开始自动执行定时器
 		let userEn = storage.getMyInfo();
 		if(util.isEmpty(userEn)) return;
-		this.account = userEn.account; //赋值账号
+		this.account = userEn.account; //赋值账号		
 	},
 	// 设置账号
 	setAccount(account){
@@ -32,8 +33,10 @@ export default {
 	},
 	//开始连接服务器
 	open() {		
+		if(util.isEmpty(this.account)) return;//没有账户就是未登录
 		if (this.IsOpen) return; //防止重复连接	
 
+		uni.closeSocket();		//容错,先关闭连接
 		//连接
 		uni.connectSocket({
 			url: this.url,
@@ -57,9 +60,7 @@ export default {
 			this.wsFail();
 		});
 		
-		this.onMessage();	//接收消息监听			
-		
-		this.autoTry();	//开始自动执行定时器
+		this.onMessage();	//接收消息监听					
 		
 		console.log("ws已经开始连接");
 	},
@@ -89,11 +90,11 @@ export default {
 			console.log('收到服务器内容2' + resObj);
 			let type = resObj.type; //类型	
 			if(type == "init")
-			 {
+			{				
 				this.clientId = resObj.clientId; //重新获取ws连接id
 				this.isLoginGate = false;
 				this.autoLoginGate(); //尝试登录网关
-			 }
+			}
 			if (this.mapFun.has(type)) {
 				let arr = this.mapFun.get(type);
 				for (let i = 0; i < arr.length; ++i) {
@@ -158,10 +159,16 @@ export default {
 
 	//执行自动操作
 	autoTryDo() {		
-		if (!this.isOpen) return;
-		// console.log(1);
-		this.autoLoginGate(); //尝试登录网关
-		uni.sendSocketMessage({data: "0"}); //发送心跳消息
+		if (!this.isOpen) 
+		{
+			this.open();	//没开启连接就尝试连接
+		}			
+		else
+		{
+			// console.log(1);
+			this.autoLoginGate(); //尝试登录网关
+			uni.sendSocketMessage({data: "0"}); //发送心跳消息
+		}		
 	}
 
 
