@@ -62,7 +62,7 @@
 							<view class="chat_infos">
 								<view class="msgbox">
 									<text>{{item.account}}</text>
-									<rich-text class="tui-chatbox tui-chatbox-right" :nodes="item.Frmsg" style="word-break : break-all;"></rich-text>
+									<rich-text class="tui-chatbox tui-chatbox-left" :nodes="item.Frmsg" style="word-break : break-all;"></rich-text>
 								</view>
 							</view>
 						</view>
@@ -73,13 +73,7 @@
         <!-- 抽屉 -->
         <view class="popup-layer" :class="popupLayerClass" @touchstart.stop.prevent="discard">
         	<!-- 表情 --> 
-        	<swiper class="emoji-swiper" :class="{hidden:hideEmoji}" indicator-dots="true" duration="150">
-        		<swiper-item v-for="(page,pid) in emojiList" :key="pid">
-        			<view v-for="(em,eid) in page" :key="eid" @touchstart="addEmoji(em)">
-        				<image mode="widthFix" :src="'/static/img/emoji/'+em.url"></image>
-        			</view>
-        		</swiper-item>
-        	</swiper>
+			<emoji :class="{hidden:hideEmoji}" @addEmoji="addEmoji"></emoji>
         </view>
         <!-- 抽屉 -->
 	</view>
@@ -93,9 +87,11 @@
 	import wsType from '@/api/msgType.js';
 	import em from '@/common/em.js';
 	import lastMsg from '@/api/lastMsg.js';
+	import emoji from '@/components/emoji/emoji';
 	export default {
 		components: {
-			tuiIcon
+			tuiIcon,
+			emoji
 		},
 		data() {
 			return {

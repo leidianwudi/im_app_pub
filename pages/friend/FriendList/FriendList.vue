@@ -226,6 +226,9 @@
 </script>
 
 <style>
+	.more{
+		margin-right:20rpx;
+	}
 	.content{
 		height: 100%;
 		overflow: hidden;

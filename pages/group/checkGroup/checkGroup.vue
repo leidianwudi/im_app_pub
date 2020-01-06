@@ -86,6 +86,7 @@ export default {
 	methods:{
 		//去修改群信息页面
 		updGroupInfo(type){
+			if(this.groupEn.hostAccount !== this.userEn.account) return;
 			uni.navigateTo({
 				url:'/pages/group/updGroupInfo/updGroupInfo?type='+type+'&groupId='+this.groupId
 			})

@@ -9,7 +9,7 @@
 			</view>
 			<!-- #endif -->
 			<!-- #ifdef H5 -->
-			<view class="more" @tap="showMore">
+			<view class="more" @tap.stop="showMore">
 				<view class="icon add"></view>
 			</view>
 			<!-- #endif -->
@@ -25,7 +25,7 @@
 				</view>
 			</view>
 			<!-- #ifndef H5 -->
-			<view class="more" @tap="showMore">
+			<view class="more"  @tap.stop="showMore">
 				<view class="icon add"></view>
 			</view>
 			<!-- #endif -->
@@ -56,39 +56,84 @@
 
 					<view class="tui-chat-left" v-if="item.Frmsg">
 						<!-- 好友发送的消息 -->
-						<image :src="friendEn.friendHead" class="tui-user-pic tui-right" @tap="toFriendInfo(friendAccount)"></image>
-						<rich-text class="tui-chatbox tui-chatbox-right" :nodes="item.Frmsg" style="word-break : break-all;"></rich-text>
+						<image :src="friendEn.friendHead" class="tui-user-pic" @tap="toFriendInfo(friendAccount)"></image>
+						<rich-text class="tui-chatbox tui-chatbox-left rich_text" :nodes="item.Frmsg" style="word-break : break-all;"></rich-text>
+					</view>
+					
+					<view class="tui-chat-right" v-if="item.MyImg">
+						<!-- 我发送的图片 -->
+						<image :src="item.MyImg" mode=""></image>
+						<image :src="userEn.head" class="tui-user-pic tui-left"></image>
+					</view>
+					
+					<view class="tui-chat-left" v-if="item.FrImg">
+						<!-- 好友发送的图片 -->
+						<image :src="friendEn.friendHead" class="tui-user-pic" @tap="toFriendInfo(friendAccount)"></image>
+						<image :src="item.MyImg" mode=""></image>
 					</view>
 				</view>
 			</scroll-view>
 		</view>
 		<!-- 消息显示 -->
+		
 		<!-- 抽屉 -->
         <view class="popup-layer" :class="popupLayerClass" @touchstart.stop.prevent="discard">
         	<!-- 表情 --> 
-        	<swiper class="emoji-swiper" :class="{hidden:hideEmoji}" indicator-dots="true" duration="150">
+<!--        	<swiper class="emoji-swiper" :class="{hidden:hideEmoji}" indicator-dots="true" duration="150">
         		<swiper-item v-for="(page,pid) in emojiList" :key="pid">
         			<view v-for="(em,eid) in page" :key="eid" @touchstart="addEmoji(em)">
         				<image mode="widthFix" :src="'/static/img/emoji/'+em.url"></image>
         			</view>
         		</swiper-item>
-        	</swiper>
+        	</swiper> -->
+			<emoji :class="{hidden:hideEmoji}" @addEmoji="addEmoji"></emoji>
+			<view class="more-layer" :class="{hidden:hideMore}">
+				<view class="list">
+					<view class="box" @touchstart.stop="chooseImage"><view class="icon tupian2"></view></view>
+					<view class="box" @touchstart.stop="camera"><view class="icon paizhao"></view></view>
+					<view class="box" @touchstart.stop="handRedEnvelopes"><view class="icon hongbao"></view></view>
+				</view>
+			</view>
         </view>
 		<!-- 抽屉 -->
+		
+		<!-- 红包弹窗 -->
+		<!-- <view class="windows" :class="windowsState"> -->
+			<!-- 遮罩层 -->
+<!-- 			<view class="mask" @touchmove.stop.prevent="discard" @tap="closeRedEnvelope"></view>
+			<view class="layer" @touchmove.stop.prevent="discard">
+				<view class="open-redenvelope">
+					<view class="top">
+						<view class="close-btn">
+							<view class="icon close" @tap="closeRedEnvelope"></view>
+						</view>
+						<image src="/static/img/im/face/face_1.jpg"></image>
+					</view>
+					<view class="from">来自{{redenvelopeData.from}}</view>
+					<view class="blessing">{{redenvelopeData.blessing}}</view>
+					<view class="money">{{redenvelopeData.money}}</view>
+					<view class="showDetails" @tap="toDetails(redenvelopeData.rid)">
+						查看领取详情 <view class="icon to"></view>
+					</view>
+				</view>
+			</view>
+		</view> -->
 	</view>
 </template>
 
 <script>
-	import tuiIcon from '@/components/icon.vue';
-	import api from '@/api/api.js';
-	import storage from '@/api/storage.js';
-	import util from '@/common/util.js';
-	import wsType from '@/api/msgType.js';
-	import em from '@/common/em.js';
-	import lastMsg from '@/api/lastMsg.js';
-	export default {
+import tuiIcon from '@/components/icon.vue';
+import api from '@/api/api.js';
+import storage from '@/api/storage.js';
+import util from '@/common/util.js';
+import wsType from '@/api/msgType.js';
+import lastMsg from '@/api/lastMsg.js';
+import emoji from '@/components/emoji/emoji';
+import em from '@/common/em.js';
+export default {
 		components: {
-			tuiIcon
+			tuiIcon,
+			emoji
 		},
 		data() {
 			return {
@@ -99,7 +144,6 @@
 				msgList: [], //消息列表
 				scrollToView: '', //滚动列表位置
 				input: true ,//控制发送按钮显示
-				emojiList: em.emojiList  ,//表情列表
 				popupLayerClass:'', 	// 抽屉参数
 				hideEmoji:true, 		//表情定义
 				isVoice:false,
@@ -108,7 +152,9 @@
 				recording:false,
 				scrollAnimation: false,
 				isHistoryLoading: false,
-				page: 1
+				page: 1,
+				hideMore:true   	,// more参数
+				emojiList: em.emojiList
 			}
 		},
 		onLoad(res) {
@@ -122,7 +168,83 @@
 			this.$store.state.ws.removeLister(wsType.friend_chat, this.onWebScoketMsg.bind(this));
 			lastMsg.lastMsgRead2(0, this.friendAccount);
 		},
+		onReady() {
+	        console.log(this.msgList);
+		},
 		methods: {
+			// 选择图片发送
+			chooseImage(){
+				this.getImage('album');
+			},
+			//拍照发送
+			camera(){
+				this.getImage('camera');
+			},
+			// 发送聊天图片
+			getImage(type){
+				this.hideDrawer();
+				let _this = this;
+				uni.showLoading({
+                    title: '请稍等...',
+					success() {
+						uni.chooseImage({
+							sourceType:[type],
+							sizeType: ['original', 'compressed'], //可以指定是原图还是压缩图，默认二者都有
+							success: (res)=>{
+								for(let i=0; i<res.tempFilePaths.length; i++){
+									api.uploadFileToCache(res.tempFilePaths[i], res=>{
+										if(res.code == 0){
+											uni.getImageInfo({
+												src: res.data.url,
+												success: (image)=>{
+													let msg = {url:res.data.url,w:image.width,h:image.height};
+													let imgInfo = _this.setPicSize(msg);
+                                                    _this.sendImgUrl(imgInfo);
+												}
+											});
+											// api.sendMsgToFriend({
+											// 	account: _this.userEn.account,
+											// 	toAccount: _this.friendAccount,
+											// 	type: 0,
+											// 	msg: res.data.url
+											// }, res=>{
+											// 	let code = api.getCode(res);
+											// 	if(code == 0){
+											// 		uni.hideLoading();
+											// 	}else{
+											// 		uni.hideLoading();
+											// 		uni.showToast({
+											// 			title: "发送出错，请重试"
+											// 		})
+											// 	}
+											// })
+										}else{
+											uni.hideLoading();
+											uni.showToast({
+												title: "发送出错，请重试"
+											})
+										}
+									})
+								}
+							},
+							
+							
+
+						});
+					}
+				})
+			},
+			//更多功能(点击+弹出)
+			showMore(){
+				this.isVoice = false;
+				this.hideEmoji = true;
+				if(this.hideMore){
+					this.hideMore = false;
+					this.openDrawer();
+				}else{
+					this.hideDrawer();
+				}
+			},
 			//获取焦点，如果不是选表情ing,则关闭抽屉
 			textareaFocus(){
 				if(this.popupLayerClass=='showLayer' && this.hideMore == false){
@@ -139,26 +261,43 @@
 				this.send(content);
 				this.textMsg = '';//清空输入框
 			},
+			// 发送图片消息
+			sendImgUrl(content){
+				this.hideDrawer();//隐藏抽屉
+				this.send(content ,'img');
+			},
 			//替换表情符号为图片
 			replaceEmoji(str){
 				let replacedStr = str.replace(/\[([^(\]|\[)]*)\]/g,(item, index)=>{
 					console.log("item: " + item);
-					for(let i=0;i<this.emojiList.length;i++){
+					for(let i=0; i<this.emojiList.length; ++i){
 						let row = this.emojiList[i];
-						for(let j=0;j<row.length;j++){
+						for(let j=0; j<row.length; ++j){
 							let EM = row[j];
 							if(EM.alt==item){
 								//在线表情路径，图文混排必须使用网络路径，请上传一份表情到你的服务器后再替换此路径 
 								//比如你上传服务器后，你的100.gif路径为https://www.xxx.com/emoji/100.gif 则替换onlinePath填写为https://www.xxx.com/emoji/
-								let onlinePath = '/static/img/emoji'
+								let onlinePath = '/static/img/emoji';
 								let imgstr = '<img src="'+onlinePath+'/'+EM.url+'">';
-								console.log("imgstr: " + imgstr);
+								console.log(imgstr);
 								return imgstr;
 							}
 						}
 					}
 				});
-				return '<div style="display: flex;align-items: center;word-wrap:break-word;">'+replacedStr+'</div>';;
+				return '<div>'+replacedStr+'</div>';
+			},
+			// 聊天图片宽高处理
+			setPicSize(content){
+				// 让图片最长边等于设置的最大长度，短边等比例缩小，图片控件真实改变，区别于aspectFit方式。
+				let maxW = uni.upx2px(350);//350是定义消息图片最大宽度
+				let maxH = uni.upx2px(350);//350是定义消息图片最大高度
+				if(content.w>maxW||content.h>maxH){
+					let scale = content.w/content.h;
+					content.w = scale>1?maxW:maxH*scale;
+					content.h = scale>1?maxW/scale:maxH;
+				}
+				return content;
 			},
 			// 选择表情
 			chooseEmoji(){
@@ -172,7 +311,6 @@
 			},
 			//添加表情
 			addEmoji(em){
-				console.log(1);
 				this.textMsg+=em.alt;
 			},
 			// 打开抽屉
@@ -183,16 +321,12 @@
 			hideDrawer(){
 				this.popupLayerClass = '';
 				setTimeout(()=>{
+					this.hideMore = true;
 					this.hideEmoji = true;
 				},150);
 			},
 			isNFocal() {
 				if (this.textMsg === '') this.input = true;
-			},
-			//输入时显示发送按钮
-			onInput(e) {
-				if (e.detail.value === '') this.input = true;
-				else this.input = false;
 			},
 			// 上拉获取更多消息记录
 			loadHistory(){
@@ -273,6 +407,7 @@
 				} else {
 					item.Frmsg = item.msg;
 				}
+				// console.log(item.msg);
 				if (_this.isNewMsg(item.id, _this.msgList, isPush))
 				    isPush ? _this.msgList.push(item) : _this.msgList.unshift(item);
 			},
@@ -287,11 +422,11 @@
 					return (ids < msgList[0].id);
 				}
 			},
-
 			//发送信息
-			send(content) {
-				// return;
-				if (this.textMsg === '') return
+			send(content, type) {
+                if(!type){
+					if (this.textMsg === '') return;					
+				}
 				let data = {
 					account: this.userEn.account,
 					toAccount: this.friendAccount,
@@ -601,6 +736,5 @@
 		font-size: 10px;
 		padding: 0;
 	}
-	
 @import "@/static/style/style.scss";
 </style>

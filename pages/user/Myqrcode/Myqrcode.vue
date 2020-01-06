@@ -52,7 +52,7 @@ export default {
 			userEn: null 
 		}
 	},
-	onShow() {
+	onLoad() {
 		this.userEn = storage.getMyInfo();
 		this.val = this.userEn.account;
 		this.myimg = this.userEn.head;

@@ -24,11 +24,11 @@
 					</view>
 				</view>
 			</view>
-			<view class="friend_nick" @tap="toUpdFriendNick" v-if="uiType == 1">
+			<view class="friend_nick" @tap="toUpdFriendNick" v-if="uiType == 1 || uiType == 3">
 				<text>备注</text>
                 <view class="nick_more nick_show">
 					<text>{{fr_friendNickTip}}</text>
-					<micon type="arrowright" size=20 v-if="uiType == 1"></micon>
+					<micon type="arrowright" size=20 v-if="uiType == 1 || uiType == 3"></micon>
 				</view>
 			</view>
 			<view class="friend_signature">
@@ -102,7 +102,6 @@ export default{
 		this.userEn = storage.getMyInfo();
 		this.friendAccount = res.friendAccount ? res.friendAccount : res.userAccount;
         this.uiType = res.uiType;
-		console.log(this.uiType);
 		api.getUserByAccount({account: res.friendAccount},res=>{
 			let data = api.getData(res);
 			_this.fr_img = data.head;
@@ -124,6 +123,19 @@ export default{
 				_this.fr_friendNickTip = data.friendNickTip;
 			})
 		}
+	},
+	onShow(){
+		let data = {
+			account: this.friendAccount
+		}
+		this.reqFirendInfo(data);
+		api.getFriendByAccount({
+			account: this.userEn.account,
+			friendAccount: this.friendAccount
+		},res=>{
+			let data = api.getData(res);
+			this.fr_friendNickTip = data.friendNickTip;
+		})
 	},
 	// 右上角更多按钮的显示切换
 	onNavigationBarButtonTap(){
@@ -361,5 +373,19 @@ export default{
 	}
 	.hide{
 		visibility:hidden;
+	}
+	.friend_nick{
+		display:flex;
+		justify-content:space-between;
+	}
+	.nick_show{
+		width:70%;		
+		display:flex;
+		justify-content:flex-end;
+	}
+	.nick_show>text{
+		overflow:hidden;
+		text-overflow: ellipsis;
+		white-space:nowrap;
 	}
 </style>
