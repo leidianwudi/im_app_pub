@@ -387,9 +387,9 @@ export default {
 			getMsg(postData) {
 				let _this = this;
 				api.getFriendMsg(postData, res => {
-					let data = api.getData(res).data.reverse();
+					let data = api.getPageList(res);
 					data.forEach(function(item) {
-						_this.autoPushMsg(item, _this, true); //自动添加聊天数据
+						_this.autoPushMsg(item, _this, false); //自动添加聊天数据
 					})
 					_this.$nextTick(function() {
 						let i = _this.msgList.length - 1;
@@ -400,7 +400,7 @@ export default {
 				})
 			},
 
-			//自动添加消息数据
+			//自动添加消息数据  isPush:true 添加到消息后面，false添加到消息前面
 			autoPushMsg(item, _this, isPush) {
 				if (item.account === _this.userEn.account) {
 					item.Mymsg = item.msg;
@@ -412,7 +412,7 @@ export default {
 				    isPush ? _this.msgList.push(item) : _this.msgList.unshift(item);
 			},
 
-			//判断消息id是否是新消息
+			//判断消息id是否是新消息  isPush:true添加到后面，false添加到前面
 			isNewMsg(ids, msgList, isPush) {
 				if (util.isEmpty(msgList)) return true;
 				if(isPush){
@@ -447,8 +447,9 @@ export default {
 			},
 			//监听webscoket返回的数据
 			onWebScoketMsg(res) {
+				console.log("onWebScoketMsg " + res);
 				this.scrollAnimation = true;  //开启滑动动画
-				this.autoPushMsg(res, this);
+				this.autoPushMsg(res, this, true);
 				this.$nextTick(function() {
 					let i = this.msgList.length - 1;
 					if (i < 0) return;

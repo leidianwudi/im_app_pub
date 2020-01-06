@@ -3,6 +3,7 @@
 		onLaunch: function() {
 			console.log('App Launch');
 			this.$store.state.ws.init();//初始化
+			this.$store.state.ws.open();//连接ws
 		},
 		onShow: function() {
 			console.log('App Show');			
