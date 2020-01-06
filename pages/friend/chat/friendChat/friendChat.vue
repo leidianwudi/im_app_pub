@@ -48,16 +48,20 @@
 						</view>
 				 </view>
 				<view class="tui-chat-content" v-for="(item, index) in msgList" :key="index" :id="'msg'+item.id">
-					<view class="tui-chat-right" v-if="item.Mymsg">
+					<view class="tui-chat-right" v-if="item.account == userEn.account">
 						<!-- 我发送的消息 -->
-						<rich-text class="tui-chatbox tui-chatbox-right" :nodes="item.Mymsg" style="word-break : break-all;"></rich-text>
+						<view class="fail_box" v-if="item.change === 2">  <!-- 消息发送失败 -->
+							<image src="/static/img/fail.png" mode="widthFix"></image>
+						</view>
+						<tui-loadmore :visible="true" v-if="item.change === 1" :index="2"></tui-loadmore>  <!-- 消息发送中 -->
+						<rich-text class="tui-chatbox tui-chatbox-right" :nodes="item.msg" style="word-break : break-all;"></rich-text>
 						<image :src="userEn.head" class="tui-user-pic tui-left"></image>
 					</view>
 
-					<view class="tui-chat-left" v-if="item.Frmsg">
+					<view class="tui-chat-left" v-if="item.account != userEn.account">
 						<!-- 好友发送的消息 -->
 						<image :src="friendEn.friendHead" class="tui-user-pic" @tap="toFriendInfo(friendAccount)"></image>
-						<rich-text class="tui-chatbox tui-chatbox-left rich_text" :nodes="item.Frmsg" style="word-break : break-all;"></rich-text>
+						<rich-text class="tui-chatbox tui-chatbox-left rich_text" :nodes="item.msg" style="word-break : break-all;"></rich-text>
 					</view>
 					
 					<view class="tui-chat-right" v-if="item.MyImg">
@@ -130,10 +134,14 @@ import wsType from '@/api/msgType.js';
 import lastMsg from '@/api/lastMsg.js';
 import emoji from '@/components/emoji/emoji';
 import em from '@/common/em.js';
+import tran from '@/common/tran.js';
+import tuiLoadmore from "@/components/loadmore/loadmore";
+import config from "@/static/app/config";
 export default {
 		components: {
 			tuiIcon,
-			emoji
+			emoji,
+			tuiLoadmore
 		},
 		data() {
 			return {
@@ -154,7 +162,8 @@ export default {
 				isHistoryLoading: false,
 				page: 1,
 				hideMore:true   	,// more参数
-				emojiList: em.emojiList
+				emojiList: em.emojiList,
+				changeIndex: 0  //我的最新消息临时id
 			}
 		},
 		onLoad(res) {
@@ -167,9 +176,6 @@ export default {
 		onUnload() {
 			this.$store.state.ws.removeLister(wsType.friend_chat, this.onWebScoketMsg.bind(this));
 			lastMsg.lastMsgRead2(0, this.friendAccount);
-		},
-		onReady() {
-	        console.log(this.msgList);
 		},
 		methods: {
 			// 选择图片发送
@@ -198,8 +204,9 @@ export default {
 												src: res.data.url,
 												success: (image)=>{
 													let msg = {url:res.data.url,w:image.width,h:image.height};
-													let imgInfo = _this.setPicSize(msg);
-                                                    _this.sendImgUrl(imgInfo);
+													let imgInfo = _this.setPicSize(msg);   //重新设置图片大小
+													let jsonMsg = tran.obj2Json(imgInfo);  //图片信息转json格式
+                                                    _this.sendImgUrl(jsonMsg);
 												}
 											});
 											// api.sendMsgToFriend({
@@ -258,13 +265,35 @@ export default {
 					return;
 				}
 				let content = this.replaceEmoji(this.textMsg);
+				this.immediateAddMsg(content);  //将我的发言消息先添加到本地
 				this.send(content);
 				this.textMsg = '';//清空输入框
+			},
+			//直接将我的发言信息添加到本地
+			immediateAddMsg(content){
+				let data = {
+					id: --this.changeIndex,
+					account: this.userEn.account,
+					type: 0,
+					msg: content,
+					change: 1  //0正式数据  1临时数据 2失败数据
+				};
+				this.msgList.push(data);
+                this.scrollToLast();
+			},
+			//滚动条自动滚动到最后一行
+			scrollToLast(){
+				this.$nextTick(function() {
+					let i = this.msgList.length - 1;
+					if (i < 0) return;
+					// 滚动到底
+					this.scrollToView = 'msg' + this.msgList[i].id;
+				});
 			},
 			// 发送图片消息
 			sendImgUrl(content){
 				this.hideDrawer();//隐藏抽屉
-				this.send(content ,'img');
+				this.send(content);
 			},
 			//替换表情符号为图片
 			replaceEmoji(str){
@@ -277,8 +306,8 @@ export default {
 							if(EM.alt==item){
 								//在线表情路径，图文混排必须使用网络路径，请上传一份表情到你的服务器后再替换此路径 
 								//比如你上传服务器后，你的100.gif路径为https://www.xxx.com/emoji/100.gif 则替换onlinePath填写为https://www.xxx.com/emoji/
-								let onlinePath = '/static/img/emoji';
-								let imgstr = '<img src="'+onlinePath+'/'+EM.url+'">';
+								let onlinePath = config.BASE_URL + '/storage/emoji';
+								let imgstr = '<img src="'+onlinePath+'/'+EM.url+'"></img>';
 								console.log(imgstr);
 								return imgstr;
 							}
@@ -390,43 +419,33 @@ export default {
 					let data = api.getPageList(res);
 					data.forEach(function(item) {
 						_this.autoPushMsg(item, _this, false); //自动添加聊天数据
-					})
-					_this.$nextTick(function() {
-						let i = _this.msgList.length - 1;
-						if (i < 0) return;
-						// 滚动到底
-						_this.scrollToView = 'msg' + _this.msgList[i].id;
 					});
+                    _this.scrollToLast();
 				})
 			},
-
 			//自动添加消息数据  isPush:true 添加到消息后面，false添加到消息前面
 			autoPushMsg(item, _this, isPush) {
-				if (item.account === _this.userEn.account) {
-					item.Mymsg = item.msg;
-				} else {
-					item.Frmsg = item.msg;
-				}
-				// console.log(item.msg);
-				if (_this.isNewMsg(item.id, _this.msgList, isPush))
-				    isPush ? _this.msgList.push(item) : _this.msgList.unshift(item);
+				if (_this.isNewMsg(item.id, _this.msgList, isPush, item.msg))
+					if(isPush){
+						_this.msgList.push(item);
+					}else{
+						_this.msgList.unshift(item);
+					}
+				    // isPush ? _this.msgList.push(item) item.isChange = 1 : _this.msgList.unshift(item);
 			},
 
 			//判断消息id是否是新消息  isPush:true添加到后面，false添加到前面
-			isNewMsg(ids, msgList, isPush) {
+			isNewMsg(ids, msgList, isPush, isMy = false, msg = null) {
 				if (util.isEmpty(msgList)) return true;
 				if(isPush){
-					let i = msgList.length - 1;
-					return (ids > msgList[i].id);
+					let i = msgList.length - 1;				
+					return (ids > msgList[i].id) ;
 				}else{
 					return (ids < msgList[0].id);
 				}
 			},
 			//发送信息
-			send(content, type) {
-                if(!type){
-					if (this.textMsg === '') return;					
-				}
+			send(content) {
 				let data = {
 					account: this.userEn.account,
 					toAccount: this.friendAccount,
@@ -441,21 +460,30 @@ export default {
 					let code = api.getCode(res);
 					let data = api.getData(res);
 					if (code === 0) {
-						_this.textMsg = '';
+						_this.changeMsg(postData.msg, _this.msgList, 0, data.id, data.addTime);  //发送成功修改消息为已读
+						_this.textMsg = '';  //发送成功清空输入框
+					}else{
+						_this.changeMsg(postData.msg, _this.msgList, 2);  //发送失败修改记录为失败状态
 					}
 				})
 			},
+			//修改数据状态
+			changeMsg(msg, msgList, change, id = null, addTime = null){
+				if (util.isEmpty(msgList)) return true;
+				for(let i = msgList.length -1; i >= 0; i--){
+					if(msgList[i].msg == msg && msgList[i].change === 1){
+						msgList[i].change = change;  //找到需要修改数据状态的记录并修改
+						if(id != null) msgList[i].id = id;
+						if(addTime != null) msgList[i].addTime = addTime;
+						return;
+					}
+				}
+			},
 			//监听webscoket返回的数据
-			onWebScoketMsg(res) {
-				console.log("onWebScoketMsg " + res);
+			onWebScoketMsg(res) {	
 				this.scrollAnimation = true;  //开启滑动动画
 				this.autoPushMsg(res, this, true);
-				this.$nextTick(function() {
-					let i = this.msgList.length - 1;
-					if (i < 0) return;
-					// 滚动到底
-					this.scrollToView = 'msg' + this.msgList[i].id;
-				});
+                this.scrollToLast();
 			},
 			discard(){
 				return;
@@ -609,7 +637,7 @@ export default {
 	.tui-chat-left,
 	.tui-chat-right {
 		display: flex;
-		align-items: flex-start;
+		align-items:center;
 		padding-top: 40upx;
 	}
 
@@ -736,6 +764,15 @@ export default {
 		height: 60rpx;
 		font-size: 10px;
 		padding: 0;
+	}
+	.fail_box{
+		width:50rpx;
+		height:50rpx;
+		margin-right:20rpx;
+	}
+	.fail_box>image{
+		width:100%;
+		height:auto;
 	}
 @import "@/static/style/style.scss";
 </style>

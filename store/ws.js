@@ -165,7 +165,6 @@ export default {
 		}			
 		else
 		{
-			// console.log(1);
 			this.autoLoginGate(); //尝试登录网关
 			uni.sendSocketMessage({data: "0"}); //发送心跳消息
 		}		
