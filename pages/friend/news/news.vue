@@ -65,9 +65,6 @@ export default{
 		    this.menu = this.menu === true ? false : true;
 		},
 		methods:{
-			test(){
-				console.log("test执行");
-			},
 			onMenuHide(){
 				this.menu = false;
 			},

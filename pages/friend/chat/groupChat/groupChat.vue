@@ -9,7 +9,7 @@
 			</view>
 			<!-- #endif -->
 			<!-- #ifdef H5 -->
-			<view class="more" @tap="showMore">
+			<view class="more" @tap.stop="showMore">
 				<view class="icon add"></view>
 			</view>
 			<!-- #endif -->
@@ -25,7 +25,7 @@
 				</view>
 			</view>
 			<!-- #ifndef H5 -->
-			<view class="more" @tap="showMore">
+			<view class="more"  @tap.stop="showMore">
 				<view class="icon add"></view>
 			</view>
 			<!-- #endif -->
@@ -74,6 +74,13 @@
         <view class="popup-layer" :class="popupLayerClass" @touchstart.stop.prevent="discard">
         	<!-- 表情 --> 
 			<emoji :class="{hidden:hideEmoji}" @addEmoji="addEmoji"></emoji>
+			<view class="more-layer" :class="{hidden:hideMore}">
+				<view class="list">
+					<view class="box" @touchstart.stop="chooseImage"><view class="icon tupian2"></view></view>
+					<view class="box" @touchstart.stop="camera"><view class="icon paizhao"></view></view>
+					<!-- <view class="box" @touchstart.stop="handRedEnvelopes"><view class="icon hongbao"></view></view> -->
+				</view>
+			</view>
         </view>
         <!-- 抽屉 -->
 	</view>
@@ -114,6 +121,8 @@
 				voiceTis:'按住 说话',
 				recordTis:"手指上滑 取消发送",
 				recording:false,
+				hideMore:true   	,// more参数
+				changeIndex: 0  //我的最新消息临时id
 			}
 		},
 		//点击右上角的更多群信息
@@ -135,6 +144,65 @@
 			lastMsg.lastMsgRead2(1, this.groupId);
 		},
 		methods: {
+			// 选择图片发送
+			chooseImage(){
+				this.getImage('album');
+			},
+			//拍照发送
+			camera(){
+				this.getImage('camera');
+			},
+			// 发送聊天图片
+			getImage(type){
+				this.hideDrawer();
+				let _this = this;
+				uni.showLoading({
+			        title: '请稍等...',
+					success() {
+						uni.chooseImage({
+							sourceType:[type],
+							sizeType: ['original', 'compressed'], //可以指定是原图还是压缩图，默认二者都有
+							success: (res)=>{
+								for(let i=0; i<res.tempFilePaths.length; i++){
+									api.uploadFileToCache(res.tempFilePaths[i], res=>{
+										if(res.code == 0){
+											uni.getImageInfo({
+												src: res.data.url,
+												success: (image)=>{
+													let msg = {url:res.data.url, w:image.width, h:image.height};
+													let imgInfo = _this.setPicSize(msg);   //重新设置图片大小
+													let jsonMsg = tran.obj2Json(imgInfo);  //图片信息转json格式
+			                                        _this.sendImgUrl(jsonMsg);
+													uni.hideLoading();													
+												}
+											});
+										}else{
+											uni.hideLoading();
+											uni.showToast({
+												title: "发送出错，请重试"
+											})
+										}
+									})
+								}
+							},
+						});
+					}
+				})
+			},
+			//更多功能(点击+弹出)
+			showMore(){
+				this.isVoice = false;
+				this.hideEmoji = true;
+				console.log(this.hideMore);
+				if(this.hideMore){
+					console.log(12);
+					this.hideMore = false;
+					this.openDrawer();
+				}else{
+					console.log(13);
+					this.hideDrawer();
+				}
+			},
 			//获取焦点，如果不是选表情ing,则关闭抽屉
 			textareaFocus(){
 				if(this.popupLayerClass=='showLayer' && this.hideMore == false){
@@ -150,6 +218,11 @@
 				let content = this.replaceEmoji(this.textMsg);
 				this.sendGroupMsg(content);
 				this.textMsg = '';//清空输入框
+			},
+			// 发送图片消息
+			sendImgUrl(content){
+				this.hideDrawer();//隐藏抽屉
+				this.sendGroupMsg("[img]:" + content);
 			},
 			//替换表情符号为图片
 			replaceEmoji(str){
@@ -171,6 +244,18 @@
 					}
 				});
 				return '<div style="display: flex;align-items: center;word-wrap:break-word;">'+replacedStr+'</div>';;
+			},
+			// 聊天图片宽高处理
+			setPicSize(content){
+				// 让图片最长边等于设置的最大长度，短边等比例缩小，图片控件真实改变，区别于aspectFit方式。
+				let maxW = uni.upx2px(350);//350是定义消息图片最大宽度
+				let maxH = uni.upx2px(350);//350是定义消息图片最大高度
+				if(content.w>maxW||content.h>maxH){
+					let scale = content.w/content.h;
+					content.w = scale>1?maxW:maxH*scale;
+					content.h = scale>1?maxW/scale:maxH;
+				}
+				return content;
 			},
 			// 选择表情
 			chooseEmoji(){
@@ -194,6 +279,7 @@
 			hideDrawer(){
 				this.popupLayerClass = '';
 				setTimeout(()=>{
+					this.hideMore = true;
 					this.hideEmoji = true;
 				},150);
 			},

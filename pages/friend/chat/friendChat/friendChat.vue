@@ -48,32 +48,29 @@
 						</view>
 				 </view>
 				<view class="tui-chat-content" v-for="(item, index) in msgList" :key="index" :id="'msg'+item.id">
+					<view class="tui-chat-center" v-if="item.addTime">{{item.addTime}}</view>
 					<view class="tui-chat-right" v-if="item.account == userEn.account">
 						<!-- 我发送的消息 -->
 						<view class="fail_box" v-if="item.change === 2">  <!-- 消息发送失败 -->
 							<image src="/static/img/fail.png" mode="widthFix"></image>
 						</view>
 						<tui-loadmore :visible="true" v-if="item.change === 1" :index="2"></tui-loadmore>  <!-- 消息发送中 -->
-						<rich-text class="tui-chatbox tui-chatbox-right" :nodes="item.msg" style="word-break : break-all;"></rich-text>
+						<rich-text v-if="item.msgType === 0" class="tui-chatbox tui-chatbox-right" :nodes="item.msg" style="word-break : break-all;"></rich-text>
+						<!-- 我发送的图片 -->
+						<view class="tui-chat-right" v-if="item.msgType === 1">
+							<image :src="item.msg.url" mode="" :style="{'width': item.msg.w+'px','height': item.msg.h+'px'}"></image>
+						</view>
 						<image :src="userEn.head" class="tui-user-pic tui-left"></image>
 					</view>
 
 					<view class="tui-chat-left" v-if="item.account != userEn.account">
 						<!-- 好友发送的消息 -->
 						<image :src="friendEn.friendHead" class="tui-user-pic" @tap="toFriendInfo(friendAccount)"></image>
-						<rich-text class="tui-chatbox tui-chatbox-left rich_text" :nodes="item.msg" style="word-break : break-all;"></rich-text>
-					</view>
-					
-					<view class="tui-chat-right" v-if="item.MyImg">
-						<!-- 我发送的图片 -->
-						<image :src="item.MyImg" mode=""></image>
-						<image :src="userEn.head" class="tui-user-pic tui-left"></image>
-					</view>
-					
-					<view class="tui-chat-left" v-if="item.FrImg">
-						<!-- 好友发送的图片 -->
-						<image :src="friendEn.friendHead" class="tui-user-pic" @tap="toFriendInfo(friendAccount)"></image>
-						<image :src="item.MyImg" mode=""></image>
+						<rich-text v-if="item.msg.msgType === 0" class="tui-chatbox tui-chatbox-left rich_text" :nodes="item.msg" style="word-break : break-all;"></rich-text>
+						<view class="tui-chat-left-image" v-if="item.msgType === 1">
+							<!-- 好友发送的图片 -->
+							<image :src="item.msg.url" mode="" :style="{'width': item.msg.w+'px','height': item.msg.h+'px'}"></image>
+						</view>						
 					</view>
 				</view>
 			</scroll-view>
@@ -95,7 +92,7 @@
 				<view class="list">
 					<view class="box" @touchstart.stop="chooseImage"><view class="icon tupian2"></view></view>
 					<view class="box" @touchstart.stop="camera"><view class="icon paizhao"></view></view>
-					<view class="box" @touchstart.stop="handRedEnvelopes"><view class="icon hongbao"></view></view>
+					<!-- <view class="box" @touchstart.stop="handRedEnvelopes"><view class="icon hongbao"></view></view> -->
 				</view>
 			</view>
         </view>
@@ -203,28 +200,12 @@ export default {
 											uni.getImageInfo({
 												src: res.data.url,
 												success: (image)=>{
-													let msg = {url:res.data.url,w:image.width,h:image.height};
-													let imgInfo = _this.setPicSize(msg);   //重新设置图片大小
-													let jsonMsg = tran.obj2Json(imgInfo);  //图片信息转json格式
-                                                    _this.sendImgUrl(jsonMsg);
+													let msg = {url:res.data.url, w:image.width, h:image.height};
+													let imgInfo = _this.setPicSize(msg);   //重新设置图片大小													
+                                                    _this.sendImgUrl(imgInfo);
+													uni.hideLoading();													
 												}
 											});
-											// api.sendMsgToFriend({
-											// 	account: _this.userEn.account,
-											// 	toAccount: _this.friendAccount,
-											// 	type: 0,
-											// 	msg: res.data.url
-											// }, res=>{
-											// 	let code = api.getCode(res);
-											// 	if(code == 0){
-											// 		uni.hideLoading();
-											// 	}else{
-											// 		uni.hideLoading();
-											// 		uni.showToast({
-											// 			title: "发送出错，请重试"
-											// 		})
-											// 	}
-											// })
 										}else{
 											uni.hideLoading();
 											uni.showToast({
@@ -234,9 +215,6 @@ export default {
 									})
 								}
 							},
-							
-							
-
 						});
 					}
 				})
@@ -245,10 +223,13 @@ export default {
 			showMore(){
 				this.isVoice = false;
 				this.hideEmoji = true;
+				console.log(this.hideMore);
 				if(this.hideMore){
+					console.log(12);
 					this.hideMore = false;
 					this.openDrawer();
 				}else{
+					console.log(13);
 					this.hideDrawer();
 				}
 			},
@@ -265,18 +246,19 @@ export default {
 					return;
 				}
 				let content = this.replaceEmoji(this.textMsg);
-				this.immediateAddMsg(content);  //将我的发言消息先添加到本地
+				this.immediateAddMsg(content, 0);  //将我的发言消息先添加到本地
 				this.send(content);
 				this.textMsg = '';//清空输入框
 			},
 			//直接将我的发言信息添加到本地
-			immediateAddMsg(content){
+			immediateAddMsg(content, msgType){
 				let data = {
 					id: --this.changeIndex,
 					account: this.userEn.account,
 					type: 0,
 					msg: content,
-					change: 1  //0正式数据  1临时数据 2失败数据
+					change: 1  ,//0正式数据  1临时数据 2失败数据
+					msgType: msgType,
 				};
 				this.msgList.push(data);
                 this.scrollToLast();
@@ -291,9 +273,12 @@ export default {
 				});
 			},
 			// 发送图片消息
-			sendImgUrl(content){
+			sendImgUrl(imgInfo){
 				this.hideDrawer();//隐藏抽屉
-				this.send(content);
+				let content = tran.obj2Json(imgInfo);  //图片信息转json格式
+				let msg = "[img]:" + content; //添加图片标识
+				this.immediateAddMsg(msg, 1);  //将我的发言消息先添加到本地
+				this.send(msg);
 			},
 			//替换表情符号为图片
 			replaceEmoji(str){
@@ -417,32 +402,91 @@ export default {
 				let _this = this;
 				api.getFriendMsg(postData, res => {
 					let data = api.getPageList(res);
-					data.forEach(function(item) {
-						_this.autoPushMsg(item, _this, false); //自动添加聊天数据
+					let previous_item;
+					data.forEach(function(item, index) {
+						_this.autoPushMsg(item, _this, false, previous_item = null); //自动添加聊天数据
+						let previous_item = item;
 					});
                     _this.scrollToLast();
-				})
+				});
+			},
+			//判断二个消息之间的发送时间
+			time(item, previous_item){
+				
+			},
+			//获取消息内容
+			getMsgData(type, msg){
+				switch (type){
+					case 1:
+						return tran.json2Obj(msg.substr(6));
+					default:
+					    return msg;
+				}
+			},
+			//返回消息类型
+			getMsgType(msg){
+				if(msg.indexOf("[img]") != -1){  // != -1匹配到指定字符串   == -1没有匹配到指定字符串
+					return 1;
+				} 
+				return 0;
 			},
 			//自动添加消息数据  isPush:true 添加到消息后面，false添加到消息前面
-			autoPushMsg(item, _this, isPush) {
-				if (_this.isNewMsg(item.id, _this.msgList, isPush, item.msg))
+			autoPushMsg(item, _this, isPush, previous_item) {
+				if (_this.isNewMsg(item, _this.msgList, isPush))
+				{
+					// _this.time(item, previous_item);
+					item.msgType = _this.getMsgType(item.msg);  //获取消息类型
+					item.msg = _this.getMsgData(item.msgType, item.msg);  //获取消息内容
 					if(isPush){
 						_this.msgList.push(item);
 					}else{
 						_this.msgList.unshift(item);
 					}
-				    // isPush ? _this.msgList.push(item) item.isChange = 1 : _this.msgList.unshift(item);
+				    // isPush ? _this.msgList.push(item) item.isChange = 1 : _this.msgList.unshift(item);					
+				}					
 			},
-
 			//判断消息id是否是新消息  isPush:true添加到后面，false添加到前面
-			isNewMsg(ids, msgList, isPush, isMy = false, msg = null) {
+			isNewMsg(item, msgList, isPush) {
 				if (util.isEmpty(msgList)) return true;
-				if(isPush){
-					let i = msgList.length - 1;				
-					return (ids > msgList[i].id) ;
+				//当发送人为自己
+				if(item.account == this.userEn.account){
+					if(isPush){
+						//消息是否就是临时数据
+						if(this.hasMsgChange1(msgList)){
+							let i = this.getLastMsgIndexBychang(msgList, 1);						
+							if(msgList[i].msg == item.msg) return false; //是临时数据就不用添加新数据
+						}										
+						let i = this.getLastMsgIndexBychang(msgList, 0);
+						console.log("item=" + item);
+						console.log("msgList[i]=" + msgList[i]);
+						return (item.id > msgList[i].id);
+					}else{
+						return (item.id < msgList[0].id);
+					}
 				}else{
-					return (ids < msgList[0].id);
+					if(isPush){
+						let i = this.getLastMsgIndexBychang(msgList, 0);	
+						console.log(item);
+						return (item.id > msgList[i].id);
+					}else{
+						return (item.id < msgList[0].id);
+					}
 				}
+			},
+			//
+			//是否有临时数据
+			hasMsgChange1(msgList){
+				for(let i = msgList.length - 1; i >= 0; --i){
+					if(msgList[i].change = 1) return true;
+				}
+				return false;
+			},
+			//获取状态为change的最后一条消息记录index
+			getLastMsgIndexBychang(msgList, change){
+				for(let i = msgList.length - 1; i >= 0; --i){
+					if(msgList[i].change === change) return i;
+				}
+				return -1;
 			},
 			//发送信息
 			send(content) {
@@ -452,16 +496,16 @@ export default {
 					type: 0,
 					msg: content
 				}
-				this.sendInfo(data);
+				this.sendMsg(data);
 			},
-			sendInfo(postData) {
+			sendMsg(postData) {
 				let _this = this;
 				api.sendMsgToFriend(postData, res => {
 					let code = api.getCode(res);
 					let data = api.getData(res);
 					if (code === 0) {
-						_this.changeMsg(postData.msg, _this.msgList, 0, data.id, data.addTime);  //发送成功修改消息为已读
-						_this.textMsg = '';  //发送成功清空输入框
+						//_this.changeMsg(postData.msg, _this.msgList, 0, data.id, data.addTime);  //发送成功修改消息为已读
+						_this.textMsg = '';  //发送成功清空输入框						
 					}else{
 						_this.changeMsg(postData.msg, _this.msgList, 2);  //发送失败修改记录为失败状态
 					}
@@ -638,7 +682,14 @@ export default {
 	.tui-chat-right {
 		display: flex;
 		align-items:center;
-		padding-top: 40upx;
+		padding-top: 10upx;
+	}
+	
+	.tui-chat-left-image{
+		display: flex;
+		align-items:center;
+		padding-top: 10upx;
+		padding-left:30rpx;
 	}
 
 	.tui-user-pic {

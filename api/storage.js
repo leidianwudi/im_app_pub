@@ -6,7 +6,7 @@ const myHeadImg 	= "myHeadImg"; 		//头像url的key
 const groupInfo 	= "groupInfo"; 		//群详细信息的key
 const lastMsgIndex 	= "lastMsgIndex"; 	//已读消息index
 const clientId 		= "clientId";  		//ws链接id
-
+const userInfo 		= "userInfo"; 		//账号密码的key
 //封装保存本地数据操作
 module.exports = {
 	//保存我的数据
@@ -24,6 +24,23 @@ module.exports = {
 	outLogin: function() {
 		uni.removeStorage({
 			key: myInfo
+		})
+	},
+	
+	//保存用户账号和密码
+	setMyUserInfo: function(data) {
+		uni.setStorageSync(userInfo, data);
+	},
+	
+	//获取用户账号和密码
+	getMyUserInfo: function() {
+		return uni.getStorageSync(userInfo);
+	},
+	
+	//删除用户账号和密码
+	delMyUserInfo: function() {
+		uni.removeStorage({
+			key: userInfo
 		})
 	},
 
