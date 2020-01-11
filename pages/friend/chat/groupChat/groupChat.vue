@@ -388,7 +388,7 @@
 			},
 			//判断消息id是否是新消息，isPush:true添加到后面，false添加到前面
 			isNewMsg(ids, groupMsgList, isPush) {
-				if (util.isEmpty(groupMsgList)) return true;
+				if(util.isEmpty(groupMsgList)) return true;
 				if(isPush){
 					let i = groupMsgList.length - 1;
 					return (ids > groupMsgList[i].id);
