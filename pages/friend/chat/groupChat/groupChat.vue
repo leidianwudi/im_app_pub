@@ -48,22 +48,38 @@
 						<view class="rect5"></view>
 					</view>
 				 </view>
-				<view class="msgList" v-for="(item, index) in groupMsgList" :key="index" :id="'msg'+item.id">
+				<view class="msgList" v-for="(item, index) in arrMsg" :key="index" :id="'msg'+item.id">
 					<view class="msg_main">
-						<view class="tui-label" v-if="item.system">{{item.system}}</view>
-						<!-- <view class="tui-chat-center">星期四 11:02</view> -->
-						<view class="tui-chat-right" v-if="item.Mymsg">
-							<rich-text class="tui-chatbox tui-chatbox-right" :nodes="item.Mymsg" style="word-break : break-all;"></rich-text>
-							<image :src="item.head" class="tui-user-pic tui-left"></image>
+						<!-- <view class="tui-label" v-if="item.system">{{item.system}}</view> -->
+						<view class="tui-chat-center" v-if="item.addTime">{{item.addTime}}</view>
+						<view class="tui-chat-right" v-if="item.account == userEn.account">
+							<!-- 我发送的消息 -->
+							<view class="fail_box" v-if="item.change === 2">  <!-- 消息发送失败 -->
+								<image src="/static/img/fail.png" mode="widthFix"></image>
+							</view>
+							<tui-loadmore :visible="true" v-if="item.change === 1" :index="2"></tui-loadmore>  <!-- 消息发送中 -->
+							<!-- 普通文字内容 -->
+							<rich-text v-if="item.msgType === 0" class="tui-chatbox tui-chatbox-right" :nodes="item.msg" style="word-break : break-all;"></rich-text>
+							<!-- 我发送的图片 -->
+							<view class="tui-chat-right" v-if="item.msgType === 1">								
+								<image :src="item.msg.url" mode="" :style="{'width': item.msg.w+'px','height': item.msg.h+'px'}"></image>
+							</view>
+							<!-- 头像 -->
+							<image :src="userEn.head" class="tui-user-pic tui-left"></image>
 						</view>
 
-						<view class="tui-chat-left" v-if="item.Frmsg">
+						<view class="tui-chat-left" v-if="item.account != userEn.account">
 							<image :src="item.head" class="tui-user-pic tui-right" @tap="toGroupUserInfo(item.nickTip, item.job)"></image>
-							<view class="chat_infos">
+<!-- 							<view class="chat_infos">
 								<view class="msgbox">
 									<text>{{item.account}}</text>
 									<rich-text class="tui-chatbox tui-chatbox-left" :nodes="item.Frmsg" style="word-break : break-all;"></rich-text>
 								</view>
+							</view> -->
+							<rich-text v-if="item.msgType === 0" class="tui-chatbox tui-chatbox-left rich_text" :nodes="item.msg" style="word-break : break-all;"></rich-text>
+							<view class="tui-chat-left-image" v-if="item.msgType === 1">
+								<!-- 好友发送的图片 -->
+								<image :src="item.msg.url" mode="" :style="{'width': item.msg.w+'px','height': item.msg.h+'px'}"></image>
 							</view>
 						</view>
 					</view>
@@ -95,10 +111,16 @@
 	import em from '@/common/em.js';
 	import lastMsg from '@/api/lastMsg.js';
 	import emoji from '@/components/emoji/emoji';
+	import tuiLoadmore from "@/components/loadmore/loadmore";
+	import config from "@/static/app/config";
+	import groupMsg from '@/pages/friend/chat/groupChat/groupMsg.js';
+	import emojiStr from '@/common/emojiStr.js';
+	import tran from "@/common/tran.js";
 	export default {
 		components: {
 			tuiIcon,
-			emoji
+			emoji,
+			tuiLoadmore
 		},
 		data() {
 			return {
@@ -107,13 +129,11 @@
 				groupId: null, //群id
 				groupEn: null, //群的详细资料
 				userEn: null, //我的详细资料
-				groupMsgList: [], //群消息列表
-				inputDisabled: false, //输入框是否禁用
+				arrMsg: [], //群消息列表
 				scrollToView: '', //滚动列表位置
 				isHistoryLoading: false,
 				scrollAnimation: false,
 				page: 1,
-				input: true ,//控制发送按钮显示
 				emojiList: em.emojiList  ,//表情列表
 				popupLayerClass:'', 	// 抽屉参数
 				hideEmoji:true, 		//表情定义
@@ -121,8 +141,7 @@
 				voiceTis:'按住 说话',
 				recordTis:"手指上滑 取消发送",
 				recording:false,
-				hideMore:true   	,// more参数
-				changeIndex: 0  //我的最新消息临时id
+				hideMore:true   	// more参数
 			}
 		},
 		//点击右上角的更多群信息
@@ -134,7 +153,8 @@
 		onLoad(res) {
 			this.userEn = storage.getMyInfo(); //获取我的详细信息
 			this.groupId = parseInt(res.groupId); //保存群id
-			this.getGroupMsg();
+			groupMsg.init(this, this.userEn.account, this.groupId); //初始化群消息数据
+			groupMsg.getGroupMsg();//获取群消息记录
 			api.groupIn({account: this.userEn.account, groupId: this.groupId});
 			this.getGroupInfo();
 			this.$store.state.ws.addLister(wsType.group_chat, this.onWebScoketGroupMsg.bind(this));			
@@ -157,7 +177,7 @@
 				this.hideDrawer();
 				let _this = this;
 				uni.showLoading({
-			        title: '请稍等...',
+                    title: '请稍等...',
 					success() {
 						uni.chooseImage({
 							sourceType:[type],
@@ -170,9 +190,8 @@
 												src: res.data.url,
 												success: (image)=>{
 													let msg = {url:res.data.url, w:image.width, h:image.height};
-													let imgInfo = _this.setPicSize(msg);   //重新设置图片大小
-													let jsonMsg = tran.obj2Json(imgInfo);  //图片信息转json格式
-			                                        _this.sendImgUrl(jsonMsg);
+													let imgInfo = _this.setPicSize(msg);   //重新设置图片大小													
+                                                    _this.sendImgUrl(imgInfo);
 													uni.hideLoading();													
 												}
 											});
@@ -215,35 +234,27 @@
 				if(!this.textMsg){
 					return;
 				}
-				let content = this.replaceEmoji(this.textMsg);
-				this.sendGroupMsg(content);
+				let content = emojiStr.replaceEmoji(this.textMsg);  //替换表情符号
+				groupMsg.immediateAddMsg(content, 0);  //将我的发言消息先添加到本地
+				groupMsg.sendText(content);
 				this.textMsg = '';//清空输入框
 			},
 			// 发送图片消息
-			sendImgUrl(content){
+			sendImgUrl(imgInfo){
 				this.hideDrawer();//隐藏抽屉
-				this.sendGroupMsg("[img]:" + content);
+				let content = tran.obj2Json(imgInfo);  //图片信息转json格式
+				let msg = "[img]:" + content; //添加图片标识
+				groupMsg.immediateAddMsg(imgInfo, 1);  //将我的发言消息先添加到本地
+				groupMsg.sendText(msg);				
 			},
-			//替换表情符号为图片
-			replaceEmoji(str){
-				let replacedStr = str.replace(/\[([^(\]|\[)]*)\]/g,(item, index)=>{
-					console.log("item: " + item);
-					for(let i=0;i<this.emojiList.length;i++){
-						let row = this.emojiList[i];
-						for(let j=0;j<row.length;j++){
-							let EM = row[j];
-							if(EM.alt==item){
-								//在线表情路径，图文混排必须使用网络路径，请上传一份表情到你的服务器后再替换此路径 
-								//比如你上传服务器后，你的100.gif路径为https://www.xxx.com/emoji/100.gif 则替换onlinePath填写为https://www.xxx.com/emoji/
-								let onlinePath = '/static/img/emoji'
-								let imgstr = '<img src="'+onlinePath+'/'+EM.url+'">';
-								console.log("imgstr: " + imgstr);
-								return imgstr;
-							}
-						}
-					}
+			//滚动条自动滚动到最后一行
+			scrollToLast(){
+				this.$nextTick(function() {
+					let i = this.arrMsg.length - 1;
+					if (i < 0) return;
+					// 滚动到底
+					this.scrollToView = 'msg' + this.arrMsg[i].id;
 				});
-				return '<div style="display: flex;align-items: center;word-wrap:break-word;">'+replacedStr+'</div>';;
 			},
 			// 聊天图片宽高处理
 			setPicSize(content){
@@ -293,14 +304,6 @@
 					util.setBarTitle(_this.groupEn.groupName);
 				});
 			},
-			isNFocal() {
-				if (this.textMsg === '') this.input = true;
-			},
-			//输入时显示发送按钮
-			onInput(e) {
-				if (e.detail.value === '') this.input = true;
-				else this.input = false;
-			},
 			// 上拉获取更多消息记录
 			loadHistory(){
 				if(this.isHistoryLoading){
@@ -308,7 +311,7 @@
 				}
 				this.isHistoryLoading = true;//参数作为进入请求标识，防止重复请求
 				this.scrollAnimation = false;//关闭滑动动画
-				let Viewid = this.groupMsgList[0].id;//记住第一个信息ID
+				let Viewid = groupMsg.arrMsg[0].id;//记住第一个信息ID
 				let _this = this;
 				api.getGroupMsg({
 					id: 1,
@@ -338,95 +341,12 @@
 					url: '/pages/friend/details/details?friendAccount=' + friendAccount + "&uiType=" + uiType
 				})
 			},
-			//获取群的聊天记录
-			getGroupMsg() {
-				let postData = {
-					id: 1,
-					groupId: this.groupId,
-					account: this.userEn.account,
-					page: this.page,
-					count: 15
-				}
-				let _this = this;
-				api.getGroupMsg(postData, res => {
-					let code = api.getCode(res);
-					let msg = api.getMsg(res);
-					//群被解散时输入框禁用
-					if (code === -10011) {
-						_this.system = msg;
-						_this.inputDisabled = true;
-					} else {
-						let data = api.getData(res).data.reverse(); //倒取群消息
-						data.forEach(function(item) {
-							_this.autoPushGroupMsg(item, _this, true);
-						});
-						_this.$nextTick(function() {
-							let i = _this.groupMsgList.length - 1;
-							if (i < 0) return;
-							// 滚动到底
-							_this.scrollToView = 'msg' + _this.groupMsgList[i].id;
-						});
-					}
-				})
-			},
-			//自动获取群消息，isPush:true往后添加消息
-			autoPushGroupMsg(item, _this, isPush) {
-				if((_this.groupMsgList.length > 0) &&
-				 (item.groupId != _this.groupMsgList[0].groupId)) return;
-				 
-				if (item.account === _this.userEn.account) {
-					item.Mymsg = item.msg;
-				} else if (item.account === '' || item.account === null) {
-					item.system = item.msg;
-				} else {
-					item.Frmsg = item.msg;
-				}
-				if (_this.isNewMsg(item.id, _this.groupMsgList, isPush)){
-					isPush ? _this.groupMsgList.push(item) : _this.groupMsgList.unshift(item);
-				}
-					
-			},
-			//判断消息id是否是新消息，isPush:true添加到后面，false添加到前面
-			isNewMsg(ids, groupMsgList, isPush) {
-				if(util.isEmpty(groupMsgList)) return true;
-				if(isPush){
-					let i = groupMsgList.length - 1;
-					return (ids > groupMsgList[i].id);
-				}else{
-					return (ids < groupMsgList[0].id);
-				}
-			},
-			//群内发送消息
-			sendGroupMsg(content) {
-				let data = {
-					groupId: this.groupEn.id,
-					account: this.userEn.account,
-					type: 0,
-					msg: content
-				}
-				this.sendMyMsg(data);
-			},
-			sendMyMsg(postData) {
-				let _this = this;
-				api.sendMsgToGroup(postData, res => {
-					let code = api.getCode(res);
-					let data = api.getData(res);
-					if (code === 0) {
-						_this.textMsg = '';
-						//this.getGroupMsg();
-					}
-				})
-			},
 			//监听webscoket返回的数据
 			onWebScoketGroupMsg(res) {
+				if((res.account != this.friendAccount) && (res.toAccount != this.friendAccount)) return;
 				this.scrollAnimation = true;  //开启滚动动画
-				this.autoPushGroupMsg(res, this, true);
-				this.$nextTick(function() {
-					let i = this.groupMsgList.length - 1;
-					if (i < 0) return;
-					// 滚动到底
-					this.scrollToView = 'msg' + this.groupMsgList[i].id;
-				});
+				groupMsg.autoPushMsg(res, true);
+				this.scrollToLast();
 			},
 			discard(){
 				return;

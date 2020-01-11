@@ -175,7 +175,6 @@ export default {
 			this.getFriendInfo(this.userEn.account, this.friendAccount); //查询特定好友详细信息
 			friendMsg.getMsgList(); //获取与好友的消息记录
 			this.$store.state.ws.addLister(wsType.friend_chat, this.onWebScoketMsg.bind(this));
-			console.log(res);
 		},
 		onUnload() {
 			this.$store.state.ws.removeLister(wsType.friend_chat, this.onWebScoketMsg.bind(this));
@@ -311,9 +310,6 @@ export default {
 					this.hideMore = true;
 					this.hideEmoji = true;
 				},150);
-			},
-			isNFocal() {
-				if (this.textMsg === '') this.input = true;
 			},
 			// 上拉获取更多消息记录
 			loadHistory(){
