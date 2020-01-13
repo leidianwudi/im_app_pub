@@ -1,10 +1,10 @@
 <template>
 	<view class="content">
-		<view class="searchbox">
+<!-- 		<view class="searchbox">
 			<input class="search_input" @tap="search" placeholder="搜索"></input>
-		</view>
+		</view> -->
 <!--搜索框-->
-	<scroll-view scroll-y :scroll-into-view="scrollViewId" :style="{height:winHeight + 'px'}" :show-scrollbar='false'>
+	<scroll-view scroll-y :scroll-into-view="scrollViewId"  :show-scrollbar='false'>
 		<view class="cell_divider createG" @tap="myGroup">
 	        <view>
 	        	<view class="myGroup">
@@ -13,7 +13,6 @@
                     </view>
 	        		<text>我的群聊</text>
 	        	</view>
-	        	<view class="more"><micon type="arrowright" size=18></micon></view>
 	        </view>
 		</view>
 		
@@ -25,7 +24,6 @@
 		    		</view>
 		    		<text>新的朋友</text>
 		    	</view>
-		    	<view class="more"><micon type="arrowright" size=18></micon></view>
 		    </view>
 		</view>
  <!--我的群聊-->
@@ -137,6 +135,12 @@
 			}, 10)
 		},
 		methods:{
+			// 右上角查找好友按钮
+			onNavigationBarButtonTap(){
+			    uni.navigateTo({
+			    	url:"/pages/friend/lookupFriend/lookupFriend"
+			    })
+			},
 			chat(friendAccount){
 				uni.navigateTo({
 					url:'/pages/friend/details/details?friendAccount=' + friendAccount + "&uiType=1"
@@ -293,7 +297,7 @@
 		align-items: center;
 		justify-content: flex-start;
 		z-index: 9999;
-		position: absolute;
+		position: fixed;
 		top: 132rpx;
 		right: 0;
 		padding-right: 10rpx;

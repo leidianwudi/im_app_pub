@@ -86,8 +86,24 @@
         		"enablePullDownRefresh": true,
         		"app-plus": {
         			//app页面不显示滚动条
-        			"scrollIndicator": "none"
+        			"scrollIndicator": "none",
+					"titleNView": {
+						"buttons": [ //原生标题栏按钮配置,
+							  {
+								"fontSrc":"/static/style/iconFont/iconfont.ttf",
+								"text":"\ue613",
+								"float":"right",
+								"color":"#000",
+								"fontSize":"20"
+							  }
+						]
+					}
         		}
+            }
+        },{
+            "path": "pages/friend/lookupFriend/lookupFriend",
+            "style": {
+                "navigationBarTitleText": "搜索好友"
             }
         },{
             "path": "pages/friend/chat/friendChat/friendChat",

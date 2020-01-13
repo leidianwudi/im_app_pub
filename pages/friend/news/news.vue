@@ -194,7 +194,12 @@ export default{
 		height:auto;
 		position:fixed;
 		z-index:10;
-		top:30rpx;
+		/* #ifndef H5 */
+		top:30rpx;		
+		/* #endif */
+		/* #ifdef H5 */
+		top:110rpx;		
+		/* #endif */
 		right:5px;
 		background:#4C4C4C;
 		border-radius:7px;
