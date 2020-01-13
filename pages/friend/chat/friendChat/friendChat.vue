@@ -58,7 +58,7 @@
 							<!-- 普通文字内容 -->
 							<rich-text v-if="item.msgType === 0" class="tui-chatbox tui-chatbox-right" :nodes="item.msg" style="word-break : break-all;"></rich-text>
 							<!-- 我发送的图片 -->
-							<view class="tui-chat-right" v-if="item.msgType === 1">								
+							<view class="tui-chat-right" v-if="item.msgType === 1" @tap="revise(item.msg.url)">								
 								<image :src="item.msg.url" mode="" :style="{'width': item.msg.w+'px','height': item.msg.h+'px'}"></image>
 							</view>
 							<!-- 头像 -->
@@ -69,7 +69,7 @@
 							<!-- 好友发送的消息 -->
 							<image :src="friendEn.friendHead" class="tui-user-pic tui-right" @tap="toFriendInfo(friendAccount)"></image>
 							<rich-text v-if="item.msgType === 0" class="tui-chatbox tui-chatbox-left rich_text" :nodes="item.msg" style="word-break : break-all;"></rich-text>
-							<view class="tui-chat-left-image" v-if="item.msgType === 1">
+							<view class="tui-chat-left-image" v-if="item.msgType === 1" @tap="revise(item.msg.url)">
 								<!-- 好友发送的图片 -->
 								<image :src="item.msg.url" mode="" :style="{'width': item.msg.w+'px','height': item.msg.h+'px'}"></image>
 							</view>						
@@ -181,6 +181,12 @@ export default {
 			lastMsg.lastMsgRead2(0, this.friendAccount);
 		},
 		methods: {
+			//预览图片
+			revise(url){
+				uni.previewImage({
+					urls:[url]
+				});
+			},
 			// 选择图片发送
 			chooseImage(){
 				this.getImage('album');

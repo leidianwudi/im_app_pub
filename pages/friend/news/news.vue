@@ -3,7 +3,7 @@
 	    <block v-for="(item, index) in list" :key="index">
 			<listcell :last="true" class="row"  @tap="onChat(item.type, item.friendAccount, item.groupId)">
 				<view class="news_left">
-					<image :src="item.img" mode="widthFix" class="user_img" @tap.stop="test"></image>  <!-- 好友的头像 -->
+					<image :src="item.img" mode="widthFix" class="user_img"></image>  <!-- 好友的头像 -->
 					<view class="news_info">
 						<view class="name">{{item.title}}</view>  <!-- 好友昵称 -->	
 						<rich-text class="msg" :nodes="item.msg"></rich-text><!-- 好友发送的消息 -->
@@ -33,7 +33,9 @@ import storage from '@/api/storage.js';
 import api from '@/api/api.js';
 import util from '@/common/util.js';
 import micon from '@/components/m-icon/m-icon';
-import lastMsg from "@/api/lastMsg.js"
+import lastMsg from "@/api/lastMsg.js";
+import wsType from '@/api/msgType.js';
+import tran from '@/common/tran.js';
 export default{
 		components: {
 			tuiBadge,
@@ -49,6 +51,12 @@ export default{
 		},
 		onLoad() {
 			this.userEn = storage.getMyInfo();
+			this.$store.state.ws.addLister(wsType.friend_last, this.onWebScoketMsg.bind(this));
+			this.$store.state.ws.addLister(wsType.group_last, this.onWebScoketGroupMsg.bind(this));
+		},
+		onUnload() {
+			this.$store.state.ws.removeLister(wsType.friend_last, this.onWebScoketMsg.bind(this));
+			this.$store.state.ws.removeLister(wsType.group_last, this.onWebScoketGroupMsg.bind(this));			
 		},
 		onShow() {
 			this.menu = false;
@@ -65,6 +73,7 @@ export default{
 		    this.menu = this.menu === true ? false : true;
 		},
 		methods:{
+			//隐藏菜单
 			onMenuHide(){
 				this.menu = false;
 			},
@@ -123,23 +132,17 @@ export default{
 					storage.setLastMsgIndex(data);
 					if (util.isEmpty(data)) return;
 					data.forEach(function(item){
-						if(item.type === 0){
-							api.getFriendByAccount({
-								account: _this.userEn.account,
-								friendAccount: item.title
-							}, res=>{
-								let data = api.getData(res);
-								item.title = data.friendNickTip ? data.friendNickTip : item.title;
-							});
-						}else{	
+						if(item.type === 0){}   //私聊消息
+						else{	//群聊消息
 							item.img = '/static/img/1.png';
 						}
-						lastMsg.countMsg(item, _this.userEn.account);						
+						if (item.msg.indexOf("[img]") != -1) item.msg = "[图片]";  //最后一条消息是图片消息，改变消息显示为[图片]
+						lastMsg.countMsg(item, _this.userEn.account);	//设置未读消息数据					
 						//添加时间
 						let timer = item.updTime.split(" ");
 						timer = timer[1].slice(0, timer.length-5)
 						item.time = timer;
-						// 添加消息栏
+						// 添加到消息栏
 						_this.list.push(item);
 					})
 				});
@@ -154,6 +157,37 @@ export default{
 					count: 6
 				}
 				this.getMsgList(data);
+			},
+			//自动提示有新消息
+			autoPushNewMsg(res){
+				lastMsg.countMsg(res, this.userEn.account);	//设置未读消息数据
+				let isOld = false;
+				for(let i = 0; i <= this.list.length - 1; i++){
+					if(this.list[i].id === res.id){
+						this.list[i].id = res.id;
+						this.list[i].type = res.type;
+						this.list[i].title = res.title;
+						this.list[i].img = res.img;
+						this.list[i].friendAccount = res.friendAccount;
+						this.list[i].sendAccount = res.sendAccount;
+						this.list[i].groupId = res.groupId;
+						this.list[i].msg = res.msg;						
+						this.list[i].msgIndex = res.msgIndex;
+						this.list[i].updTime = res.updTime;
+						this.list[i].level = res.level;  //客户端使用的控制红点类型参数
+						this.list[i].msgNum = res.msgNum;	//客户端使用的控制红点数字
+						isOld = true;  //找到旧数据
+						console.log("autoPushNewMsg_" + tran.obj2Json(res));
+						break;
+					}
+				}
+				if(!isOld) this.list.unshift(res);  //没有找到旧数据，需要新添加
+			},
+			onWebScoketMsg(res) { 
+				this.autoPushNewMsg(res);
+			},
+			onWebScoketGroupMsg(res){
+				this.autoPushNewMsg(res);
 			}
 		}
 	}
@@ -165,7 +199,7 @@ export default{
 		height:auto;
 		position:fixed;
 		z-index:10;
-		top:50px;
+		top:30rpx;
 		right:5px;
 		background:#4C4C4C;
 		border-radius:7px;

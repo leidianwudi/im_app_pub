@@ -16,7 +16,8 @@
 		<view class="input-group savePwdGroup">
 			<view class="input-row savePwd">
 			    <text class="title login_info text-df margin-right-sm" style="width: 50%;">记住密码：</text>
-			    <switch @change="SetShadow" :class="shadow?'checked':''" color="#39B54A"></switch>
+			    <!-- <switch @change="SetShadow" :class="shadow?'checked':''" color="#39B54A"></switch> -->
+				<switch @change="SetShadow" checked color="#39B54A"></switch>
 			</view>
 		</view>
 		
@@ -50,7 +51,7 @@
                 account: '',   //输入的账号
                 password: '',  //输入的密码
                 positionTop: 0,
-				shadow: false,
+				shadow: true
             }
         },
         methods: {   

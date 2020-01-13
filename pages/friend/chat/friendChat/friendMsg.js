@@ -89,9 +89,6 @@ module.exports = {
 		if (util.isEmpty(arrMsg)) return false;
 		if (this.newMsgSum > 0) {
 			let cacheIndex = this.getFirstCacheMsgIndex(arrMsg);
-			console.log("cacheIndex=" + cacheIndex);
-			console.log("item.msg=" + item.msg);
-			console.log("arrMsg[cacheIndex]=" + arrMsg[cacheIndex]);
 			return true;
 			//if(item.msg == arrMsg[cacheIndex].msg) return true;
 		}
@@ -103,9 +100,6 @@ module.exports = {
 
 		if (isPush) {
 			let i = this.getLastMsgIndexBychang(arrMsg, 0);
-			console.log(i);
-			console.log(arrMsg[i]);
-			console.log(item);
 			return (item.id > arrMsg[i].id);
 		} else {
 			return (item.id < arrMsg[0].id);
