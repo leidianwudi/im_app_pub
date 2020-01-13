@@ -14,7 +14,7 @@
 			</view>
 		</view>
 
-		<view class="cell_divider createG" @tap="myFind">
+<!-- 		<view class="cell_divider createG" @tap="myFind">
 			<view>
 				<view class="myGroup">
 					<view class="adduser_img">
@@ -26,7 +26,7 @@
 					<micon type="arrowright" size=18></micon>
 				</view>
 			</view>
-		</view>
+		</view> -->
 	</view>
 </template>
 
