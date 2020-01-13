@@ -3,7 +3,7 @@
 	    <block v-for="(item, index) in list" :key="index">
 			<listcell :last="true" class="row"  @tap="onChat(item.type, item.friendAccount, item.groupId)">
 				<view class="news_left">
-					<image :src="item.img" mode="widthFix" class="user_img"></image>  <!-- 好友的头像 -->
+					<image :src="item.type === 1 ? '/static/img/1.png' :item.img" mode="widthFix" class="user_img"></image>  <!-- 好友的头像 -->
 					<view class="news_info">
 						<view class="name">{{item.title}}</view>  <!-- 好友昵称 -->	
 						<rich-text class="msg" :nodes="item.msg"></rich-text><!-- 好友发送的消息 -->
@@ -132,10 +132,6 @@ export default{
 					storage.setLastMsgIndex(data);
 					if (util.isEmpty(data)) return;
 					data.forEach(function(item){
-						if(item.type === 0){}   //私聊消息
-						else{	//群聊消息
-							item.img = '/static/img/1.png';
-						}
 						if (item.msg.indexOf("[img]") != -1) item.msg = "[图片]";  //最后一条消息是图片消息，改变消息显示为[图片]
 						lastMsg.countMsg(item, _this.userEn.account);	//设置未读消息数据					
 						//添加时间
@@ -177,7 +173,6 @@ export default{
 						this.list[i].level = res.level;  //客户端使用的控制红点类型参数
 						this.list[i].msgNum = res.msgNum;	//客户端使用的控制红点数字
 						isOld = true;  //找到旧数据
-						console.log("autoPushNewMsg_" + tran.obj2Json(res));
 						break;
 					}
 				}
