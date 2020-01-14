@@ -97,9 +97,9 @@
 							duration:2000,
 							success() {
 								setTimeout(function(){
-									uni.reLaunch({
-									    url: '/pages/friend/news/news',
-									});
+									uni.navigateBack({
+										delta: 1
+									})
 								},2000)
 							}
 						})

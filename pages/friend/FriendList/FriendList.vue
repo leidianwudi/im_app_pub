@@ -1,10 +1,10 @@
 <template>
-	<view class="content">
+	<view class="tui-page content" style="padding-right: 0;">
 <!-- 		<view class="searchbox">
 			<input class="search_input" @tap="search" placeholder="搜索"></input>
 		</view> -->
 <!--搜索框-->
-	<scroll-view scroll-y :scroll-into-view="scrollViewId"  :show-scrollbar='false'>
+	<scroll-view scroll-y :scroll-into-view="scrollViewId" :show-scrollbar='false' :style="{height:winHeight + 'px'}">
 		<view class="cell_divider createG" @tap="myGroup">
 	        <view>
 	        	<view class="myGroup">
@@ -183,6 +183,7 @@
 				this.touchmove = false;
 				this.touchmoveIndex = -1
 			},
+			//获取好友列表
 			reqFirendList(data){
 				let _this = this;
 				api.getFriendsByAccount(data, res=>{
@@ -297,7 +298,7 @@
 		align-items: center;
 		justify-content: flex-start;
 		z-index: 9999;
-		position: fixed;
+		position: absolute;
 		top: 132rpx;
 		right: 0;
 		padding-right: 10rpx;

@@ -128,6 +128,8 @@ module.exports = {
 		switch (type) {
 			case 1:
 				return tran.json2Obj(msg.substr(6));
+			case 2:
+			    return tran.json2Obj(msg.substr(8));
 			default:
 				return msg;
 		}
@@ -136,6 +138,8 @@ module.exports = {
 	getMsgType(msg) {
 		if (msg.indexOf("[img]") != -1) { // != -1匹配到指定字符串   == -1没有匹配到指定字符串
 			return 1;
+		}else if (msg.indexOf("[voice]") != -1) {
+			return 2;
 		}
 		return 0;
 	},

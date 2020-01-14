@@ -133,6 +133,7 @@ export default{
 					if (util.isEmpty(data)) return;
 					data.forEach(function(item){
 						if (item.msg.indexOf("[img]") != -1) item.msg = "[图片]";  //最后一条消息是图片消息，改变消息显示为[图片]
+						if (item.msg.indexOf("[voice]") != -1) item.msg = "[语音]";  //最后一条消息是图片消息，改变消息显示为[图片]						
 						lastMsg.countMsg(item, _this.userEn.account);	//设置未读消息数据					
 						//添加时间
 						let timer = item.updTime.split(" ");

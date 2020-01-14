@@ -45,7 +45,7 @@
 		<view class="apply_friend">
 			<button type="primary" @tap="apply" v-if="uiType == 0">加为好友</button>
 			<button type="primary" @tap="outGroupUserByAdmin" v-if="uiType == 5">移出群聊</button>
-			<button type="primary" @tap="sendInfo" v-if="uiType == 1">发消息</button>
+			<button type="primary" @tap="sendInfo(friendAccount)" v-if="uiType == 1">发消息</button>
 		</view>
 		
 		<modal :show="modal9" @cancel="hide9" :custom="true" :fadein="true">
@@ -102,7 +102,7 @@ export default{
 		this.userEn = storage.getMyInfo();
 		this.friendAccount = res.friendAccount ? res.friendAccount : res.userAccount;
         this.uiType = res.uiType;
-		api.getUserByAccount({account: res.friendAccount},res=>{
+		api.getUserByAccount({account: this.friendAccount},res=>{
 			let data = api.getData(res);
 			_this.fr_img = data.head;
 			_this.fr_name = data.account;
@@ -139,7 +139,7 @@ export default{
 	},
 	// 右上角更多按钮的显示切换
 	onNavigationBarButtonTap(){
-		if(this.userAccount === false) return;
+		if(this.uiType == 0) return;
 	    this.menu = this.menu === true ? false : true;
 	},
 	methods:{
@@ -191,7 +191,11 @@ export default{
 					},500)
 				}
 			})
-
+		},
+		sendInfo(friendAccount){
+			uni.navigateTo({
+				url:'/pages/friend/chat/friendChat/friendChat?friendAccount=' + friendAccount
+			})
 		},
 		del(){
 			let _this = this;

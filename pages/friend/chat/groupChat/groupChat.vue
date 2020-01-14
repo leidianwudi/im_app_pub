@@ -1,5 +1,5 @@
 <template>
-	<view class="content" @tap="hideDrawer" style="background: #ebedf6; padding: 0rpx; padding-bottom: 100upx;box-sizing: border-box;">
+	<view class="content" @tap="hideDrawer" style="background:#F1F2F7; padding: 0rpx; padding-bottom: 100upx;box-sizing: border-box;">
 		<!-- 底部输入框 -->
 		<view class="input-box" :class="popupLayerClass" @touchmove.stop.prevent="discard">
 			<!-- H5下不能录音，输入栏布局改动一下 -->
@@ -34,7 +34,12 @@
 			</view>
 		</view>
 		<!-- 底部输入框 -->
-
+		<!-- 录音UI效果 -->
+		<view class="record" :class="recording?'':'hidden'">
+			<view class="ing" :class="willStop?'hidden':''"><view class="icon luyin2" ></view></view>
+			<view class="cancel" :class="willStop?'':'hidden'"><view class="icon chehui" ></view></view>
+			<view class="tis" :class="willStop?'change':''">{{recordTis}}</view>
+		</view>
 		<view class="chat_info">
 			<scroll-view class="msg-list" scroll-y="true" :scroll-with-animation="scrollAnimation" :scroll-into-view="scrollToView"
 			 @scrolltoupper="loadHistory" upper-threshold="50">
@@ -64,6 +69,11 @@
 							<view class="tui-chat-right" v-if="item.msgType === 1">								
 								<image :src="item.msg.url" mode="" :style="{'width': item.msg.w+'px','height': item.msg.h+'px'}"></image>
 							</view>
+							<!-- 我发送的语音 -->
+							<view v-if="item.msgType === 2" class="tui-chat-right bubble voice" @tap="playVoice(item.msg)" :class="playMsgid == item.msg.id?'play':''">
+								<view class="icon my-voice"></view>
+								<view class="length">{{item.msg.length}}</view>
+							</view>								
 							<!-- 头像 -->
 							<image :src="userEn.head" class="tui-user-pic tui-left"></image>
 						</view>
@@ -81,6 +91,11 @@
 								<!-- 好友发送的图片 -->
 								<image :src="item.msg.url" mode="" :style="{'width': item.msg.w+'px','height': item.msg.h+'px'}"></image>
 							</view>
+							<!-- 好友发送的语音 -->
+							<view v-if="item.msgType === 2" class="tui-chat-right bubble voice" @tap="playVoice(item.msg)" :class="playMsgid == item.msg.id?'play':''">
+								<view class="length">{{item.msg.length}}</view>
+								<view class="icon other-voice"></view>
+							</view>								
 						</view>
 					</view>
 				</view>
@@ -137,11 +152,26 @@
 				emojiList: em.emojiList  ,//表情列表
 				popupLayerClass:'', 	// 抽屉参数
 				hideEmoji:true, 		//表情定义
+				hideMore:true,		// more参数
+				
+				//录音相关参数
+				// #ifndef H5
+				//H5不能录音
+				RECORDER:uni.getRecorderManager(),
+				// #endif
 				isVoice:false,
 				voiceTis:'按住 说话',
 				recordTis:"手指上滑 取消发送",
 				recording:false,
-				hideMore:true   	// more参数
+				willStop:false,
+				initPoint:{identifier:0,Y:0},
+				recordTimer:null,
+				recordLength:0,
+				
+				//播放语音相关参数
+				AUDIO:uni.createInnerAudioContext(),
+				playMsgid:null,
+				VoiceTimer:null
 			}
 		},
 		//点击右上角的更多群信息
@@ -157,13 +187,119 @@
 			groupMsg.getGroupMsg();//获取群消息记录
 			api.groupIn({account: this.userEn.account, groupId: this.groupId});
 			this.getGroupInfo();
-			this.$store.state.ws.addLister(wsType.group_chat, this.onWebScoketGroupMsg.bind(this));			
+			this.$store.state.ws.addLister(wsType.group_chat, this.onWebScoketGroupMsg.bind(this));	
+			
+			//语音自然播放结束
+			this.AUDIO.onEnded((res)=>{
+				this.playMsgid=null;
+			});
+			// #ifndef H5
+			//录音开始事件
+			this.RECORDER.onStart((e)=>{
+				this.recordBegin(e);
+			})
+			//录音结束事件
+			this.RECORDER.onStop((e)=>{
+				this.recordEnd(e);
+			})
+			// #endif		
 		},
 		onUnload() {
 			this.$store.state.ws.removeLister(wsType.group_chat, this.onWebScoketGroupMsg.bind(this));
 			lastMsg.lastMsgRead2(1, this.groupId);
 		},
 		methods: {
+			// 播放语音
+			playVoice(msg){
+				this.playMsgid=msg.id;
+				this.AUDIO.src = msg.url;
+				this.$nextTick(function() {
+					this.AUDIO.play();
+				});
+			},
+			// 录音开始
+			voiceBegin(e){
+				if(e.touches.length>1){
+					return ;
+				}
+				this.initPoint.Y = e.touches[0].clientY;
+				this.initPoint.identifier = e.touches[0].identifier;
+				this.RECORDER.start({format:"mp3"});//录音开始,
+			},
+			//录音开始UI效果
+			recordBegin(e){
+				this.recording = true;
+				this.voiceTis='松开 结束';
+				this.recordLength = 0;
+				this.recordTimer = setInterval(()=>{
+					this.recordLength++;
+				},1000)
+			},
+			// 录音被打断
+			voiceCancel(){
+				this.recording = false;
+				this.voiceTis='按住 说话';
+				this.recordTis = '手指上滑 取消发送'
+				this.willStop = true;//不发送录音
+				this.RECORDER.stop();//录音结束
+			},
+			// 录音中(判断是否触发上滑取消发送)
+			voiceIng(e){
+				if(!this.recording){
+					return;
+				}
+				let touche = e.touches[0];
+				//上滑一个导航栏的高度触发上滑取消发送
+				if(this.initPoint.Y - touche.clientY>=uni.upx2px(100)){
+					this.willStop = true;
+					this.recordTis = '松开手指 取消发送'
+				}else{
+					this.willStop = false;
+					this.recordTis = '手指上滑 取消发送'
+				}
+			},
+			// 结束录音
+			voiceEnd(e){
+				if(!this.recording){
+					return;
+				}
+				this.recording = false;
+				this.voiceTis='按住 说话';
+				this.recordTis = '手指上滑 取消发送'
+				this.RECORDER.stop();//录音结束
+			},
+			//录音结束(参数为录音文件的临时路径)
+			recordEnd(e){
+				clearInterval(this.recordTimer);  //关闭录音动画
+				if(!this.willStop){
+					api.uploadFileToCache(e.tempFilePath, res=>{
+						if(res.code == 0){
+							let msg = {
+								length: 0,  //录音总时长 
+								url: res.data.url //录音文件路径
+							}
+							let min = parseInt(this.recordLength/60);
+							let sec = this.recordLength%60;
+							min = min<10?'0'+min:min;
+							sec = sec<10?'0'+sec:sec;
+							msg.length = min+':'+sec;
+							let voiceInfo = tran.obj2Json(msg);  //录音信息转json格式	
+							let content = "[voice]:" + voiceInfo; //添加录音标识		
+							groupMsg.immediateAddMsg(msg, 2);  //将我的发言消息先添加到本地
+							groupMsg.sendText(content);																
+						}
+					});
+				}else{
+					console.log('取消发送录音');
+				}
+				this.willStop = false;
+			},
+					
+			// 切换语音/文字输入
+			switchVoice(){
+				this.hideDrawer();
+				this.isVoice = this.isVoice?false:true;
+			},
 			// 选择图片发送
 			chooseImage(){
 				this.getImage('album');

@@ -111,7 +111,7 @@ export default{
 			},
 			Apply(){
                 uni.navigateTo({
-                	url:'../details/details?userAccount=' + this.search_name + "&uiType=0"
+                	url:'/pages/friend/details/details?userAccount=' + this.search_name + "&uiType=0"
                 })
 			},
 			show(postData){

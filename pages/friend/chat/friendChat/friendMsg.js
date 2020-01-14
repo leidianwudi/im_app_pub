@@ -109,7 +109,6 @@ module.exports = {
 	getFirstCacheMsgIndex(arrMsg) {
 		let findSum = 0; //找到次数
 		for (let i = arrMsg.length - 1; i >= 0; --i) {
-			console.log(arrMsg[i]);
 			if (arrMsg[i].change === 1) {
 				findSum += 1; //找到一次
 				if (findSum == this.newMsgSum) return i;
@@ -127,9 +126,11 @@ module.exports = {
 	//获取消息内容
 	getMsgData(type, msg) {
 		switch (type) {
-			case 1:
+			case 1:  //图片消息
 				return tran.json2Obj(msg.substr(6));
-			default:
+			case 2:
+			    return tran.json2Obj(msg.substr(8));
+			default: //语音消息
 				return msg;
 		}
 	},
@@ -137,6 +138,8 @@ module.exports = {
 	getMsgType(msg) {
 		if (msg.indexOf("[img]") != -1) { // != -1匹配到指定字符串   == -1没有匹配到指定字符串
 			return 1;
+		}else if (msg.indexOf("[voice]") != -1) {
+			return 2;
 		}
 		return 0;
 	},
@@ -158,7 +161,7 @@ module.exports = {
 			type: 0,
 			msg: content,
 			change: 1, //0正式数据  1临时数据 2失败数据
-			msgType: msgType, //  客户端自定义的消息类型 0:文字消息 1:图片消息 
+			msgType: msgType, //  客户端自定义的消息类型 0:文字消息 1:图片消息 2:语音消息
 			addTime: time.getToday_YMD()
 		};
 		this.ui.arrMsg.push(data);
