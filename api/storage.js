@@ -7,6 +7,8 @@ const groupInfo 	= "groupInfo"; 		//群详细信息的key
 const lastMsgIndex 	= "lastMsgIndex"; 	//已读消息index
 const clientId 		= "clientId";  		//ws链接id
 const userInfo 		= "userInfo"; 		//账号密码的key
+const lastMsg       = "lastMsg";        //最后一条消息列表的key
+const friendList       = "friendList";        //好友列表的key
 //封装保存本地数据操作
 module.exports = {
 	//保存我的数据
@@ -59,16 +61,30 @@ module.exports = {
 
 
 	// 保存最后一条聊天记录
-	setLastMsgIndex: function(data) {
+	setLastMsgIndex: function(data, fun) {
 		uni.setStorage({
-			key: 'setmsg',
-			data: data
+			key: lastMsg,
+			data: data,
+			success: fun
 		})
 	},
 
 	// 获取最后一条聊天记录
-	getLastMsgIndex: function(type, groupId, friendAccount) {
-		return uni.getStorageSync('setmsg');
+	getLastMsgIndex: function() {
+		return uni.getStorageSync(lastMsg);
+	},
+	
+	// 保存好友列表
+	setFriendList: function(data) {
+		uni.setStorage({
+			key: friendList,
+			data: data
+		})
+	},
+	
+	// 获取好友列表
+	getFriendList: function() {
+		return uni.getStorageSync(friendList);
 	},
 
 	//保存头像

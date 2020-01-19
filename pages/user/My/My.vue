@@ -1,5 +1,5 @@
 <template>
-    <view class="content">
+    <view class="content" style="background: #EDEDED; padding:0 0 20rpx;">
 		<view class="user_info">
 			<view class="img_box" @tap="revise">
 				<image :src="userEn.head" class="user_img" mode="widthFix"></image>
@@ -15,6 +15,30 @@
 				<view class="user_text">{{userEn.signature ? userEn.signature : '暂无设置签名'}}</view>
 			</view>
 		</view>
+		
+		<view class="func">
+			
+			<view class="func_box" @tap="toSetUp">
+                <view class="">
+                	<text class="iconfont myIcon">&#xe608;</text>
+                	<text class="func_test">设置</text>
+                </view>
+				<view class="">
+					<micon type="arrowright" size=18></micon>
+				</view>
+			</view>
+			
+			<view class="func_box" @tap="toAbout">
+                <view class="">
+                	<text class="iconfont myIcon">&#xe635;</text>
+                	<text class="func_test">关于我们</text>	
+                </view>			
+				<view class="">
+					<micon type="arrowright" size=18></micon>					
+				</view>
+			</view>
+						
+		</view>
         <view class="btn-row">
             <button v-if="!isLogin" type="primary" class="primary" @tap="bindLogin" hover-class="onbutton">登录</button>
             <button v-if="isLogin" type="default" @tap="bindLogout" hover-class="onbutton">退出登录</button>
@@ -25,13 +49,17 @@
 <script>
 import storage from '@/api/storage.js';
 import utilCore from '@/api/utilCore.js';
+import micon from '@/components/m-icon/m-icon';
+import "@/static/style/iconFont/iconfont_my.css";
     import {
         mapState,
         mapMutations
     } from 'vuex'
 
     export default {
-		components: {},
+		components: {
+			micon
+		},
 		data(){
 			return{
 				id:1,
@@ -44,6 +72,17 @@ import utilCore from '@/api/utilCore.js';
 			this.isLogin = utilCore.isLogin();
 		},
         methods: {	
+			toSetUp(){
+				uni.navigateTo({
+					url:'/pages/user/My/setUp/setUp'
+				})
+			},
+			toAbout(){
+				uni.navigateTo({
+					url:'/pages/user/My/about/about'
+				})
+			},
+			//退出登录
             bindLogin() {
                 uni.navigateTo({
                     url: '../login/login',
@@ -78,10 +117,11 @@ import utilCore from '@/api/utilCore.js';
 	}
 	.user_info{
 		width:100%;
-		padding:15rpx 13rpx;
+		padding:30rpx;
 		box-sizing:border-box;
 		display:flex;
 		flex-direction:row;
+		background: #fff;
 	}
 	.img_box{
 		width: 200upx;
@@ -129,5 +169,23 @@ import utilCore from '@/api/utilCore.js';
 	}
 	.onbutton{
 		opacity: 0.7;
+	}
+	.myIcon{
+		font-size:28px;
+		vertical-align:middle;
+	}
+	.func{
+		background:#fff;
+		margin-top:30rpx;		
+	}
+	.func_box{
+		border-bottom: 1px solid #F0F0F0;
+		padding:20rpx 50rpx;
+		display:flex;
+		justify-content: space-between;
+		align-items:center;
+	}
+	.func_test{
+		margin-left:20rpx;
 	}
 </style>

@@ -87,7 +87,7 @@ export default {
 		uni.onSocketMessage((res) => {
 			//console.log('收到服务器内容1' + res);
 			let resObj = tran.json2Obj(res.data);
-			console.log('收到服务器内容2' + resObj);
+			console.log('收到服务器内容2' + res);
 			let type = resObj.type; //类型	
 			if(type == "init")
 			{				

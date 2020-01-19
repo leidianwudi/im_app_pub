@@ -1,9 +1,11 @@
 <script>
+	import newMsg from "@/pages/friend/news/newMsg.js";
 	export default {
 		onLaunch: function() {
 			console.log('App Launch');
 			this.$store.state.ws.init();//初始化
 			this.$store.state.ws.open();//连接ws
+			newMsg.init(this); //开启最后记录消息监听
 		},
 		onShow: function() {
 			console.log('App Show');			
