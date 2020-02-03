@@ -64,9 +64,9 @@ module.exports = {
 	refreshLastMsg(){
 		let msg = storage.getLastMsgIndex();
 		console.log(msg);
-		if(util.isEmpty(msg)) return;
-		console.log(this.ui.list);
+		if(util.isEmpty(msg)) return;		
 		if(util.isEmpty(this.ui)) return;
+		console.log(this.ui.list);
 		this.ui.list = [];  //删除旧数据
 		//关闭下拉刷新动画
 		uni.stopPullDownRefresh();	

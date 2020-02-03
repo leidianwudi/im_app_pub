@@ -484,8 +484,8 @@
 			},
 			//监听webscoket返回的数据
 			onWebScoketGroupMsg(res) {
+				if(res.groupId != this.groupId) return;
 				console.log("onWebScoketGroupMsg:"+ tran.obj2Json(res));
-				if(res.account != this.groupId) return;
 				this.scrollAnimation = true;  //开启滚动动画
 				groupMsg.autoPushMsg(res, true);
 				this.scrollToLast();
