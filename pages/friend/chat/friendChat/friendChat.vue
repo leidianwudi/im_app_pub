@@ -508,7 +508,7 @@ export default {
 			onWebScoketMsg(res) {	
 				if((res.account != this.friendAccount) && (res.toAccount != this.friendAccount)) return;
 				this.scrollAnimation = true;  //开启滑动动画
-				console.log("onWebScoketMsg:"+ tran.obj2Json(res));
+				//console.log("onWebScoketMsg:"+ tran.obj2Json(res));
 				friendMsg.autoPushMsg(res, true);
                 this.scrollToLast();
 			},

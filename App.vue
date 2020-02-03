@@ -1,12 +1,26 @@
 <script>
 	export default {
 		onLaunch: function() {
+			switch (uni.getSystemInfoSync().platform) {
+				case 'android':
+					//console.log('运行Android上') 
+					//plus.navigator.closeSplashscreen();
+					break;
+				case 'ios':
+					//console.log('运行iOS上') 
+					//plus.navigator.closeSplashscreen();
+					break;
+				default:
+					//console.log('运行在开发者工具上') 
+					break;									
+			}
+			
 			console.log('App Launch');
-			this.$store.state.ws.init();//初始化
-			this.$store.state.ws.open();//连接ws
+			this.$store.state.ws.init(); //初始化
+			this.$store.state.ws.open(); //连接ws
 		},
 		onShow: function() {
-			console.log('App Show');			
+			console.log('App Show');
 		},
 		onHide: function() {
 			console.log('App Hide');
@@ -17,7 +31,7 @@
 <style>
 	/*每个页面公共css */
 	@import "./common/app.css";
-	
+
 	/*每个页面公共css */
 	page {
 		min-height: 100%;
@@ -59,13 +73,14 @@
 		min-height: 100%;
 		display: flex;
 	}
+
 	.content {
 		display: flex;
 		flex: 1;
 		flex-direction: column;
-/* 		background-color:rgba(238,235,233,.3); */
+		/* 		background-color:rgba(238,235,233,.3); */
 		padding: 20upx;
-		background:#fff;
+		background: #fff;
 		box-sizing: border-box;
 	}
 
@@ -113,9 +128,11 @@
 		padding-left: 30upx;
 		line-height: 50upx;
 	}
+
 	.input-row .login_info {
-		width:20%;
+		width: 20%;
 	}
+
 	.input-row.border::after {
 		position: absolute;
 		right: 0;
@@ -136,5 +153,4 @@
 	button.primary {
 		background-color: #0faeff;
 	}
-	
 </style>

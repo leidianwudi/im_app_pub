@@ -33,6 +33,7 @@ export default {
 	},
 	//开始连接服务器
 	open() {		
+		console.log("ws开始连接");
 		if(util.isEmpty(this.account)) return;//没有账户就是未登录
 		if (this.IsOpen) return; //防止重复连接	
 
@@ -62,7 +63,7 @@ export default {
 		
 		this.onMessage();	//接收消息监听					
 		
-		console.log("ws已经开始连接");
+		console.log("ws连接结束");
 	},
 	//关闭连接
 	close(){
