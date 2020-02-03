@@ -112,13 +112,22 @@
 			}, 10)
 		},
 		onShow(){
+			let _this = this;
 			this.friengList = [];
-			let data = {
-				account: this.userEn.account,
-				page: 1,
-				count: 20
+			let friendList = storage.getFriendList();
+			if(util.isEmpty(friendList)){
+				let data = {
+					account: this.userEn.account,
+					page: 1,
+					count: 20
+				}
+				this.reqFirendList(data);
+			}else{
+				friendList.forEach(function(e){
+					let fristKey = chinapy.makePy(e.friendNickTip);
+					_this.addFriend(fristKey, e);
+				});
 			}
-			this.reqFirendList(data);
 			const that = this;
 			setTimeout(() => {
 				uni.getSystemInfo({
@@ -188,6 +197,7 @@
 				let _this = this;
 				api.getFriendsByAccount(data, res=>{
 					let data = api.getData(res).data;
+					storage.setFriendList(data);
 					data.forEach(function(e){				
 						let fristKey = chinapy.makePy(e.friendNickTip);
 						_this.addFriend(fristKey, e);

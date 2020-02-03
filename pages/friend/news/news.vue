@@ -34,8 +34,8 @@ import api from '@/api/api.js';
 import util from '@/common/util.js';
 import micon from '@/components/m-icon/m-icon';
 import lastMsg from "@/api/lastMsg.js";
-import wsType from '@/api/msgType.js';
 import tran from '@/common/tran.js';
+import newMsg from "@/pages/friend/news/newMsg.js";
 export default{
 		components: {
 			tuiBadge,
@@ -51,22 +51,15 @@ export default{
 		},
 		onLoad() {
 			this.userEn = storage.getMyInfo();
-			this.$store.state.ws.addLister(wsType.friend_last, this.onWebScoketMsg.bind(this));
-			this.$store.state.ws.addLister(wsType.group_last, this.onWebScoketGroupMsg.bind(this));
+			newMsg.initUi(this, this.userEn.account);  //初始化
 		},
 		onUnload() {
-			this.$store.state.ws.removeLister(wsType.friend_last, this.onWebScoketMsg.bind(this));
-			this.$store.state.ws.removeLister(wsType.group_last, this.onWebScoketGroupMsg.bind(this));			
+			newMsg.closeUi(); //ui关闭
 		},
 		onShow() {
 			this.menu = false;
-			this.list = [];
-			let data = {
-				account: this.userEn.account,
-				page: 1,
-				count: 99
-			};
-			this.getMsgList(data);
+			newMsg.refreshLastMsg(); //刷新ui数据
+			newMsg.getLastMsg();  //尝试取数据
 		},
 		// 右上角更多按钮的显示切换
 		onNavigationBarButtonTap(){
@@ -124,67 +117,10 @@ export default{
 						break;	
 				}
 			},
-			//获取最后一条消息
-			getMsgList(postData){
-				let _this = this;
-				api.getLastMsgByAccount(postData, res=>{
-					let data = api.getData(res).data;
-					storage.setLastMsgIndex(data);
-					if (util.isEmpty(data)) return;
-					data.forEach(function(item){
-						if (item.msg.indexOf("[img]") != -1) item.msg = "[图片]";  //最后一条消息是图片消息，改变消息显示为[图片]
-						if (item.msg.indexOf("[voice]") != -1) item.msg = "[语音]";  //最后一条消息是图片消息，改变消息显示为[图片]						
-						lastMsg.countMsg(item, _this.userEn.account);	//设置未读消息数据					
-						//添加时间
-						let timer = item.updTime.split(" ");
-						timer = timer[1].slice(0, timer.length-5)
-						item.time = timer;
-						// 添加到消息栏
-						_this.list.push(item);
-					})
-				});
-				uni.stopPullDownRefresh();
-			},
 			//下拉刷新重新请求聊天数据
 			onPullDownRefresh(){
-				this.list = [];
-				let data = {
-					account: this.userEn.account,
-					page: 1,
-					count: 6
-				}
-				this.getMsgList(data);
+				newMsg.getLastMsg();
 			},
-			//自动提示有新消息
-			autoPushNewMsg(res){
-				lastMsg.countMsg(res, this.userEn.account);	//设置未读消息数据
-				let isOld = false;
-				for(let i = 0; i <= this.list.length - 1; i++){
-					if(this.list[i].id === res.id){
-						this.list[i].id = res.id;
-						this.list[i].type = res.type;
-						this.list[i].title = res.title;
-						this.list[i].img = res.img;
-						this.list[i].friendAccount = res.friendAccount;
-						this.list[i].sendAccount = res.sendAccount;
-						this.list[i].groupId = res.groupId;
-						this.list[i].msg = res.msg;						
-						this.list[i].msgIndex = res.msgIndex;
-						this.list[i].updTime = res.updTime;
-						this.list[i].level = res.level;  //客户端使用的控制红点类型参数
-						this.list[i].msgNum = res.msgNum;	//客户端使用的控制红点数字
-						isOld = true;  //找到旧数据
-						break;
-					}
-				}
-				if(!isOld) this.list.unshift(res);  //没有找到旧数据，需要新添加
-			},
-			onWebScoketMsg(res) { 
-				this.autoPushNewMsg(res);
-			},
-			onWebScoketGroupMsg(res){
-				this.autoPushNewMsg(res);
-			}
 		}
 	}
 </script>

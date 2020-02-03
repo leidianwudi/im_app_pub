@@ -106,6 +106,16 @@
                 "navigationBarTitleText": "搜索好友"
             }
         },{
+            "path": "pages/user/My/setUp/setUp",
+            "style": {
+                "navigationBarTitleText": "设置"
+            }
+        },{
+            "path": "pages/user/My/about/about",
+            "style": {
+                "navigationBarTitleText": "关于我们"
+            }
+        },{
             "path": "pages/friend/chat/friendChat/friendChat",
             "style": {
                 "navigationBarTitleText": "聊天记录"
