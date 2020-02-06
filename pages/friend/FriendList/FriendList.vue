@@ -26,7 +26,7 @@
 		    	</view>
 		    </view>
 		</view>
- <!--我的群聊-->
+ <!--好友列表-->
 		<view class="list">
 		    <block v-for="(item, index) in friengList" :key="index">
 				<view class="cell_divider" :id="item.letter">
@@ -45,14 +45,14 @@
 	
 	<view class="tui-indexed-list-bar" :style="{height:indexBarHeight+'px'}" @touchstart.stop="touchStart"
 	 @touchmove.stop="touchMove" @touchend.stop="touchEnd" @touchcancel.stop="touchCancel">
-		<view v-for="(items,index3) in lists" :key="index3" class="tui-indexed-list-text" :style="{height:indexBarItemHeight+'px'}">
+		<view v-for="(items,index3) in friengList" :key="index3" class="tui-indexed-list-text" :style="{height:indexBarItemHeight+'px'}">
 			{{items.letter}}
 		</view>
 	</view>
 	
-	
-	<view class="tui-indexed-list-alert" v-if="touchmove && lists[touchmoveIndex].letter">
-		<text>{{lists[touchmoveIndex].letter}}</text>
+	<!-- 左边字母被点击时，显示当前定位字母 -->
+	<view class="tui-indexed-list-alert" v-if="touchmove && friengList[touchmoveIndex].letter">
+		<text>{{friengList[touchmoveIndex].letter}}</text>
 	</view>	
 	
 	
@@ -73,72 +73,47 @@
 		},
 		data(){
 			return{
-				friengList:[],
-				userEn: null,
-                lists: [],
+				friengList:[],//好友列表数据，已经根据首字母分组
+				userEn: null,//用户个人信息
                 touchmove: false, // 是否在索引表上滑动
-                touchmoveIndex: -1,
+                touchmoveIndex: -1,//左边字母被点击时，当前定位字母index
                 titleHeight: 0, // A字距离窗口顶部的高度
                 indexBarHeight: 0, // 索引表高度
                 indexBarItemHeight: 0, // 索引表子项的高度
                 scrollViewId: '', // scroll-view滚动到的子元素的id
-                winHeight: 0
+                winHeight: 0	//窗口高度
 			}
 		},
 		onLoad() {
 			this.userEn = storage.getMyInfo();
 		},
+		//下拉刷新
 		onPullDownRefresh(){
-			this.friengList = [];
-			let data = {
-				account: this.userEn.account,
-				page: 1,
-				count: 20
-			};
-			this.reqFirendList(data);
-			const that = this;
-			setTimeout(() => {
-				uni.getSystemInfo({
-					success: function(res) {
-						let winHeight = res.windowHeight;  //获取设备的可使用窗口高度
-						let barHeight = winHeight - uni.upx2px(232); //uni.upx2px 尺寸单位转换方法
-						that.winHeight = winHeight;
-						that.indexBarHeight = barHeight;
-						that.indexBarItemHeight = barHeight / 25;
-						that.titleHeight = uni.upx2px(132);
-						that.lists = that.friengList;
-					}
-				})
-			}, 10)
+			this.reqFirendList();
 		},
 		onShow(){
-			let _this = this;
+			const _this = this;
 			this.friengList = [];
+			//先取本地数据
 			let friendList = storage.getFriendList();
-			if(util.isEmpty(friendList)){
-				let data = {
-					account: this.userEn.account,
-					page: 1,
-					count: 20
-				}
-				this.reqFirendList(data);
-			}else{
+			if(!util.isEmpty(friendList)){
 				friendList.forEach(function(e){
 					let fristKey = chinapy.makePy(e.friendNickTip);
 					_this.addFriend(fristKey, e);
 				});
 			}
-			const that = this;
+			//再到网络上取数据
+			this.reqFirendList();
+						
 			setTimeout(() => {
 				uni.getSystemInfo({
 					success: function(res) {
 						let winHeight = res.windowHeight;  //获取设备的可使用窗口高度
 						let barHeight = winHeight - uni.upx2px(232); //uni.upx2px 尺寸单位转换方法
-						that.winHeight = winHeight;
-						that.indexBarHeight = barHeight;
-						that.indexBarItemHeight = barHeight / 25;
-						that.titleHeight = uni.upx2px(132);
-						that.lists = that.friengList;
+						_this.winHeight = winHeight;
+						_this.indexBarHeight = barHeight;
+						_this.indexBarItemHeight = barHeight / 25;
+						_this.titleHeight = uni.upx2px(132);
 					}
 				})
 			}, 10)
@@ -169,7 +144,7 @@
 				this.touchmove = true
 				let pageY = e.touches[0].pageY   //记录点击的首字母的pageY值
 				let index = Math.floor((pageY - this.titleHeight) / this.indexBarItemHeight)
-				let item = this.lists[index]
+				let item = this.friengList[index]
 				if (item) {
 					this.scrollViewId = item.letter;
 					this.touchmoveIndex = index
@@ -178,7 +153,7 @@
 			touchMove(e) { //拖动首字母导航条时
 				let pageY = e.touches[0].pageY;
 				let index = Math.floor((pageY - this.titleHeight) / this.indexBarItemHeight)
-				let item = this.lists[index]
+				let item = this.friengList[index]
 				if (item) {
 					this.scrollViewId = item.letter;
 					this.touchmoveIndex = index
@@ -193,11 +168,17 @@
 				this.touchmoveIndex = -1
 			},
 			//获取好友列表
-			reqFirendList(data){
+			reqFirendList(){
+				let data = {
+					account: this.userEn.account,
+					page: 1,
+					count: 200
+				};
+				
 				let _this = this;
 				api.getFriendsByAccount(data, res=>{
 					let data = api.getData(res).data;
-					storage.setFriendList(data);
+					storage.setFriendList(data);//好友数据保存到本地
 					data.forEach(function(e){				
 						let fristKey = chinapy.makePy(e.friendNickTip);
 						_this.addFriend(fristKey, e);
@@ -205,6 +186,7 @@
 				});
 				uni.stopPullDownRefresh();
 			},
+			//自动把好友加到列表
 			addFriend(fristKey, value){
 				//如果首字母不存在就添加首字母+添加数据
 				if(!this.isFriendsHasKey(fristKey)){
@@ -212,7 +194,9 @@
 					this.friengList.push(arr);
 				} else{    //如果首字母存在则追加数据
 					let arr = this.getFriendsByKey(fristKey);
-					arr.push(value);
+					//如果好友不在列表就新增
+					if (!this.isFriendsHasUser(arr, value.friendAccount))
+						arr.push(value);
 				}
 			},
 			//根据首字母返回好友数组
@@ -225,11 +209,23 @@
 				}
 				return null;
 			},
-			//查询key是否存在
+			//查询首字母key是否存在
 			isFriendsHasKey(key){
 				for(let value of this.friengList)
 				{
 					if(value.letter === key){
+						return true;
+					}
+				}
+				return false;
+			},
+			//查询好友是否已经存在
+			isFriendsHasUser(list, friendAccount)
+			{
+				if (util.isEmpty(list)) return false;
+				for(let value of list)
+				{
+					if(value.friendAccount === friendAccount){
 						return true;
 					}
 				}
