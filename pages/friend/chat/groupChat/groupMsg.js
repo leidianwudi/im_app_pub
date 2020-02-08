@@ -48,9 +48,13 @@ module.exports = {
 		api.getGroupMsg(postData, (res) => {
 			let data = api.getPageList(res);
 			storage.getGroupMsg(this.groupId, data);	//保存群消息到本地
+			let msgNew = [];
 			data.forEach(function(item, index) {
-				_this.autoPushMsg(item, false); //自动添加聊天数据
+				item.msgType = _this.getMsgType(item.msg); //获取消息类型
+				item.msg = _this.getMsgData(item.msgType, item.msg); //获取消息内容
+				msgNew.unshift(item);//添加到前面
 			});
+			_this.ui.arrMsg = msgNew;//重新赋值
 			_this.ui.scrollToLast();
 		});
 	},
@@ -70,9 +74,11 @@ module.exports = {
 		api.sendMsgToGroup(postData, res => {
 			let code = api.getCode(res);
 			let data = api.getData(res);
-			if (code === 0) {} else {
+			if (code === 0) {
+				_this.autoPushMsg(data, true);//发送成功添加数据
+			} else {
 				let index = _this.getFirstCacheMsgIndex(_this.ui.arrMsg);
-				this.changeMsg(index, postData.msg, _this.ui.arrMsg, 2); //发送失败修改记录为失败状态
+				_this.changeMsg(index, postData.msg, _this.ui.arrMsg, 2); //发送失败修改记录为失败状态
 			}
 		})
 	},
