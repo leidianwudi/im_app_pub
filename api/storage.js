@@ -8,7 +8,9 @@ const lastMsgIndex 	= "lastMsgIndex"; 	//已读消息index
 const clientId 		= "clientId";  		//ws链接id
 const userInfo 		= "userInfo"; 		//账号密码的key
 const lastMsg       = "lastMsg";        //最后一条消息列表的key
-const friendList       = "friendList";        //好友列表的key
+const friendList    = "friendList";     //好友列表的key
+const friendMsg    	= "friendMsg";     	//好友消息的key
+const groupMsg    	= "groupMsg";     	//群消息的key
 //封装保存本地数据操作
 module.exports = {
 	//保存我的数据
@@ -75,7 +77,7 @@ module.exports = {
 	},
 	
 	// 保存好友列表
-	setFriendList: function(data) {
+	setFriendList(data) {
 		uni.setStorage({
 			key: friendList,
 			data: data
@@ -83,8 +85,34 @@ module.exports = {
 	},
 	
 	// 获取好友列表
-	getFriendList: function() {
+	getFriendList() {
 		return uni.getStorageSync(friendList);
+	},
+	
+	// 保存好友消息
+	setFriendMsg(friendAccount, data) {
+		uni.setStorage({
+			key: friendMsg + "_" + friendAccount,
+			data: data
+		})
+	},
+	
+	// 获取好友消息
+	getFriendMsg(friendAccount) {
+		return uni.getStorageSync(friendMsg + "_" + friendAccount);
+	},
+	
+	// 保存群消息
+	setGroupMsg(groupId, data) {
+		uni.setStorage({
+			key: groupMsg + "_" + groupId,
+			data: data
+		})
+	},
+	
+	// 获取群消息
+	getGroupMsg(groupId) {
+		return uni.getStorageSync(groupMsg + "_" + groupId);
 	},
 
 	//保存头像

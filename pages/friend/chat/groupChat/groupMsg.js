@@ -2,6 +2,7 @@ import util from '@/common/util.js';
 import tran from '@/common/tran.js';
 import api from '@/api/api.js';
 import time from '@/common/time.js';
+import storage from '@/api/storage.js';
 
 // 群消息操作
 module.exports = {
@@ -24,20 +25,29 @@ module.exports = {
 	},
 	//获取群的消息列表
 	getGroupMsg() {
-		let data = {
+		let data = storage.getGroupMsg(this.groupId);//群消息
+		if (!util.isEmpty(data))
+		{
+			for (let i = 0; i < data.length; ++i)
+			{
+				this.autoPushMsg(data[i], false); //自动添加聊天数据
+			}
+		}
+		this.getMsg();
+	},
+	//查询群消息
+	getMsg() {
+		let _this = this;
+		let postData = {
 			account: this.account,
 			groupId: this.groupId,
 			id: 1,
 			page: 1,
 			count: 15
 		}
-		this.getMsg(data);
-	},
-	//查询群消息
-	getMsg(postData) {
-		let _this = this;
 		api.getGroupMsg(postData, (res) => {
 			let data = api.getPageList(res);
+			storage.getGroupMsg(this.groupId, data);	//保存群消息到本地
 			data.forEach(function(item, index) {
 				_this.autoPushMsg(item, false); //自动添加聊天数据
 			});

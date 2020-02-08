@@ -452,7 +452,7 @@
 				}
 				this.isHistoryLoading = true;//参数作为进入请求标识，防止重复请求
 				this.scrollAnimation = false;//关闭滑动动画
-				let Viewid = groupMsg.arrMsg[0].id;//记住第一个信息ID
+				let Viewid = this.arrMsg[0].id;//记住第一个信息ID
 				let _this = this;
 				api.getGroupMsg({
 					id: 1,
