@@ -435,7 +435,7 @@ function mkRslt(arr) {
 	//arrRslt = arrRslt.toString().replace(/(^\s*)|(\s*$)/g,"");
 	// 去除所有空格
 	arrRslt = arrRslt.toString().replace(/\s+/g, "");
-	console.log(arrRslt);
+	//console.log(arrRslt);
 	return arrRslt;
 }
 //两端去空格函数
