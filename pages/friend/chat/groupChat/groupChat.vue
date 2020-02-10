@@ -102,14 +102,14 @@
 			</scroll-view>
 		</view>
         <!-- 抽屉 -->
-        <view class="popup-layer" :class="popupLayerClass" @touchstart.stop.prevent="discard">
+        <view class="popup-layer" :class="popupLayerClass" @tap.stop.prevent="discard">
         	<!-- 表情 --> 
-			<emoji :class="{hidden:hideEmoji}" @addEmoji="addEmoji"></emoji>
+			<emoji ref="emojiRef" :class="{hidden:hideEmoji}" @addEmoji="addEmoji"></emoji>
 			<view class="more-layer" :class="{hidden:hideMore}">
 				<view class="list">
-					<view class="box" @touchstart.stop="chooseImage"><view class="icon tupian2"></view></view>
-					<view class="box" @touchstart.stop="camera"><view class="icon paizhao"></view></view>
-					<!-- <view class="box" @touchstart.stop="handRedEnvelopes"><view class="icon hongbao"></view></view> -->
+					<view class="box" @tap.stop="chooseImage"><view class="icon tupian2"></view></view>
+					<view class="box" @tap.stop="camera"><view class="icon paizhao"></view></view>
+					<!-- <view class="box" @tap.stop="handRedEnvelopes"><view class="icon hongbao"></view></view> -->
 				</view>
 			</view>
         </view>
@@ -187,7 +187,7 @@
 			groupMsg.getGroupMsg();//获取群消息记录
 			api.groupIn({account: this.userEn.account, groupId: this.groupId});
 			this.getGroupInfo();
-			this.$store.state.ws.addLister(wsType.group_chat, this.onWebScoketGroupMsg.bind(this));	
+			this.$store.state.ws.addLister(wsType.group_chat, this.onWebScoketGroupMsg);	
 			
 			//语音自然播放结束
 			this.AUDIO.onEnded((res)=>{
@@ -202,10 +202,14 @@
 			this.RECORDER.onStop((e)=>{
 				this.recordEnd(e);
 			})
-			// #endif		
+			// #endif	
+				
+			setTimeout(() => {
+				this.$refs.emojiRef.initData();//延迟加载表情
+			}, 500);
 		},
 		onUnload() {
-			this.$store.state.ws.removeLister(wsType.group_chat, this.onWebScoketGroupMsg.bind(this));
+			this.$store.state.ws.removeLister(wsType.group_chat, this.onWebScoketGroupMsg);
 			lastMsg.lastMsgRead2(1, this.groupId);
 		},
 		methods: {
@@ -390,12 +394,17 @@
 			},
 			//滚动条自动滚动到最后一行
 			scrollToLast(){
+				//h5要下针执行
+				// #ifdef H5
 				this.$nextTick(function() {
+				// #endif
 					let i = this.arrMsg.length - 1;
 					if (i < 0) return;
 					// 滚动到底
 					this.scrollToView = 'msg' + this.arrMsg[i].id;
+				// #ifdef H5
 				});
+				// #endif
 			},
 			// 聊天图片宽高处理
 			setPicSize(content){
@@ -464,15 +473,13 @@
 					this.isHistoryLoading = false;
 					let newMsg = api.getPageList(res);
 					newMsg.forEach(function(item){	
-					   _this.autoPushGroupMsg(item, _this, false);
+					   groupMsg.autoPushMsg(item, false);
 					});					
 				});
 				//这段代码很重要，不然每次加载历史数据都会跳到顶部
 				this.$nextTick(function() {
 					this.scrollToView = 'msg'+Viewid;//跳转上次的第一行信息位置
-					this.$nextTick(function() {
-						this.scrollAnimation = true;//恢复滚动动画
-					});
+					this.scrollAnimation = true;//恢复滚动动画
 				});				
 			},
 			//点击群成员头像跳转至个人信息页面
@@ -488,7 +495,11 @@
 				console.log("onWebScoketGroupMsg:"+ tran.obj2Json(res));
 				this.scrollAnimation = true;  //开启滚动动画
 				groupMsg.autoPushMsg(res, true);
-				this.scrollToLast();
+				
+				//延迟100毫秒定位到最后一行，防止自己发消息后，还没定位到最后一行，消息临时id被改成正式id，导致定位错误
+				setTimeout(() => {
+					this.scrollToLast();
+				}, 100);
 			},
 			discard(){
 				return;

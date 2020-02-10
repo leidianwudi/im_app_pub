@@ -1,39 +1,6 @@
 <template>
 	<view class="content" @tap="hideDrawer" style="padding: 0rpx;padding-bottom: 100upx;box-sizing: border-box;background:#F1F2F7;">
-		<!-- 底部输入栏 -->
-		<view class="input-box" :class="popupLayerClass" @touchmove.stop.prevent="discard">
-			<!-- H5下不能录音，输入栏布局改动一下 -->
-			<!-- #ifndef H5 -->   <!-- 除了h5，其他平台都存在的代码 -->
-			<view class="voice">
-				<view class="icon" :class="isVoice?'jianpan':'yuyin'" @tap="switchVoice"></view>
-			</view>
-			<!-- #endif -->  <!-- 除了h5，其他平台都存在的代码 -->
-			<!-- #ifdef H5 -->
-			<view class="more" @tap.stop="showMore">
-				<view class="icon add"></view>
-			</view>
-			<!-- #endif -->
-			<view class="textbox">
-				<view class="voice-mode" :class="[isVoice?'':'hidden',recording?'recording':'']" @touchstart="voiceBegin" @touchmove.stop.prevent="voiceIng" @touchend="voiceEnd" @touchcancel="voiceCancel">{{voiceTis}}</view>
-				<view class="text-mode"  :class="isVoice?'hidden':''">
-					<view class="box">
-						<textarea auto-height="true" v-model="textMsg" @focus="textareaFocus"/>
-					</view>
-					<view class="em" @tap.stop="chooseEmoji">
-						<view class="icon biaoqing"></view>
-					</view>
-				</view>
-			</view>
-			<!-- #ifndef H5 -->
-			<view class="more"  @tap.stop="showMore">
-				<view class="icon add"></view>
-			</view>
-			<!-- #endif -->
-			<view class="send" :class="isVoice?'hidden':''" @tap="sendText">
-				<view class="btn">发送</view>
-			</view>
-		</view>
-		<!-- 底部输入栏 -->
+		
 		<!-- 录音UI效果 -->
 		<view class="record" :class="recording?'':'hidden'">
 			<view class="ing" :class="willStop?'hidden':''"><view class="icon luyin2" ></view></view>
@@ -75,7 +42,7 @@
 							<!-- 头像 -->
 							<image :src="userEn.head" class="tui-user-pic tui-left"></image>
 						</view>
-
+	
 						<view class="tui-chat-left" v-if="item.account != userEn.account">
 							<!-- 好友发送的消息 -->
 							<image :src="friendEn.friendHead" class="tui-user-pic tui-right" @tap="toFriendInfo(friendAccount)"></image>
@@ -96,21 +63,21 @@
 		<!-- 消息显示 -->
 		
 		<!-- 抽屉 -->
-        <view class="popup-layer" :class="popupLayerClass" @touchstart.stop.prevent="discard">
+        <view class="popup-layer" :class="popupLayerClass" @tap.stop.prevent="discard">
         	<!-- 表情 --> 
-<!--        	<swiper class="emoji-swiper" :class="{hidden:hideEmoji}" indicator-dots="true" duration="150">
+<!--       	<swiper class="emoji-swiper" :class="{hidden:hideEmoji}" indicator-dots="true" duration="150">
         		<swiper-item v-for="(page,pid) in emojiList" :key="pid">
-        			<view v-for="(em,eid) in page" :key="eid" @touchstart="addEmoji(em)">
+        			<view v-for="(em,eid) in page" :key="eid" @tap="addEmoji(em)">
         				<image mode="widthFix" :src="'/static/img/emoji/'+em.url"></image>
         			</view>
         		</swiper-item>
         	</swiper> -->
-			<emoji :class="{hidden:hideEmoji}" @addEmoji="addEmoji"></emoji>
+			<emoji ref="emojiRef" :class="{hidden:hideEmoji}" @addEmoji="addEmoji"></emoji>
 			<view class="more-layer" :class="{hidden:hideMore}">
 				<view class="list">
-					<view class="box" @touchstart.stop="chooseImage"><view class="icon tupian2"></view></view>
-					<view class="box" @touchstart.stop="camera"><view class="icon paizhao"></view></view>
-					<!-- <view class="box" @touchstart.stop="handRedEnvelopes"><view class="icon hongbao"></view></view> -->
+					<view class="box" @tap="chooseImage"><view class="icon tupian2"></view></view>
+					<view class="box" @tap="camera"><view class="icon paizhao"></view></view>
+					<!-- <view class="box" @tap.stop="handRedEnvelopes"><view class="icon hongbao"></view></view> -->
 				</view>
 			</view>
         </view>
@@ -138,6 +105,40 @@
 				</view>
 			</view>
 		</view> -->
+		<!-- 底部输入栏 -->
+		<view class="input-box" :class="popupLayerClass" @touchmove.stop.prevent="discard">
+			<!-- H5下不能录音，输入栏布局改动一下 -->
+			<!-- #ifndef H5 -->   <!-- 除了h5，其他平台都存在的代码 -->
+			<view class="voice">
+				<view class="icon" :class="isVoice?'jianpan':'yuyin'" @tap="switchVoice"></view>
+			</view>
+			<!-- #endif -->  <!-- 除了h5，其他平台都存在的代码 -->
+			<!-- #ifdef H5 -->
+			<view class="more" @tap.stop="showMore">
+				<view class="icon add"></view>
+			</view>
+			<!-- #endif -->
+			<view class="textbox">
+				<view class="voice-mode" :class="[isVoice?'':'hidden',recording?'recording':'']" @touchstart="voiceBegin" @touchmove.stop.prevent="voiceIng" @touchend="voiceEnd" @touchcancel="voiceCancel">{{voiceTis}}</view>
+				<view class="text-mode"  :class="isVoice?'hidden':''">
+					<view class="box">
+						<textarea auto-height="true" v-model="textMsg" @focus="textareaFocus"/>
+					</view>
+					<view class="em" @tap.stop="chooseEmoji">
+						<view class="icon biaoqing"></view>
+					</view>
+				</view>
+			</view>
+			<!-- #ifndef H5 -->
+			<view class="more"  @tap.stop="showMore">
+				<view class="icon add"></view>
+			</view>
+			<!-- #endif -->
+			<view class="send" :class="isVoice?'hidden':''" @tap="sendText">
+				<view class="btn">发送</view>
+			</view>
+		</view>
+		<!-- 底部输入栏 -->
 	</view>
 </template>
 
@@ -176,7 +177,7 @@ export default {
 				
 				scrollAnimation: false,
 				isHistoryLoading: false,
-				page: 1,
+				page: 1,//当前第1页
 				hideMore:true   	,// more参数
 				emojiList: em.emojiList,
 				
@@ -201,12 +202,13 @@ export default {
 			}
 		},
 		onLoad(res) {
+			this.page = 1;
 			this.userEn = storage.getMyInfo();
 			this.friendAccount = res.friendAccount; //获取好友账号
 			friendMsg.init(this, this.userEn.account, this.friendAccount); //初始化好友消息数据
 			this.getFriendInfo(this.userEn.account, this.friendAccount); //查询特定好友详细信息
 			friendMsg.getMsgList(); //获取与好友的消息记录
-			this.$store.state.ws.addLister(wsType.friend_chat, this.onWebScoketMsg.bind(this));
+			this.$store.state.ws.addLister(wsType.friend_chat, this.onWebScoketMsg);
 			//语音自然播放结束
 			this.AUDIO.onEnded((res)=>{
 				this.playMsgid=null;
@@ -221,9 +223,13 @@ export default {
 				this.recordEnd(e);
 			})
 			// #endif
+			
+			setTimeout(() => {
+				this.$refs.emojiRef.initData();//延迟加载表情
+			}, 500);			
 		},
 		onUnload() {
-			this.$store.state.ws.removeLister(wsType.friend_chat, this.onWebScoketMsg.bind(this));
+			this.$store.state.ws.removeLister(wsType.friend_chat, this.onWebScoketMsg);
 			lastMsg.lastMsgRead2(0, this.friendAccount);
 		},
 		methods: {
@@ -405,12 +411,19 @@ export default {
 			},
 			//滚动条自动滚动到最后一行
 			scrollToLast(){
+				//h5要下针执行
+				// #ifdef H5
 				this.$nextTick(function() {
+				// #endif
+				
 					let i = this.arrMsg.length - 1;
 					if (i < 0) return;
 					// 滚动到底
 					this.scrollToView = 'msg' + this.arrMsg[i].id;
+					
+				// #ifdef H5
 				});
+				// #endif
 			},
 			// 发送图片消息
 			sendImgUrl(imgInfo){
@@ -434,6 +447,7 @@ export default {
 			},
 			// 选择表情
 			chooseEmoji(){
+				console.log("chooseEmoji:" + this.hideMore);
 				this.hideMore = true;
 				if(this.hideEmoji){
 					this.hideEmoji = false;
@@ -444,6 +458,7 @@ export default {
 			},
 			//添加表情
 			addEmoji(em){
+				console.log("sssssssssss");
 				this.textMsg+=em.alt;
 			},
 			// 打开抽屉
@@ -452,6 +467,7 @@ export default {
 			},
 			// 隐藏抽屉
 			hideDrawer(){
+				console.log("hideDrawer");
 				this.popupLayerClass = '';
 				setTimeout(()=>{
 					this.hideMore = true;
@@ -463,9 +479,9 @@ export default {
 				if(this.isHistoryLoading){
 					return ;
 				}
-				this.isHistoryLoading = true;//参数作为进入请求标识，防止重复请求
+				this.isHistoryLoading = true;//参数作为进入请求标识，防止重复请求	
 				this.scrollAnimation = false;//关闭滑动动画
-				let Viewid = this.arrMsg[0].id;//记住第一个信息ID
+				let Viewid = this.arrMsg[0].id;//记住第一个信息ID				
 				let _this = this;
 				api.getFriendMsg({
 					account: _this.userEn.account,
@@ -473,20 +489,18 @@ export default {
 					id: 1,
 					page: ++_this.page,
 					count: 15
-				}, res=>{
-					this.isHistoryLoading = false;
+				}, res=>{				
+					this.isHistoryLoading = false;					
 					let newMsg = api.getPageList(res);
 					newMsg.forEach(function(item){	
 					   friendMsg.autoPushMsg(item, false);
 					});					
-				});
+				});	
 				//这段代码很重要，不然每次加载历史数据都会跳到顶部
-				this.$nextTick(function() {
+				this.$nextTick(function() {						
 					this.scrollToView = 'msg'+Viewid;//跳转上次的第一行信息位置
-					this.$nextTick(function() {
-						this.scrollAnimation = true;//恢复滚动动画
-					});
-				});				
+					this.scrollAnimation = true;//恢复滚动动画			
+				});
 			},
 			//获取好友详细信息
 			getFriendInfo(account, friendAccount) {
@@ -510,7 +524,11 @@ export default {
 				this.scrollAnimation = true;  //开启滑动动画
 				console.log("onWebScoketMsg:"+ tran.obj2Json(res));
 				friendMsg.autoPushMsg(res, true);
-                this.scrollToLast();
+
+				//延迟100毫秒定位到最后一行，防止自己发消息后，还没定位到最后一行，消息临时id被改成正式id，导致定位错误
+				setTimeout(() => {
+					this.scrollToLast();
+				}, 100);
 			},
 			discard(){
 				return;

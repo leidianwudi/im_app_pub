@@ -27,14 +27,12 @@ module.exports = {
 	//获取和好友的消息列表
 	getMsgList() {		
 		let data = storage.getFriendMsg(this.friendAccount);//好友消息
-		if (!util.isEmpty(data))
+		if (!util.isEmpty(data)) 
 		{
-			for (let i = 0; i < data.length; ++i)
-			{
-				this.autoPushMsg(data[i], false); //自动添加聊天数据
-			}
+			this.ui.arrMsg = data;//赋值
+			this.ui.scrollToLast();
 		}
-		this.getMsg();
+		this.getMsg();//查找新数据
 	},
 	//查询消息
 	getMsg() {
@@ -47,16 +45,16 @@ module.exports = {
 		}
 		let _this = this;
 		api.getFriendMsg(postData, (res) => {
-			let data = api.getPageList(res);
-			storage.setFriendMsg(this.friendAccount, data);	//保存好友消息到本地
+			let data = api.getPageList(res);			
 			let msgNew = [];
 			data.forEach(function(item, index) {
 				item.msgType = _this.getMsgType(item.msg); //获取消息类型
 				item.msg = _this.getMsgData(item.msgType, item.msg); //获取消息内容
 				msgNew.unshift(item);//添加到前面	
 			});			
-			_this.ui.arrMsg = msgNew;//重新赋值
-			_this.ui.scrollToLast();
+			this.ui.arrMsg = msgNew;//重新赋值			
+			storage.setFriendMsg(this.friendAccount, msgNew);	//保存好友消息到本地
+			this.ui.scrollToLast();					
 		});
 	},	
 

@@ -42,6 +42,7 @@ module.exports = {
 		let _this = this;
 		api.getLastMsgByAccount(postData, res=>{
 			let data = api.getData(res).data;
+			if (util.isEmpty()) return;
 			let resData = [];
 			data.forEach(function(item){
 				if (item.msg.indexOf("[img]") != -1) item.msg = "[图片]";  //最后一条消息是图片消息，改变消息显示为[图片]
@@ -63,10 +64,10 @@ module.exports = {
 	//刷新ui数据
 	refreshLastMsg(){
 		let msg = storage.getLastMsgIndex();
-		console.log(msg);
+		//console.log(msg);
 		if(util.isEmpty(msg)) return;		
 		if(util.isEmpty(this.ui)) return;
-		console.log(this.ui.list);
+		//console.log(this.ui.list);
 		this.ui.list = [];  //删除旧数据
 		//关闭下拉刷新动画
 		uni.stopPullDownRefresh();	

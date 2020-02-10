@@ -27,13 +27,11 @@ module.exports = {
 	getGroupMsg() {
 		let data = storage.getGroupMsg(this.groupId);//群消息
 		if (!util.isEmpty(data))
-		{
-			for (let i = 0; i < data.length; ++i)
-			{
-				this.autoPushMsg(data[i], false); //自动添加聊天数据
-			}
-		}
-		this.getMsg();
+		 {
+			this.ui.arrMsg = data;//赋值
+			 _this.ui.scrollToLast();
+		 }
+		this.getMsg();//查找新数据
 	},
 	//查询群消息
 	getMsg() {
@@ -46,17 +44,17 @@ module.exports = {
 			count: 15
 		}
 		api.getGroupMsg(postData, (res) => {
-			let data = api.getPageList(res);
-			storage.getGroupMsg(this.groupId, data);	//保存群消息到本地
+			let data = api.getPageList(res);			
 			let msgNew = [];
 			data.forEach(function(item, index) {
 				item.msgType = _this.getMsgType(item.msg); //获取消息类型
 				item.msg = _this.getMsgData(item.msgType, item.msg); //获取消息内容
 				msgNew.unshift(item);//添加到前面
 			});
-			_this.ui.arrMsg = msgNew;//重新赋值
-			_this.ui.scrollToLast();
-		});
+			this.ui.arrMsg = msgNew;//重新赋值			
+			storage.getGroupMsg(this.groupId, data);	//保存群消息到本地
+			this.ui.scrollToLast();
+		} );
 	},
 
 	//发送群文本信息

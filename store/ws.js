@@ -127,24 +127,29 @@ export default {
 
 	//添加监听
 	addLister(type, func) {
-		//console.log("监听" + type + "_" + func)
+		//console.log("开始添加监听" + type + "_" + func)
 		if (this.mapFun.has(type)) {
-			this.mapFun.get(type).push(func); //添加到数组最后
-			
+			this.mapFun.get(type).push(func); //添加到数组最后			
 		} else {
 			this.mapFun.set(type, [func]); //添加第一个数据
 		}
+		//console.log("监听已经添加:" + this.mapFun.get(type));
 	},
 
 	//删除监听
 	removeLister(type, func) {
 		if (!this.mapFun.has(type)) return;
 
-		//console.log("删除监听" + type + "_" + func)
+		//console.log("开始删除监听" + type + "_" + func)
 		let arr = this.mapFun.get(type); //回调函数数组
 		for (let i = 0; i < arr.length; ++i) {
-			if (arr[i] === func) {
-				this.mapFun.set(type, arr.splice(i, 1)); //把值删除
+			console.log("比较:" + arr[i] + "和" + func)
+			if (this.mapFun.get(type)[i] === func) {
+				console.log("监听已经删除" + arr);
+				arr.splice(i, 1);//把值删除
+				//console.log("监听已经删除" + arr);
+				//console.log(this.mapFun.get(type));
+				//this.mapFun.set(type, arr); //赋值
 				return;
 			}
 		}
