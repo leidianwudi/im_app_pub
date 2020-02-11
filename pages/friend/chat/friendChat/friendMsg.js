@@ -43,13 +43,12 @@ module.exports = {
 			page: 1,
 			count: 15
 		}
-		let _this = this;
 		api.getFriendMsg(postData, (res) => {
 			let data = api.getPageList(res);			
 			let msgNew = [];
-			data.forEach(function(item, index) {
-				item.msgType = _this.getMsgType(item.msg); //获取消息类型
-				item.msg = _this.getMsgData(item.msgType, item.msg); //获取消息内容
+			data.forEach((item, index) => {
+				item.msgType = this.getMsgType(item.msg); //获取消息类型
+				item.msg = this.getMsgData(item.msgType, item.msg); //获取消息内容
 				msgNew.unshift(item);//添加到前面	
 			});			
 			this.ui.arrMsg = msgNew;//重新赋值			
@@ -70,15 +69,14 @@ module.exports = {
 	},
 	//发送消息
 	send(postData) {
-		let _this = this;
 		api.sendMsgToFriend(postData, res => {
 			let code = api.getCode(res);
 			let data = api.getData(res);
 			if (code === 0) {
-				_this.autoPushMsg(data, true);//发送成功添加数据
+				this.autoPushMsg(data, true);//发送成功添加数据
 			} else {
 				let index = _this.getFirstCacheMsgIndex(_this.ui.arrMsg);
-				_this.changeMsg(index, postData.msg, _this.ui.arrMsg, 2); //发送失败修改记录为失败状态
+				this.changeMsg(index, postData.msg, _this.ui.arrMsg, 2); //发送失败修改记录为失败状态
 			}
 		})
 	},
