@@ -119,7 +119,7 @@
 				let data = {
 					account: this.userEn.account,
 					page: 1,
-					count: 20
+					count: 99
 				}
 				this.reqFirendList(data);
 			}else{
