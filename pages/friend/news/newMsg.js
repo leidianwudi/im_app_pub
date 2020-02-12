@@ -23,7 +23,7 @@ module.exports = {
 	},
 	
 	//关闭ui
-	closeUi(){
+	closeUi(){		
 		this.ui = null; //ui赋值为空
 	},
 	
@@ -39,15 +39,15 @@ module.exports = {
 	
     //获取消息并保存到本地
 	_getLastMsgByAccount(postData){
-		let _this = this;
+		//let _this = this;
 		api.getLastMsgByAccount(postData, res=>{
 			let data = api.getData(res).data;
 			if (util.isEmpty()) return;
 			let resData = [];
-			data.forEach(function(item){
+			data.forEach((item)=>{
 				if (item.msg.indexOf("[img]") != -1) item.msg = "[图片]";  //最后一条消息是图片消息，改变消息显示为[图片]
 				if (item.msg.indexOf("[voice]") != -1) item.msg = "[语音]";  //最后一条消息是图片消息，改变消息显示为[图片]						
-				lastMsg.countMsg(item, _this.account);	//设置未读消息数据					
+				lastMsg.countMsg(item, this.account);	//设置未读消息数据					
 				//添加时间
 				let timer = item.updTime.split(" ");
 				timer = timer[1].slice(0, timer.length-5)
@@ -55,9 +55,9 @@ module.exports = {
 				// 添加数据
 				resData.push(item);
 			});
-			
-			//保存到本地,保存后执行_refreshLastMsg函数
-			storage.setLastMsgIndex(resData, _this.refreshLastMsg.bind(_this));		
+			this.ui.list = resData;  //赋值数据
+			//保存到本地
+			storage.setLastMsgIndex(resData);		
 		});
 	},
 	
@@ -68,12 +68,10 @@ module.exports = {
 		if(util.isEmpty(msg)) return;		
 		if(util.isEmpty(this.ui)) return;
 		//console.log(this.ui.list);
-		this.ui.list = [];  //删除旧数据
+		
 		//关闭下拉刷新动画
-		uni.stopPullDownRefresh();	
-		for(let i = 0; i < msg.length; ++i){
-			this.ui.list.push(msg[i]);  //添加数据
-		}
+		uni.stopPullDownRefresh();			
+		this.ui.list = msg;  //赋值数据
 	},
 	//监听好友消息
 	onWebScoketMsg(res) {

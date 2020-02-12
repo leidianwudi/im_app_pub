@@ -208,7 +208,7 @@ export default {
 			friendMsg.init(this, this.userEn.account, this.friendAccount); //初始化好友消息数据
 			this.getFriendInfo(this.userEn.account, this.friendAccount); //查询特定好友详细信息
 			friendMsg.getMsgList(); //获取与好友的消息记录
-			this.$store.state.ws.addLister(wsType.friend_chat, this.onWebScoketMsg);
+			this.$store.state.ws.addLister(wsType.friend_chat, this.onWebScoketMsg.bind(this));
 			//语音自然播放结束
 			this.AUDIO.onEnded((res)=>{
 				this.playMsgid=null;
@@ -229,7 +229,7 @@ export default {
 			}, 500);			
 		},
 		onUnload() {
-			this.$store.state.ws.removeLister(wsType.friend_chat, this.onWebScoketMsg);
+			this.$store.state.ws.removeLister(wsType.friend_chat, this.onWebScoketMsg.bind(this));
 			lastMsg.lastMsgRead2(0, this.friendAccount);
 		},
 		methods: {
