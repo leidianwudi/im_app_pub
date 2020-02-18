@@ -55,6 +55,8 @@ module.exports = {
 				// 添加数据
 				resData.push(item);
 			});
+			//关闭下拉刷新动画
+			uni.stopPullDownRefresh();	
 			this.ui.list = resData;  //赋值数据
 			//保存到本地
 			storage.setLastMsgIndex(resData);		

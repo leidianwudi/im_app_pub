@@ -144,7 +144,7 @@ export default {
 		let arr = this.mapFun.get(type); //回调函数数组
 		for (let i = 0; i < arr.length; ++i) {
 			console.log("比较:" + arr[i] + "和" + func)
-			if (this.mapFun.get(type)[i] === func) {
+			if (arr[i] === func) {
 				console.log("监听已经删除" + arr);
 				arr.splice(i, 1);//把值删除
 				//console.log("监听已经删除" + arr);

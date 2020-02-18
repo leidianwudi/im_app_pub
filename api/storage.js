@@ -63,7 +63,7 @@ module.exports = {
 
 
 	// 保存最后一条聊天记录
-	setLastMsgIndex: function(data, fun) {
+	setLastMsgIndex: function(data, fun = null) {
 		uni.setStorage({
 			key: lastMsg,
 			data: data,
