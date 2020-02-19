@@ -21,7 +21,7 @@
 			<view class="func_box" @tap="toSetUp">
                 <view class="">
                 	<text class="iconfont myIcon">&#xe608;</text>
-                	<text class="func_test">设置</text>
+                	<text class="func_test">消息设置</text>
                 </view>
 				<view class="">
 					<micon type="arrowright" size=18></micon>
