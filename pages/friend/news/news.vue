@@ -3,7 +3,7 @@
 	    <block v-for="(item, index) in list" :key="index">
 			<listcell :last="true" class="row"  @tap="onChat(item.type, item.friendAccount, item.groupId)">
 				<view class="news_left">
-					<image :src="item.type === 1 ? '/static/img/1.png' :item.img" mode="widthFix" class="user_img"></image>  <!-- 好友的头像 -->
+					<image :src="item.type === 1 ? '/static/img/1.png' :item.img" class="user_img"></image>  <!-- 好友的头像 -->
 					<view class="news_info">
 						<view class="name">{{item.title}}</view>  <!-- 好友昵称 -->	
 						<rich-text class="msg" :nodes="item.msg"></rich-text><!-- 好友发送的消息 -->

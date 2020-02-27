@@ -5,9 +5,9 @@
 		</view> -->
 <!--搜索框-->
 	<scroll-view scroll-y :scroll-into-view="scrollViewId" :show-scrollbar='false' :style="{height:scrollHeight + 'px'}">
-		<view class="cell_divider createG" @tap="myGroup">
+		<view class="cell_divider createG" @tap="myGroup" style="margin-top: 10px;">
 	        <view>
-	        	<view class="myGroup" style="margin-top: 10px;">
+	        	<view class="myGroup">
                     <view class="adduser_img">
                     	<image src="/static/img/group.png" mode="widthFix"></image>
                     </view>
