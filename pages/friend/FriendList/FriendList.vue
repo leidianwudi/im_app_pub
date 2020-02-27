@@ -1,13 +1,13 @@
 <template>
-	<view class="tui-page content" style="padding-right: 0;">
+	<view class="uni-page content" style="padding-right: 0;padding-top: 0;padding-bottom: 0px;">
 <!-- 		<view class="searchbox">
 			<input class="search_input" @tap="search" placeholder="搜索"></input>
 		</view> -->
 <!--搜索框-->
-	<scroll-view scroll-y :scroll-into-view="scrollViewId" :show-scrollbar='false' :style="{height:winHeight + 'px'}">
+	<scroll-view scroll-y :scroll-into-view="scrollViewId" :show-scrollbar='false' :style="{height:scrollHeight + 'px'}">
 		<view class="cell_divider createG" @tap="myGroup">
 	        <view>
-	        	<view class="myGroup">
+	        	<view class="myGroup" style="margin-top: 10px;">
                     <view class="adduser_img">
                     	<image src="/static/img/group.png" mode="widthFix"></image>
                     </view>
@@ -81,7 +81,7 @@
                 indexBarHeight: 0, // 索引表高度
                 indexBarItemHeight: 0, // 索引表子项的高度
                 scrollViewId: '', // scroll-view滚动到的子元素的id
-                winHeight: 0	//窗口高度
+                scrollHeight: 0	//滚动窗口高度
 			}
 		},
 		onLoad() {
@@ -110,9 +110,9 @@
 					success: function(res) {
 						let winHeight = res.windowHeight;  //获取设备的可使用窗口高度
 						let barHeight = winHeight - uni.upx2px(232); //uni.upx2px 尺寸单位转换方法
-						_this.winHeight = winHeight;
-						_this.indexBarHeight = barHeight;
-						_this.indexBarItemHeight = barHeight / 25;
+						_this.scrollHeight = winHeight;	//滚动窗口高度为窗口高度减20
+						_this.indexBarHeight = barHeight; //索引表高度
+						_this.indexBarItemHeight = barHeight / 25;//索引表子项的高度
 						_this.titleHeight = uni.upx2px(132);
 					}
 				})

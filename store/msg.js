@@ -4,6 +4,7 @@ export default {
 	mapFirstMsg: new Map(),	//好友聊天数据
 	mapGroupMsg: new Map(),	//群聊天数据 
 	
+	
 	//取好友消息
 	getFriendMsg(friendAccount)
 	{
