@@ -20,47 +20,91 @@
 							<view class="rect5"></view>
 						</view>
 				 </view>
+				 <checkbox-group>
 					<view class="tui-chat-content" v-for="(item, index) in arrMsg" :key="index" :id="'msg'+item.id">
-						<view class="tui-chat-center" v-if="item.addTime">{{item.addTime}}</view>
-						<view class="tui-chat-right" v-if="item.account == userEn.account">
-							<!-- 我发送的消息 -->
-							<view class="fail_box" v-if="item.change === 2"> <!-- 消息发送失败 -->
-								<image src="/static/img/fail.png" mode="widthFix"></image>
+							<view class="tui-chat-center" v-if="item.addTime">{{item.addTime}}</view>
+							<view class="tui-chat-right" v-if="item.account == userEn.account"  @longpress="logoTime(item)">
+								<label v-if="select">
+								    <checkbox />
+								</label>
+								<view class="function" v-if="item.id == selectId">
+									<view class="function_line" @tap="copy(item.msg)" v-if="isTest">复制</view>
+									<view class="function_line" @tap="retransmission(item.msg)">转发</view>
+									<view class="function_line">撤回</view>
+									<view class="function_line" @tap="selectDel">多选</view>
+									<view class="" @tap="delMsg(item)">删除</view>
+								</view>
+								<view class="function_arrow" v-if="item.id == selectId"></view>
+								<!-- 我发送的消息 -->
+								<view class="fail_box" v-if="item.change === 2"> <!-- 消息发送失败 -->
+									<image src="/static/img/fail.png" mode="widthFix"></image>
+								</view>
+								<tui-loadmore :visible="true" v-if="item.change === 1" :index="2"></tui-loadmore>  <!-- 消息发送中 -->
+								<!-- 普通文字内容 -->
+								<rich-text v-if="item.msgType === 0" class="tui-chatbox tui-chatbox-right" :nodes="item.msg" style="word-break : break-all;"></rich-text>
+								<!-- 我发送的图片 -->
+								<view class="tui-chat-right" v-if="item.msgType === 1" @tap="revise(item.msg.url)">								
+									<image :src="item.msg.url" mode="" :style="{'width': item.msg.w+'px','height': item.msg.h+'px'}"></image>
+								</view>
+								<!-- 我发送的语音 -->
+								<view v-if="item.msgType === 2" class="tui-chat-right bubble voice" @tap="playVoice(item.msg)" :class="playMsgid == item.msg.id?'play':''">
+									<view class="icon my-voice"></view>
+									<view class="length">{{item.msg.length}}</view>
+								</view>							
+								<!-- 头像 -->
+								<image :src="userEn.head" class="tui-user-pic tui-left"></image>
 							</view>
-							<tui-loadmore :visible="true" v-if="item.change === 1" :index="2"></tui-loadmore>  <!-- 消息发送中 -->
-							<!-- 普通文字内容 -->
-							<rich-text v-if="item.msgType === 0" class="tui-chatbox tui-chatbox-right" :nodes="item.msg" style="word-break : break-all;"></rich-text>
-							<!-- 我发送的图片 -->
-							<view class="tui-chat-right" v-if="item.msgType === 1" @tap="revise(item.msg.url)">								
-								<image :src="item.msg.url" mode="" :style="{'width': item.msg.w+'px','height': item.msg.h+'px'}"></image>
-							</view>
-							<!-- 我发送的语音 -->
-							<view v-if="item.msgType === 2" class="tui-chat-right bubble voice" @tap="playVoice(item.msg)" :class="playMsgid == item.msg.id?'play':''">
-								<view class="icon my-voice"></view>
-								<view class="length">{{item.msg.length}}</view>
-							</view>							
-							<!-- 头像 -->
-							<image :src="userEn.head" class="tui-user-pic tui-left"></image>
-						</view>
-	
-						<view class="tui-chat-left" v-if="item.account != userEn.account">
-							<!-- 好友发送的消息 -->
-							<image :src="friendEn.friendHead" class="tui-user-pic tui-right" @tap="toFriendInfo(friendAccount)"></image>
-							<rich-text v-if="item.msgType === 0" class="tui-chatbox tui-chatbox-left rich_text" :nodes="item.msg" style="word-break : break-all;"></rich-text>
-							<view class="tui-chat-left-image" v-if="item.msgType === 1" @tap="revise(item.msg.url)">
-								<!-- 好友发送的图片 -->
-								<image :src="item.msg.url" mode="" :style="{'width': item.msg.w+'px','height': item.msg.h+'px'}"></image>
-							</view>	
-							<!-- 好友发送的语音 -->
-							<view v-if="item.msgType === 2" class="tui-chat-right bubble voice" @tap="playVoice(item.msg)" :class="playMsgid == item.msg.id?'play':''">
-								<view class="length">{{item.msg.length}}</view>
-								<view class="icon other-voice"></view>
-							</view>					
-						</view>
+								
+							<view class="tui-chat-left" v-if="item.account != userEn.account" @longpress="logoTime(item)">
+								<label v-if="select">
+								    <checkbox />
+								</label>
+								<view class="function" v-if="item.id == selectId">
+									<view class="function_line" @tap="copy(item.msg)" v-if="isTest">复制</view>
+									<view class="function_line" @tap="retransmission(item.msg)">转发</view>
+									<view class="function_line">撤回</view>
+									<view class="function_line" @tap="selectDel">多选</view>
+									<view class="" @tap="delMsg(item)">删除</view>
+								</view>
+								<view class="function_arrow left_arrow" v-if="item.id == selectId"></view>
+								<!-- 好友发送的消息 -->
+								<image :src="friendEn.friendHead" class="tui-user-pic tui-right" @tap="toFriendInfo(friendAccount)"></image>
+								<rich-text v-if="item.msgType === 0" class="tui-chatbox tui-chatbox-left rich_text" :nodes="item.msg" style="word-break : break-all;"></rich-text>
+								<view class="tui-chat-left-image" v-if="item.msgType === 1" @tap="revise(item.msg.url)">
+									<!-- 好友发送的图片 -->
+									<image :src="item.msg.url" mode="" :style="{'width': item.msg.w+'px','height': item.msg.h+'px'}"></image>
+								</view>	
+								<!-- 好友发送的语音 -->
+								<view v-if="item.msgType === 2" class="tui-chat-right bubble voice" @tap="playVoice(item.msg)" :class="playMsgid == item.msg.id?'play':''">
+									<view class="length">{{item.msg.length}}</view>
+									<view class="icon other-voice"></view>
+								</view>					
+							</view>										
 					</view>
+				</checkbox-group>
 			</scroll-view>
 		</view>
 		<!-- 消息显示 -->
+		
+		<!-- 删除消息提示框 -->
+		<modal :show="modal9" @cancel="hide9" :custom="true" :fadein="true">
+			<view class="modal_custom">
+				<view class="prompt_title">你确定要删除消息吗？</view>
+				<view class="uni-padding-wrap radio_box">
+					<label class="radio"><radio value="r1" :checked="delFriendMsg" @tap="isChecked" />是否同时删除对方的消息？</label>
+				</view>
+				<view class="button_box">
+					<button @tap="hide9">取消</button>
+					<button @tap="hide9">确定</button>
+				</view>
+			</view>
+		</modal>
+		
+		<!-- 多选删除底部的删除键 -->
+		<view class="del_button" v-if="select">
+			<button type="primary"  @tap="delMsg">删除</button>
+			<button type="primary" @tap="cancelDel">取消</button>
+		</view>
 		
 		<!-- 抽屉 -->
         <view class="popup-layer" :class="popupLayerClass" @tap.stop.prevent="discard">
@@ -156,13 +200,15 @@ import tuiLoadmore from "@/components/loadmore/loadmore";
 import config from "@/static/app/config";
 import friendMsg from '@/pages/friend/chat/friendChat/friendMsg.js';
 import emojiStr from '@/common/emojiStr.js';
+import modal from "@/components/modal/modal";
 
 export default {
 	
 		components: {
 			tuiIcon,
 			emoji,
-			tuiLoadmore
+			tuiLoadmore,
+			modal
 		},
 		data() {
 			return {
@@ -174,6 +220,11 @@ export default {
 				scrollToView: '', //滚动列表位置
 				popupLayerClass:'', 	// 抽屉参数
 				hideEmoji:true, 		//表情定义
+				selectId: 0,  //控制长按出现功能选择栏
+				isTest: true,  //控制选择栏里是否有复制功能
+				modal9: false,			//控制添加好友时的验证信息弹窗
+				delFriendMsg: false,   //控制删除单选框
+				select: false,  //控制删除多选框显示
 				
 				scrollAnimation: false,
 				isHistoryLoading: false,
@@ -233,6 +284,49 @@ export default {
 			lastMsg.lastMsgRead2(0, this.friendAccount);
 		},
 		methods: {
+			//取消多选删除按钮
+			cancelDel(){
+				this.select = false;				
+			},
+			//多选删除按钮
+			selectDel(){
+				this.select = true;
+			},
+			//单选转发跳转到转发界面
+			retransmission(msg){
+				let testMsg = msg.slice(5);
+				testMsg = testMsg.substring(0,testMsg.length - 6); // 提取文字信息
+				uni.navigateTo({
+					url: "/pages/friend/retransmission/retransmission?msg=" + testMsg
+				})
+			},
+			//控制删除功能弹窗的勾选框
+			isChecked(){
+				this.delFriendMsg = this.delFriendMsg == false ? true : false;
+			},
+			//关闭删除功能弹窗
+			hide9() {
+				this.modal9 = false
+			},
+			//删除功能
+			delMsg(item){
+				this.modal9 = true;
+			},
+			//复制功能
+			copy(msg){
+                let testMsg = msg.slice(5);
+				testMsg = testMsg.substring(0,testMsg.length - 6); // 提取文字信息
+				// console.log(testMsg);
+				uni.setClipboardData({    //复制文字信息
+				    data: testMsg,
+				});
+			},
+			//长按打开功能菜单
+			logoTime(item){
+				console.log(item);
+				this.isTest = item.msgType == 0 ? true : false;  //判断长按消息的类型 只有文字消息才显示复制
+				this.selectId = item.id;
+			},
 			// 播放语音
 			playVoice(msg){
 				this.playMsgid=msg.id;
@@ -465,9 +559,9 @@ export default {
 			openDrawer(){
 				this.popupLayerClass = 'showLayer';
 			},
-			// 隐藏抽屉
+			// 隐藏抽屉(点击页面空白地方)
 			hideDrawer(){
-				console.log("hideDrawer");
+				this.selectId = 0;
 				this.popupLayerClass = '';
 				setTimeout(()=>{
 					this.hideMore = true;
@@ -684,8 +778,15 @@ export default {
 		display: flex;
 		align-items:center;
 		padding-top: 30upx;
-			justify-content: flex-start;
+		justify-content: flex-start;
+		position:relative;
 	}
+	.tui-chat-right>label{
+		position:absolute;
+		z-index:999;
+		left:0;
+	}
+	
 	
 	.tui-chat-left-image{
 		display: flex;
@@ -826,6 +927,88 @@ export default {
 	.fail_box>image{
 		width:100%;
 		height:auto;
+	}
+	.function{
+		width:auto;
+		position:absolute;
+		top:-80rpx;
+		border-radius:20rpx;
+		background-color:rgba(48, 48, 48, .9);
+		display:flex;
+		justify-content:space-around;
+		z-index:99;
+	}
+	.function>view{
+		padding:25rpx;
+		font-size:14px;
+		color:#fff;
+	}
+	.function_line{
+		border-right:1px solid #b5b5b5;
+	}
+	.function_arrow{
+		width:0;
+		height:0;
+		border-right:16rpx solid transparent;
+		border-left:16rpx solid transparent;
+		border-top:16rpx solid rgba(48, 48, 48, .9);
+		position:absolute;
+		top:3px;
+		right:17%;
+		z-index:99;
+	}
+	.left_arrow{
+		right:0;
+		left:17%;
+	}
+	.prompt_title{
+		margin-bottom:30rpx;
+	}
+	.radio_box{
+		margin-bottom:30rpx;
+		font-size:14px;
+	}
+	.button_box{
+		width:100%;
+		display:flex;
+	}
+	.button_box>button{
+		width:50%;
+		background:none;
+		border-top:1px solid #dedede;
+		border-radius:0;
+	}
+	.button_box>button:nth-child(1){
+		border-right:1px solid #dedede;
+	}
+	.modal_custom{
+		display:flex;
+		justify-content:center;
+		align-items:center;
+		flex-direction:column;
+	}
+	.del_button{
+		position:fixed;
+		bottom:0;
+		left:0;
+		right:0;
+		height:140rpx;
+		background:#f8f6f7;
+		z-index:1000;
+		display:flex;
+		justify-content:space-between;
+		align-items:center;
+	}
+	.del_button>button{
+		width:40%;
+		height:70%;
+	}
+	.del_button>button:nth-child(1){
+		background:#fe8282;
+	}
+	.del_button>button:nth-child(2){
+		background:#fff;
+		color:#000;
 	}
 @import "@/static/style/style.scss";
 </style>

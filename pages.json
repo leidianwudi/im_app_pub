@@ -35,6 +35,11 @@
 				}
             }			
 		},{
+            "path": "pages/friend/retransmission/retransmission",
+            "style": {
+                "navigationBarTitleText": "选择好友"
+            }			
+        },{
             "path": "pages/user/Myqrcode/Myqrcode",
             "style": {
                 "navigationBarTitleText": "我的二维码名片"
