@@ -39,7 +39,8 @@ import util from '@/common/util.js';
                     title:'正在上传头像.....',
 					success() {
 						_this.path = ev.path;
-						api.uploadFileToCache(_this.url, res => {
+						api.uploadFileToCache(_this.path, res => {
+							console.log(res);
 							_this.serverUrl = res.data.url;
 							api.updMyInfo({
 								account: _this.userEn.account,
@@ -71,6 +72,9 @@ import util from '@/common/util.js';
 			oncancle() {
 				// url设置为空，隐藏控件
 				this.url = "";
+				uni.navigateBack({
+					delta: 1
+				})
 			}
 		}
 	}

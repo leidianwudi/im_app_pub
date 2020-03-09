@@ -11,7 +11,12 @@
                 		<image src="/static/img/xiugai.png" mode="widthFix"></image>
                 	</view>
                 </view>
-				<view class="user_name">用户账号：{{userEn.account}}</view>
+				<view class="user_nick">
+					<view class="user_name">用户账号：{{userEn.account}}</view>
+					<view class="qrcode_icon">
+						<image src="/static/img/qrcode_icon.png" mode="widthFix"></image>
+					</view>
+				</view>
 				<view class="user_text">{{userEn.signature ? userEn.signature : '暂无设置签名'}}</view>
 			</view>
 		</view>
@@ -156,7 +161,11 @@ import "@/static/style/iconFont/iconfont_my.css";
 		width:41rpx;
 		height:41rpx;
 	}
-	.xiugai>image{
+	.qrcode_icon{
+		width:45rpx;
+		height:45rpx;
+	}
+	.xiugai>image, .qrcode_icon>image{
 		width:100%;
 		height:auto;
 	}

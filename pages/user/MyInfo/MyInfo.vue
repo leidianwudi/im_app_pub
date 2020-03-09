@@ -11,7 +11,15 @@
 						<micon type="arrowright" size=18></micon>
 					</view>
 				</view>
-			</view>			
+			</view>	
+			<view @tap="toQrcode">
+				<text>二维码名片</text>
+				<view class="info_color">
+					<view class="more">
+						<micon type="arrowright" size=18></micon>
+					</view>
+				</view>
+			</view>
 			<view>
 				<text>账号</text>
 				<view class="info_color">
@@ -124,6 +132,12 @@ import kpsImageCutter from "@/components/ksp-image-cutter/ksp-image-cutter.vue";
 			});
 		},
 		methods: {
+			//查看我的二维码名片
+			toQrcode(){
+				uni.navigateTo({
+					url:'/pages/user/Myqrcode/Myqrcode'
+				})
+			},
 			//查看大头像
 			checkImg(){
 				uni.previewImage({
