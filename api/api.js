@@ -106,4 +106,10 @@ module.exports = {
 	
 	//查询所有最后一条聊天记录
 	getLastMsgByAccount: function(postData, funSuccess) {httpUtil.post('msg/getLastMsgByAccount', postData, funSuccess);},
+	
+	//修改用户系统设置
+	setUserSetting: function(postData, funSuccess) {httpUtil.post('user/setUserSetting', postData, funSuccess);},
+	
+	//查询用户系统设置
+	getUserSetting: function(postData, funSuccess) {httpUtil.post('user/getUserSetting', postData, funSuccess);},
 } 

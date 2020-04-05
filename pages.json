@@ -200,6 +200,23 @@
             "style": {
                 "navigationBarTitleText": "新用户注册"
             }
+        },{
+            "path": "pages/user/My/setUp/noticeNotExcuse/noticeNotExcuse",
+            "style": {
+                "navigationBarTitleText": "消息设置",
+				"app-plus": {
+					"bounce": "none", //关闭窗口回弹效果
+					"titleNView": {
+						"buttons": [ //原生标题栏按钮配置,
+							  {
+								"text":"\u2713",
+								"float":"right",
+								"fontSize":"20px"
+							  }
+						]
+					}
+				}
+            }			
         }
     ],
     "tabBar": {
