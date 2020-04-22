@@ -3,7 +3,7 @@
         <view class="input-group">
             <view class="input-row border">
                 <text class="title login_info">账号：</text>
-                <m-input class="m-input" type="text" clearable focus v-model="account" placeholder="请输入账号"></m-input>
+			   <m-input class="m-input" type="text" focus v-model="account" placeholder="请输入账号"></m-input>
             </view>
 			
 			
@@ -66,7 +66,7 @@
                  */
                 this.positionTop = uni.getSystemInfoSync().windowHeight - 100;
             },
-            bindLogin() {				
+            bindLogin() {		
                 if (this.account.length < 5) {
                     uni.showToast({
                         icon: 'none',

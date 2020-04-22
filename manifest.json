@@ -46,7 +46,8 @@
                 "speech" : {},
                 "push" : {
                     "unipush" : {}
-                }
+                },
+                "ad" : null
             },
             "icons" : {
                 "android" : {
@@ -110,6 +111,7 @@
             "treeShaking" : {
                 "enable" : true
             }
-        }
+        },
+        "title" : "陌聊"
     }
 }
