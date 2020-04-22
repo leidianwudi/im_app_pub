@@ -25,14 +25,14 @@
 							<view class="tui-chat-center" v-if="item.addTime">{{item.addTime}}</view>
 							<view class="tui-chat-right" v-if="item.account == userEn.account"  @longpress="logoTime(item)">
 								<label v-if="select">
-								    <checkbox />
+								    <checkbox @tap="addMsgId(item.id)"/>
 								</label>
 								<view class="function" v-if="item.id == selectId">
 									<view class="function_line" @tap="copy(item.msg)" v-if="isTest">复制</view>
 									<view class="function_line" @tap="retransmission(item.msg)">转发</view>
 									<view class="function_line">撤回</view>
 									<view class="function_line" @tap="selectDel">多选</view>
-									<view class="" @tap="delMsg(item)">删除</view>
+									<view class="" @tap="showDelMsg(item.id)">删除</view>
 								</view>
 								<view class="function_arrow" v-if="item.id == selectId"></view>
 								<!-- 我发送的消息 -->
@@ -64,7 +64,7 @@
 									<view class="function_line" @tap="retransmission(item.msg)">转发</view>
 									<view class="function_line">撤回</view>
 									<view class="function_line" @tap="selectDel">多选</view>
-									<view class="" @tap="delMsg(item)">删除</view>
+									<view class="" @tap="showDelMsg(item.id)">删除</view>
 								</view>
 								<view class="function_arrow left_arrow" v-if="item.id == selectId"></view>
 								<!-- 好友发送的消息 -->
@@ -95,7 +95,7 @@
 				</view>
 				<view class="button_box">
 					<button @tap="hide9">取消</button>
-					<button @tap="hide9">确定</button>
+					<button @tap="delMsg">确定</button>
 				</view>
 			</view>
 		</modal>
@@ -225,6 +225,7 @@ export default {
 				modal9: false,			//控制添加好友时的验证信息弹窗
 				delFriendMsg: false,   //控制删除单选框
 				select: false,  //控制删除多选框显示
+				selIdArr:[],		//选中的聊天记录id数组
 				
 				scrollAnimation: false,
 				isHistoryLoading: false,
@@ -290,6 +291,7 @@ export default {
 			},
 			//多选删除按钮
 			selectDel(){
+				this.selIdArr = [];//清空
 				this.select = true;
 			},
 			//单选转发跳转到转发界面
@@ -306,11 +308,25 @@ export default {
 			},
 			//关闭删除功能弹窗
 			hide9() {
-				this.modal9 = false
+				this.modal9 = false;
+			},
+			//添加选中的聊天记录id
+			addMsgId(id) {
+				this.selIdArr.push({id: id});
+			},
+			//删除聊天记录
+			delMsg() {
+				this.cancelDel();//取消多选删除按钮
+				this.hide9();//隐藏对话框
+				friendMsg.delFriendMsgInAccount(this.selIdArr);				
 			},
 			//删除功能
-			delMsg(item){
-				this.modal9 = true;
+			showDelMsg(id){
+				console.log(id);
+				this.modal9 = true;//显示删除对话框
+				this.selIdArr = [];//清空
+				this.selIdArr.push({id: id});
+				//this.delMsg();//删除
 			},
 			//复制功能
 			copy(msg){

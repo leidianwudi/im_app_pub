@@ -112,4 +112,7 @@ module.exports = {
 	
 	//查询用户系统设置
 	getUserSetting: function(postData, funSuccess) {httpUtil.post('user/getUserSetting', postData, funSuccess);},
+	
+	//删除自己聊天记录
+	delFriendMsgInAccount: function(postData, funSuccess) {httpUtil.post('friend/delFriendMsgInAccount', postData, funSuccess);},
 } 

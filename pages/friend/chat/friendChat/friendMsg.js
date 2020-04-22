@@ -157,6 +157,29 @@ module.exports = {
 		}
 		return 0;
 	},
+	//删除自己聊天记录
+	delFriendMsgInAccount(delArr) {
+		let data = {
+			account: this.account,
+			arr: delArr
+		};
+		let _this = this;
+		api.delFriendMsgInAccount(data, (res)=>{
+			if (api.getCode(res) == 0)
+			{						
+				delArr.forEach((item)=>{	
+					for(let i = 0; i < _this.ui.arrMsg.length; ++i)
+					{
+						if (_this.ui.arrMsg[i].id == item.id)
+						{
+							_this.ui.arrMsg.splice(i, 1);//删除数据
+							break;
+						}
+					}
+				});
+			}
+		});
+	},
 	//修改数据状态 id:记录id addTime:记录时间
 	changeMsg(index, msg, arrMsg, change, id = null, addTime = null) {
 		if (util.isEmpty(arrMsg)) return true;
