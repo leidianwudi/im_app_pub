@@ -82,7 +82,7 @@
 								<image :src="item.msg.url" mode="" :style="{'width': item.msg.w+'px','height': item.msg.h+'px'}"></image>
 							</view>
 							<!-- 我发送的语音 -->
-							<view v-if="item.msgType === 2" class="tui-chat-right bubble voice" @tap="playVoice(item.msg)" :class="playMsgid == item.msg.id?'play':''">
+							<view v-if="item.msgType === 2" class="tui-chat-right bubble voice" @tap="playVoice(item)" :class="playMsgid == item.msg.id?'play':''">
 								<view class="icon my-voice"></view>
 								<view class="length">{{item.msg.length}}</view>
 							</view>								
@@ -115,7 +115,7 @@
 								<image :src="item.msg.url" mode="" :style="{'width': item.msg.w+'px','height': item.msg.h+'px'}"></image>
 							</view>
 							<!-- 好友发送的语音 -->
-							<view v-if="item.msgType === 2" class="tui-chat-right bubble voice" @tap="playVoice(item.msg)" :class="playMsgid == item.msg.id?'play':''">
+							<view v-if="item.msgType === 2" class="tui-chat-right bubble voice" @tap="playVoice(item)" :class="playMsgid == item.msg.id?'play':''">
 								<view class="length">{{item.msg.length}}</view>
 								<view class="icon other-voice"></view>
 							</view>								
@@ -310,7 +310,7 @@
 			// 播放语音
 			playVoice(msg){
 				this.playMsgid=msg.id;
-				this.AUDIO.src = msg.url;
+				this.AUDIO.src = msg.msg.url;
 				this.$nextTick(function() {
 					this.AUDIO.play();
 				});
