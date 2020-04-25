@@ -164,10 +164,11 @@ module.exports = {
 			arr: delArr
 		};
 		let _this = this;
+		let _delArr = delArr;
 		api.delFriendMsgInAccount(data, (res)=>{
 			if (api.getCode(res) == 0)
 			{						
-				delArr.forEach((item)=>{	
+				_delArr.forEach((item)=>{	
 					for(let i = 0; i < _this.ui.arrMsg.count; ++i)
 					{
 						if (_this.ui.arrMsg[i].id == item.id)
