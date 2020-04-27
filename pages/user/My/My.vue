@@ -25,7 +25,7 @@
 			
 			<view class="func_box" @tap="toSetUp">
                 <view class="">
-                	<text class="iconfont myIcon">&#xe608;</text>
+                	<micon type="settings" size=20></micon>
                 	<text class="func_test">消息设置</text>
                 </view>
 				<view class="">
@@ -35,7 +35,7 @@
 			
 			<view class="func_box" @tap="toAbout">
                 <view class="">
-                	<text class="iconfont myIcon">&#xe635;</text>
+                	<micon type="info" size=20></micon>
                 	<text class="func_test">关于我们</text>	
                 </view>			
 				<view class="">
@@ -55,7 +55,6 @@
 import storage from '@/api/storage.js';
 import utilCore from '@/api/utilCore.js';
 import micon from '@/components/m-icon/m-icon';
-import "@/static/style/iconFont/iconfont_my.css";
     import {
         mapState,
         mapMutations
