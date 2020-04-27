@@ -288,57 +288,38 @@ export default {
 			lastMsg.lastMsgRead2(0, this.friendAccount);
 		},
 		methods: {
+			//确定删除记录
 			delMsg(){
-				if(this.delType == 1){    //删除记录类型为单选
-					let data = {
-						account: this.userEn.account,
-						arr: this.delMsgId
-					};
-					if(this.delFriendMsg){  //选中同时删除对方的记录
-						api.delFriendMsgByArr(data, (res)=>{
-							let code = api.getCode(res);
-							if(code == 0) friendMsg.getMsgList(); //重新获取与好友的消息记录
-							this.delFriendMsg = false;  //重置单选框
+				if(this.delFriendMsg){    	//选中同时删除对方的记录
+					if(this.delType == 1){  //删除记录类型为单选
+						friendMsg.delFriendMsgByArr(this.delMsgId);
+					}else{  				//删除记录类型为多选（多选初始获取到的id值为string类型）
+						let msgId = [];
+						this.delId.forEach((item, index) => {
+							let numId = parseInt(item);  //id转为number类型
+						    msgId.push({
+						        id: numId
+						    });
 						});
-					}else{
-						api.delFriendMsgInAccount(data, (res)=>{
-							let code = api.getCode(res);
-							if(code == 0) friendMsg.getMsgList(); //重新获取与好友的消息记录
-							this.delFriendMsg = false;  //重置单选框
-						});
+						friendMsg.delFriendMsgByArr(msgId);
+						this.select = false;//关闭多选界面
 					}
 				}
 				
 				
-				else{		//删除记录类型为多选
-					let msgId = [];
-					this.delId.forEach((item, index) => {
-						console.log(this.delId);
-						let numId = parseInt(item);  //id转为number类型
-						console.log(numId);
-					    msgId.push({
-					        id: numId
-					    });
-					});
-					let data1 = {
-						account: this.userEn.account,
-						arr: msgId
-					};
-					if(this.delFriendMsg){  //选中同时删除对方的记录
-						api.delFriendMsgByArr(data1, (res)=>{
-							let code = api.getCode(res);
-							if(code == 0) friendMsg.getMsgList(); //重新获取与好友的消息记录
-							this.select = false;   //关闭多选界面
-							this.delFriendMsg = false;  //重置单选框
+				else{		//只删除自己的记录
+					if(this.delType == 1){  //删除记录类型为单选
+						friendMsg.delFriendMsgInAccount(this.delMsgId);
+					}else{  				//删除记录类型为多选（多选初始获取到的id值为string类型）
+						let msgId = [];
+						this.delId.forEach((item, index) => {
+							let numId = parseInt(item);  //id转为number类型
+						    msgId.push({
+						        id: numId
+						    });
 						});
-					}else{
-						api.delFriendMsgInAccount(data1, (res)=>{
-							let code = api.getCode(res);
-							if(code == 0) friendMsg.getMsgList(); //重新获取与好友的消息记录
-							this.select = false;
-							this.select = false;   //关闭多选界面
-							this.delFriendMsg = false;  //重置单选框
-						});
+						friendMsg.delFriendMsgInAccount(msgId);
+						this.select = false;  //关闭多选界面
 					}
 				}
 			},

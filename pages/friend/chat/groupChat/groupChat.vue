@@ -53,21 +53,21 @@
 						<view class="rect5"></view>
 					</view>
 				 </view>
-				<checkbox-group>
+				<checkbox-group @change="getMsgId">
 				<view class="msgList" v-for="(item, index) in arrMsg" :key="index" :id="'msg'+item.id">
 					<view class="msg_main">
 						<!-- <view class="tui-label" v-if="item.system">{{item.system}}</view> -->
 						<view class="tui-chat-center" v-if="item.addTime">{{item.addTime}}</view>
 						<view class="tui-chat-right" v-if="item.account == userEn.account" @longpress="logoTime(item)">
 							<label v-if="select">
-							    <checkbox />
+							    <checkbox :value="item.id + ''" />
 							</label>
 							<view class="function" v-show="item.id == selectId">
 								<view class="function_line" @tap="copy(item.msg)" v-if="isTest">复制</view>
 								<view class="function_line" @tap="retransmission(item.msg)">转发</view>
 								<view class="function_line">撤回</view>
 								<view class="function_line" @tap="selectDel">多选</view>
-								<view class="" @tap="delMsg(item)">删除</view>
+								<view class=""  @tap="delMsgsTrue(1, item.id)">删除</view>
 							</view>
 							<view class="function_arrow" v-show="item.id == selectId"></view>
 							<!-- 我发送的消息 -->
@@ -92,14 +92,14 @@
 
 						<view class="tui-chat-left" v-if="item.account != userEn.account" @longpress="logoTime(item)">
 							<label v-if="select">
-							    <checkbox />
+							    <checkbox :value="item.id + ''" />
 							</label>
 							<view class="function" v-show="item.id == selectId">
 								<view class="function_line" @tap="copy(item.msg)" v-if="isTest">复制</view>
 								<view class="function_line" @tap="retransmission(item.msg)">转发</view>
 								<view class="function_line">撤回</view>
 								<view class="function_line" @tap="selectDel">多选</view>
-								<view class="" @tap="delMsg(item)">删除</view>
+								<view class=""  @tap="delMsgsTrue(1, item.id)">删除</view>
 							</view>
 							<view class="function_arrow left_arrow" v-show="item.id == selectId"></view>
 							<image :src="item.head" class="tui-user-pic tui-right" @tap="toGroupUserInfo(item.nickTip, item.job)"></image>
@@ -148,14 +148,14 @@
 				</view>
 				<view class="button_box">
 					<button @tap="hide9">取消</button>
-					<button @tap="hide9">确定</button>
+					<button @tap="submitDel">确定</button>
 				</view>
 			</view>
 		</modal>
 		
 		<!-- 多选删除底部的删除键 -->
 		<view class="del_button" v-if="select">
-			<button type="primary"  @tap="delMsg">删除</button>
+			<button type="primary"  @tap="delMsgsTrue(2)">删除</button>
 			<button type="primary" @tap="cancelDel">取消</button>
 		</view>
 	</view>
@@ -203,7 +203,10 @@
 				isTest: true,  //控制选择栏里是否有复制功能
 				modal9: false,			//控制添加好友时的验证信息弹窗
 				delFriendMsg: false,   //控制删除单选框
-				select: false,  //控制删除多选框显示				
+				select: false,  //控制删除多选框显示	
+				delType: null, //判断删除记录类型 1：单选 2：多选
+				delId: [], //被删除记录的id（多选用）
+				delMsgId: [], //被删除记录的id（单选用）
 				
 				//录音相关参数
 				// #ifndef H5
@@ -264,6 +267,55 @@
 			lastMsg.lastMsgRead2(1, this.groupId);
 		},
 		methods: {
+			//确定删除记录
+			delMsg(){
+				if(this.delFriendMsg){    	//选中同时删除对方的记录
+					if(this.delType == 1){  //删除记录类型为单选
+						groupMsg.delFriendMsgByArr(this.delMsgId);
+					}else{  				//删除记录类型为多选（多选初始获取到的id值为string类型）
+						let msgId = [];
+						this.delId.forEach((item, index) => {
+							let numId = parseInt(item);  //id转为number类型
+						    msgId.push({
+						        id: numId
+						    });
+						});
+						groupMsg.delFriendMsgByArr(msgId);
+						this.select = false;//关闭多选界面
+					}
+				}
+				
+				
+				else{		//只删除自己的记录
+					if(this.delType == 1){  //删除记录类型为单选
+						groupMsg.delFriendMsgInAccount(this.delMsgId);
+					}else{  				//删除记录类型为多选（多选初始获取到的id值为string类型）
+						let msgId = [];
+						this.delId.forEach((item, index) => {
+							let numId = parseInt(item);  //id转为number类型
+						    msgId.push({
+						        id: numId
+						    });
+						});
+						groupMsg.delFriendMsgInAccount(msgId);
+						this.select = false;  //关闭多选界面
+						console.log(this.arrMsg);
+					}
+				}
+			},
+			//多选删除记录操作
+			getMsgId(v){
+				this.delId = v.detail.value;
+			},
+			//删除记录确认弹窗控制
+			delMsgsTrue(type, id){
+				this.modal9 = true;
+				if(type == 1){ 				  //删除记录类型为单选
+					this.delMsgId = [{"id": id}];
+					this.delType = 1;
+				}
+				if(type == 2) this.delType = 2;  //删除记录类型为多选
+			},
 			//取消多选删除按钮
 			cancelDel(){
 				this.select = false;				
@@ -288,9 +340,10 @@
 			hide9() {
 				this.modal9 = false
 			},
-			//删除功能
-			delMsg(item){
-				this.modal9 = true;
+			//提交删除记录信息
+			submitDel(){
+				this.modal9 = false
+				this.delMsg();				
 			},
 			//复制功能
 			copy(msg){
@@ -303,7 +356,6 @@
 			},
 			//长按打开功能菜单
 			logoTime(item){
-				console.log(item);
 				this.isTest = item.msgType == 0 ? true : false;  //判断长按消息的类型 只有文字消息才显示复制
 				this.selectId = item.id;
 			},
