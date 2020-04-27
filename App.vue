@@ -2,6 +2,26 @@
 	import newMsg from "@/pages/friend/news/newMsg.js";
 	export default {
 		onLaunch: function() {
+			document.addEventListener('plusready', function(){  
+			    // 页面加载时触发  
+			    var pinf = plus.push.getClientInfo();  
+			    var cid1 = pinf.clientid;//客户端标识  
+				uni.showModal({
+					title:'cid1',
+					content:cid1
+				});
+			}, false );
+			// #ifdef APP-PLUS
+			plus.push.addEventListener('plusready', function(message) {  
+			            var pinf = plus.push.getClientInfo();
+			            var cid2 = pinf.clientid;//客户端标识  
+			            uni.showModal({
+			            	title:'cid2',
+			            	content:cid2
+			            }); 
+			        });  
+			// #endif
+			
 			switch (uni.getSystemInfoSync().platform) {
 				case 'android':
 					//console.log('运行Android上') 
