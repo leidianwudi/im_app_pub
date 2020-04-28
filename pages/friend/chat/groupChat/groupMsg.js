@@ -159,43 +159,17 @@ module.exports = {
 	},
 	
 	//删除自己聊天记录
-	delFriendMsgInAccount(delArr) {
+	delGroupMsgByArr(delArr) {
 		let data = {
 			account: this.account,
 			arr: delArr
 		};
 		let _this = this;
 		let _delArr = delArr;
-		api.delFriendMsgInAccount(data, (res)=>{
+		api.delGroupMsgByArr(data, (res)=>{
 			if (api.getCode(res) == 0)
 			{				
 				_delArr.forEach((item) =>{	
-					for(let i = 0; i < _this.ui.arrMsg.length; ++i)
-					{
-						if (_this.ui.arrMsg[i].id == item.id)
-						{
-							_this.ui.arrMsg.splice(i, 1);//删除数据
-							break;
-						}
-					}
-				});
-			}
-		});
-	},
-	
-	//删除双方聊天记录
-	delFriendMsgByArr(delArr) {
-		let data = {
-			account: this.account,
-			arr: delArr
-		};
-		let _this = this;
-		let _delArr = delArr;
-		api.delFriendMsgByArr(data, (res)=>{
-			if (api.getCode(res) == 0)
-			{				
-				_delArr.forEach((item)=>{	
-					console.log(item);  //{id:xxx}
 					for(let i = 0; i < _this.ui.arrMsg.length; ++i)
 					{
 						if (_this.ui.arrMsg[i].id == item.id)

@@ -65,7 +65,6 @@
 							<view class="function" v-show="item.id == selectId">
 								<view class="function_line" @tap="copy(item.msg)" v-if="isTest">复制</view>
 								<view class="function_line" @tap="retransmission(item.msg)">转发</view>
-								<view class="function_line">撤回</view>
 								<view class="function_line" @tap="selectDel">多选</view>
 								<view class=""  @tap="delMsgsTrue(1, item.id)">删除</view>
 							</view>
@@ -82,9 +81,10 @@
 								<image :src="item.msg.url" mode="" :style="{'width': item.msg.w+'px','height': item.msg.h+'px'}"></image>
 							</view>
 							<!-- 我发送的语音 -->
-							<view v-if="item.msgType === 2" class="tui-chat-right bubble voice" @tap="playVoice(item)" :class="playMsgid == item.msg.id?'play':''">
+							<view v-if="item.msgType === 2" class="tui-chatbox tui-chatbox-right tui-chat-right bubble voice" 
+							@tap="playVoice(item)" :class="playMsgid == item.id?'play1':''" style="padding:10rpx 20rpx; font-size:14px;">
+								<view class="length" style="margin-right:20rpx;">{{item.msg.length}}</view>
 								<view class="icon my-voice"></view>
-								<view class="length">{{item.msg.length}}</view>
 							</view>								
 							<!-- 头像 -->
 							<image :src="userEn.head" class="tui-user-pic tui-left"></image>
@@ -115,9 +115,10 @@
 								<image :src="item.msg.url" mode="" :style="{'width': item.msg.w+'px','height': item.msg.h+'px'}"></image>
 							</view>
 							<!-- 好友发送的语音 -->
-							<view v-if="item.msgType === 2" class="tui-chat-right bubble voice" @tap="playVoice(item)" :class="playMsgid == item.msg.id?'play':''">
-								<view class="length">{{item.msg.length}}</view>
+							<view v-if="item.msgType === 2" class="tui-chatbox tui-chatbox-left tui-chat-right bubble voice" 
+							@tap="playVoice(item)" :class="playMsgid == item.id?'play':''" style="padding:10rpx 20rpx; font-size:14px;">
 								<view class="icon other-voice"></view>
+								<view class="length" style="margin-left:20rpx;">{{item.msg.length}}</view>
 							</view>								
 						</view>
 					</view>
@@ -143,9 +144,6 @@
 		<modal :show="modal9" @cancel="hide9" :custom="true" :fadein="true">
 			<view class="modal_custom">
 				<view class="prompt_title">你确定要删除消息吗？</view>
-				<view class="uni-padding-wrap radio_box">
-					<label class="radio"><radio value="r1" :checked="delFriendMsg" @tap="isChecked" />是否同时删除对方的消息？</label>
-				</view>
 				<view class="button_box">
 					<button @tap="hide9">取消</button>
 					<button @tap="submitDel">确定</button>
@@ -202,7 +200,6 @@
 				selectId: 0,  //控制长按出现功能选择栏
 				isTest: true,  //控制选择栏里是否有复制功能
 				modal9: false,			//控制添加好友时的验证信息弹窗
-				delFriendMsg: false,   //控制删除单选框
 				select: false,  //控制删除多选框显示	
 				delType: null, //判断删除记录类型 1：单选 2：多选
 				delId: [], //被删除记录的id（多选用）
@@ -269,38 +266,18 @@
 		methods: {
 			//确定删除记录
 			delMsg(){
-				if(this.delFriendMsg){    	//选中同时删除对方的记录
-					if(this.delType == 1){  //删除记录类型为单选
-						groupMsg.delFriendMsgByArr(this.delMsgId);
-					}else{  				//删除记录类型为多选（多选初始获取到的id值为string类型）
-						let msgId = [];
-						this.delId.forEach((item, index) => {
-							let numId = parseInt(item);  //id转为number类型
-						    msgId.push({
-						        id: numId
-						    });
-						});
-						groupMsg.delFriendMsgByArr(msgId);
-						this.select = false;//关闭多选界面
-					}
-				}
-				
-				
-				else{		//只删除自己的记录
-					if(this.delType == 1){  //删除记录类型为单选
-						groupMsg.delFriendMsgInAccount(this.delMsgId);
-					}else{  				//删除记录类型为多选（多选初始获取到的id值为string类型）
-						let msgId = [];
-						this.delId.forEach((item, index) => {
-							let numId = parseInt(item);  //id转为number类型
-						    msgId.push({
-						        id: numId
-						    });
-						});
-						groupMsg.delFriendMsgInAccount(msgId);
-						this.select = false;  //关闭多选界面
-						console.log(this.arrMsg);
-					}
+				if(this.delType == 1){  //删除记录类型为单选
+					groupMsg.delGroupMsgByArr(this.delMsgId);
+				}else{  				//删除记录类型为多选（多选初始获取到的id值为string类型）
+					let msgId = [];
+					this.delId.forEach((item, index) => {
+						let numId = parseInt(item);  //id转为number类型
+					    msgId.push({
+					        id: numId
+					    });
+					});
+					groupMsg.delGroupMsgByArr(msgId);
+					this.select = false;//关闭多选界面
 				}
 			},
 			//多选删除记录操作
@@ -331,10 +308,6 @@
 				uni.navigateTo({
 					url: "/pages/friend/retransmission/retransmission?msg=" + testMsg
 				})
-			},
-			//控制删除功能弹窗的勾选框
-			isChecked(){
-				this.delFriendMsg = this.delFriendMsg == false ? true : false;
 			},
 			//关闭删除功能弹窗
 			hide9() {
@@ -1037,6 +1010,10 @@
 	.del_button>button:nth-child(2){
 		background:#fff;
 		color:#000;
+	}
+	.my-voice, .other-voice{
+		display:flex;
+		align-items:center;
 	}
 @import "@/static/style/style.scss";
 </style>

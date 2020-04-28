@@ -118,4 +118,7 @@ module.exports = {
 	
 	//删除自己的聊天记录
 	delFriendMsgInAccount: function(postData, funSuccess) {httpUtil.post('friend/delFriendMsgInAccount', postData, funSuccess);},
+	
+	//删除群的聊天记录
+	delGroupMsgByArr: function(postData, funSuccess) {httpUtil.post('group/delGroupMsgByArr', postData, funSuccess);},
 } 

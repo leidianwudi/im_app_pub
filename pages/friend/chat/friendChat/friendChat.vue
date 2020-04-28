@@ -47,9 +47,10 @@
 									<image :src="item.msg.url" mode="" :style="{'width': item.msg.w+'px','height': item.msg.h+'px'}"></image>
 								</view>
 								<!-- 我发送的语音 -->
-								<view v-if="item.msgType === 2" class="tui-chat-right bubble voice" @tap="playVoice(item)" :class="playMsgid == item.msg.id?'play':''">
+								<view v-if="item.msgType === 2" class="tui-chatbox tui-chatbox-right tui-chat-right bubble voice" 
+								@tap="playVoice(item)" :class="playMsgid == item.id?'play1':''" style="padding:10rpx 20rpx; font-size:14px;">
+									<view class="length" style="margin-right:20rpx;">{{item.msg.length}}</view>
 									<view class="icon my-voice"></view>
-									<view class="length">{{item.msg.length}}</view>
 								</view>							
 								<!-- 头像 -->
 								<image :src="userEn.head" class="tui-user-pic tui-left"></image>
@@ -75,10 +76,11 @@
 									<image :src="item.msg.url" mode="" :style="{'width': item.msg.w+'px','height': item.msg.h+'px'}"></image>
 								</view>	
 								<!-- 好友发送的语音 -->
-								<view v-if="item.msgType === 2" class="tui-chat-right bubble voice" @tap="playVoice(item)" :class="playMsgid == item.id?'play':''">
-									<view class="length">{{item.msg.length}}</view>
+								<view v-if="item.msgType === 2" class="tui-chatbox tui-chatbox-left tui-chat-right bubble voice" 
+								@tap="playVoice(item)" :class="playMsgid == item.id?'play':''" style="padding:10rpx 20rpx; font-size:14px;">
 									<view class="icon other-voice"></view>
-								</view>													
+									<view class="length" style="margin-left:20rpx;">{{item.msg.length}}</view>
+								</view>		
 							</view>										
 					</view>
 				</checkbox-group>
@@ -121,6 +123,7 @@
 				<view class="list">
 					<view class="box" @tap="chooseImage"><view class="icon tupian2"></view></view>
 					<view class="box" @tap="camera"><view class="icon paizhao"></view></view>
+					<view class="box" @tap="shake"><view class="icon shake"></view></view>
 					<!-- <view class="box" @tap.stop="handRedEnvelopes"><view class="icon hongbao"></view></view> -->
 				</view>
 			</view>
@@ -203,7 +206,6 @@ import emojiStr from '@/common/emojiStr.js';
 import modal from "@/components/modal/modal";
 
 export default {
-	
 		components: {
 			tuiIcon,
 			emoji,
@@ -288,6 +290,23 @@ export default {
 			lastMsg.lastMsgRead2(0, this.friendAccount);
 		},
 		methods: {
+			//抖屏功能
+			shake(){
+				// uni.navigateTo({
+				// 	url: '/pages/friend/chat/shake/shake?friendAccount=' + this.friendAccount
+				// })
+				uni.showModal({
+					title: '抖一抖',
+					content: '确定对好友发起抖一抖？',
+					success: function (res) {
+					    if (res.confirm) {
+					        console.log('用户点击确定');
+					    } else if (res.cancel) {
+					        console.log('用户点击取消');
+					    }
+					}
+				});
+			},
 			//确定删除记录
 			delMsg(){
 				if(this.delFriendMsg){    	//选中同时删除对方的记录
@@ -1063,6 +1082,10 @@ export default {
 	.del_button>button:nth-child(2){
 		background:#fff;
 		color:#000;
+	}
+	.my-voice, .other-voice{
+		display:flex;
+		align-items:center;
 	}
 @import "@/static/style/style.scss";
 </style>
