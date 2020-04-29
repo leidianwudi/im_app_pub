@@ -295,14 +295,16 @@ export default {
 				// uni.navigateTo({
 				// 	url: '/pages/friend/chat/shake/shake?friendAccount=' + this.friendAccount
 				// })
+				let _this = this;
 				uni.showModal({
 					title: '抖一抖',
 					content: '确定对好友发起抖一抖？',
 					success: function (res) {
 					    if (res.confirm) {
-					        console.log('用户点击确定');
-					    } else if (res.cancel) {
-					        console.log('用户点击取消');
+							let txt = "发送抖一抖";
+							//friendMsg.immediateAddMsg(txt, 3);  //将我的发言消息先添加到本地
+							_this.hideDrawer();
+					        friendMsg.sendShake(txt);							
 					    }
 					}
 				});
@@ -523,18 +525,17 @@ export default {
 												success: (image)=>{
 													let msg = {url:res.data.url, w:image.width, h:image.height};
 													let imgInfo = _this.setPicSize(msg);   //重新设置图片大小													
-                                                    _this.sendImgUrl(imgInfo);
-													uni.hideLoading();													
+                                                    _this.sendImgUrl(imgInfo);															
 												}
 											});
-										}else{
-											uni.hideLoading();
+										}else{											
 											uni.showToast({
 												title: "发送出错，请重试"
 											})
 										}
 									})
 								}
+								uni.hideLoading();
 							},
 						});
 					}
@@ -695,7 +696,7 @@ export default {
 				//延迟100毫秒定位到最后一行，防止自己发消息后，还没定位到最后一行，消息临时id被改成正式id，导致定位错误
 				setTimeout(() => {
 					this.scrollToLast();
-				}, 100);
+				}, 300);
 			},
 			discard(){
 				return;

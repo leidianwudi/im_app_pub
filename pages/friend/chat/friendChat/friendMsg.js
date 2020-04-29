@@ -62,7 +62,17 @@ module.exports = {
 		let data = {
 			account: this.account,
 			toAccount: this.friendAccount,
-			type: 0,
+			type: 0,	//文本
+			msg: content
+		}
+		this.send(data);
+	},
+	//发送抖动消息
+	sendShake(content) {
+		let data = {
+			account: this.account,
+			toAccount: this.friendAccount,
+			type: 2,	//抖动
 			msg: content
 		}
 		this.send(data);
@@ -86,16 +96,20 @@ module.exports = {
 		item.msg = this.getMsgData(item.msgType, item.msg); //获取消息内容
 		//添加数据的情况下且是临时数据
 		if (isPush && this.isCacheMsg(item, this.ui.arrMsg)) {
+			console.log("1");
 			let index = this.getFirstCacheMsgIndex(this.ui.arrMsg);
 			this.changeMsg(index, item.msg, this.ui.arrMsg, 0, item.id, item.addTime); //修改记录为成功状态			
 		} else if (this.isNewMsg(item, this.ui.arrMsg, isPush)) {
+			console.log("2");
 			item.change = 0;
 			if (isPush) {
+				console.log(item);
 				this.ui.arrMsg.push(item);//添加到后面
 			} else {
 				this.ui.arrMsg.unshift(item);//添加到前面
 			}
-		}
+		}	
+		if (isPush) this.ui.scrollToLast();//定位到最后一行
 	},
 	//是否是临时数据
 	isCacheMsg(item, arrMsg) {
@@ -111,9 +125,12 @@ module.exports = {
 	//是否是新数据
 	isNewMsg(item, arrMsg, isPush) {
 		if (util.isEmpty(arrMsg)) return true;
-
+		
+		console.log(item);
+		console.log(arrMsg);
 		if (isPush) {
 			let i = this.getLastMsgIndexBychang(arrMsg, 0);
+			console.log(i);
 			return (item.id > arrMsg[i].id);
 		} else {
 			return (item.id < arrMsg[0].id);
@@ -135,7 +152,7 @@ module.exports = {
 		for (let i = arrMsg.length - 1; i >= 0; --i) {
 			if (arrMsg[i].change === change) return i;
 		}
-		return -1;
+		return arrMsg.length - 1;
 	},
 	//获取消息内容
 	getMsgData(type, msg) {
@@ -228,7 +245,7 @@ module.exports = {
 			type: 0,
 			msg: content,
 			change: 1, //0正式数据  1临时数据 2失败数据
-			msgType: msgType, //  客户端自定义的消息类型 0:文字消息 1:图片消息 2:语音消息
+			msgType: msgType, //  客户端自定义的消息类型 0:文字消息 1:图片消息 2:语音消息 3:抖一抖
 			addTime: time.getToday_YMD()
 		};
 		this.ui.arrMsg.push(data);

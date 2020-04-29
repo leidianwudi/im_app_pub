@@ -96,7 +96,14 @@ export default {
 				this.isLoginGate = false;
 				this.autoLoginGate(); //尝试登录网关
 			}
-			if (this.mapFun.has(type)) {
+			else if(type == "12")//抖屏消息
+			{
+				if (resObj.data.account == this.account) return;//自己发的不提示
+				uni.navigateTo({
+					url:'/pages/friend/chat/shake/shake?friendAccount='+ resObj.data.toAccount
+				});	
+			}
+			else if (this.mapFun.has(type)) {
 				let arr = this.mapFun.get(type);
 				for (let i = 0; i < arr.length; ++i) {
 					arr[i](resObj.data); //函数回调
