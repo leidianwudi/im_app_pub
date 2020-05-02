@@ -3,6 +3,7 @@ import api from "@/api/api.js";
 import lastMsg from "@/api/lastMsg.js";
 import util from "@/common/util.js";
 import wsType from '@/api/msgType.js';
+import tran from "@/common/tran.js";
 //最后一条消息操作
 module.exports = {
 	
@@ -85,6 +86,7 @@ module.exports = {
 	},
 	//自动把单条记录添加到列表
 	autoPushNewMsg(res){
+		console.log("autoPushNewMsg:"+tran.obj2Json(res));
 		lastMsg.countMsg(res, this.account);	//设置未读消息数据
 		let msg = storage.getLastMsgIndex(); 
 		let isOld = false;

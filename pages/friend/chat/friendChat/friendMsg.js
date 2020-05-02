@@ -96,11 +96,9 @@ module.exports = {
 		item.msg = this.getMsgData(item.msgType, item.msg); //获取消息内容
 		//添加数据的情况下且是临时数据
 		if (isPush && this.isCacheMsg(item, this.ui.arrMsg)) {
-			console.log("1");
 			let index = this.getFirstCacheMsgIndex(this.ui.arrMsg);
 			this.changeMsg(index, item.msg, this.ui.arrMsg, 0, item.id, item.addTime); //修改记录为成功状态			
 		} else if (this.isNewMsg(item, this.ui.arrMsg, isPush)) {
-			console.log("2");
 			item.change = 0;
 			if (isPush) {
 				console.log(item);
@@ -125,12 +123,8 @@ module.exports = {
 	//是否是新数据
 	isNewMsg(item, arrMsg, isPush) {
 		if (util.isEmpty(arrMsg)) return true;
-		
-		console.log(item);
-		console.log(arrMsg);
 		if (isPush) {
 			let i = this.getLastMsgIndexBychang(arrMsg, 0);
-			console.log(i);
 			return (item.id > arrMsg[i].id);
 		} else {
 			return (item.id < arrMsg[0].id);
@@ -145,7 +139,7 @@ module.exports = {
 				if (findSum == this.newMsgSum) return i;
 			}
 		}
-		return -1;
+		return arrMsg.length - 1;
 	},
 	//获取状态为change的最后一条消息记录index
 	getLastMsgIndexBychang(arrMsg, change) {
@@ -238,11 +232,11 @@ module.exports = {
 		if (change === 0) --this.newMsgSum; //设置为成功时,数据-1
 	},
 	//直接将我的发言信息添加到本地
-	immediateAddMsg(content, msgType) {
+	immediateAddMsg(content, msgType, type = 0) {
 		let data = {
 			id: --this.changeIndex,
 			account: this.account,
-			type: 0,
+			type: type,
 			msg: content,
 			change: 1, //0正式数据  1临时数据 2失败数据
 			msgType: msgType, //  客户端自定义的消息类型 0:文字消息 1:图片消息 2:语音消息 3:抖一抖

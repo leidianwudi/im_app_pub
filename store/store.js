@@ -15,14 +15,18 @@ const store = new Vuex.Store({
 		ws: ws //webscoket链接,		
     },
     mutations: {
+		//登录
         login(state, userEn) {
 			state.userEn = userEn;
             state.hasLogin = true;
         },
+		
+		//登出
         logout(state) {
             state.userEn = null;
             state.hasLogin = false;
-        }
+        },
+		
     }
 })
 

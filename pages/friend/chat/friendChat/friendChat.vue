@@ -265,6 +265,7 @@ export default {
 			this.getFriendInfo(this.userEn.account, this.friendAccount); //查询特定好友详细信息
 			friendMsg.getMsgList(); //获取与好友的消息记录
 			this.$store.state.ws.addLister(wsType.friend_chat, this.onWebScoketMsg.bind(this));
+			this.$store.state.ws.addLister(wsType.friend_shake, this.onWebScoketMsg.bind(this));
 			//语音自然播放结束
 			this.AUDIO.onEnded((res)=>{
 				this.playMsgid=null;
@@ -283,18 +284,16 @@ export default {
 			
 			setTimeout(() => {
 				this.$refs.emojiRef.initData();//延迟加载表情
-			}, 500);			
+			}, 1000);			
 		},
 		onUnload() {
 			this.$store.state.ws.removeLister(wsType.friend_chat, this.onWebScoketMsg.bind(this));
+			this.$store.state.ws.removeLister(wsType.friend_shake, this.onWebScoketMsg.bind(this));
 			lastMsg.lastMsgRead2(0, this.friendAccount);
 		},
 		methods: {
 			//抖屏功能
 			shake(){
-				// uni.navigateTo({
-				// 	url: '/pages/friend/chat/shake/shake?friendAccount=' + this.friendAccount
-				// })
 				let _this = this;
 				uni.showModal({
 					title: '抖一抖',
@@ -302,7 +301,7 @@ export default {
 					success: function (res) {
 					    if (res.confirm) {
 							let txt = "发送抖一抖";
-							//friendMsg.immediateAddMsg(txt, 3);  //将我的发言消息先添加到本地
+							friendMsg.immediateAddMsg(txt, 0, 2);  //将我的发言消息先添加到本地
 							_this.hideDrawer();
 					        friendMsg.sendShake(txt);							
 					    }

@@ -1,27 +1,8 @@
 <script>
 	import newMsg from "@/pages/friend/news/newMsg.js";
+	import tran from "@/common/tran.js";
 	export default {
-		onLaunch: function() {
-			document.addEventListener('plusready', function(){  
-			    // 页面加载时触发  
-			    var pinf = plus.push.getClientInfo();  
-			    var cid1 = pinf.clientid;//客户端标识  
-				uni.showModal({
-					title:'cid1',
-					content:cid1
-				});
-			}, false );
-			// #ifdef APP-PLUS
-			plus.push.addEventListener('plusready', function(message) {  
-			            var pinf = plus.push.getClientInfo();
-			            var cid2 = pinf.clientid;//客户端标识  
-			            uni.showModal({
-			            	title:'cid2',
-			            	content:cid2
-			            }); 
-			        });  
-			// #endif
-			
+		onLaunch: function() {					
 			switch (uni.getSystemInfoSync().platform) {
 				case 'android':
 					//console.log('运行Android上') 
@@ -40,6 +21,38 @@
 			this.$store.state.ws.init(); //初始化
 			this.$store.state.ws.open(); //连接ws
 			newMsg.init(this); //开启最后记录消息监听
+			
+			//#ifdef APP-PLUS					
+			//收到推送消息执行
+			const _handlePush = function(msg) {		
+				// uni.showModal({
+				// 	title:'resy',
+				// 	content:msg.payload
+				// }); 
+				let res = tran.json2Obj(msg.payload);	
+				console.log(res.type);
+				console.log(res.account);
+				if (res.type == 12)	//抖一抖
+				{
+					let fromAccount = res.account;	//来源好友
+					//打开抖屏界面
+					uni.navigateTo({
+						url:'/pages/friend/chat/shake/shake?friendAccount='+ fromAccount
+					});	
+				}				
+			};
+			
+			//监听系统通知栏消息点击事件  
+			plus.push.addEventListener('click', function(msg){  
+				_handlePush(msg);
+			}, false);  
+			//监听接收透传消息事件  
+			plus.push.addEventListener('receive', function(msg){  
+				plus.runtime.openURL("tlwlkjim://");//唤醒app
+			    _handlePush(msg);
+			}, false);			
+			
+			//#endif
 		},
 		onShow: function() {
 			console.log('App Show');

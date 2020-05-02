@@ -88,20 +88,12 @@ export default {
 		uni.onSocketMessage((res) => {
 			//console.log('收到服务器内容1' + res);
 			let resObj = tran.json2Obj(res.data);
-			console.log('收到服务器内容2' + res);
 			let type = resObj.type; //类型	
 			if(type == "init")
 			{				
 				this.clientId = resObj.clientId; //重新获取ws连接id
 				this.isLoginGate = false;
 				this.autoLoginGate(); //尝试登录网关
-			}
-			else if(type == "12")//抖屏消息
-			{
-				if (resObj.data.account == this.account) return;//自己发的不提示
-				uni.navigateTo({
-					url:'/pages/friend/chat/shake/shake?friendAccount='+ resObj.data.toAccount
-				});	
 			}
 			else if (this.mapFun.has(type)) {
 				let arr = this.mapFun.get(type);
@@ -122,12 +114,19 @@ export default {
 		console.log(this.account +'_' + this.clientId);
 		if(this.isLoginGate) return; //如果已经登录可不用登录
 		if(util.isEmpty(this.account) || util.isEmpty(this.clientId)) return;
+		
+		var pushId = "";
+		//#ifdef APP-PLUS
+		var pinf = plus.push.getClientInfo();
+		pushId = pinf.clientid;//推送客户端标识 
+		//#endif
 		api.loginGate({
 			account: this.account,
-			clientId: this.clientId
+			clientId: this.clientId,
+			pushId: pushId
 		}, res=>{
 			console.log('已登录网关成功' + res);
-			console.log(this.account + '_' + this.clientId);
+			console.log(this.account + '_' + this.clientId + "_" + pushId);
 			this.isLoginGate = true;  //登录成功设置已登录状态
 		})
 	},
@@ -171,7 +170,8 @@ export default {
 	},
 
 	//执行自动操作
-	autoTryDo() {		
+	autoTryDo() {	
+		console.log("定时器执行");
 		if (!this.isOpen) 
 		{
 			this.open();	//没开启连接就尝试连接
@@ -180,6 +180,7 @@ export default {
 		{
 			this.autoLoginGate(); //尝试登录网关
 			uni.sendSocketMessage({data: "0"}); //发送心跳消息
+			console.log("发心跳");
 		}		
 	}
 

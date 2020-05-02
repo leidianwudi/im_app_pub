@@ -62,9 +62,14 @@ export default{
 		},
 		//接收抖一抖邀请(跳转到好友聊天界面)
 		receive(){
+			//必须先关闭所有页面，跳转到主页
+			uni.switchTab({
+				url:'/pages/friend/news/news'
+			});	
+			//保存当前页跳转到好友聊天页
 			uni.navigateTo({
 				url:'/pages/friend/chat/friendChat/friendChat?friendAccount='+ this.friendAccount
-			});	
+			});
 		}
 	}
 }

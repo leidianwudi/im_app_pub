@@ -114,6 +114,7 @@ module.exports = {
 
 		if (isPush) {
 			let i = this.getLastMsgIndexBychang(arrMsg, 0);
+			console.log("sss:"+i);
 			return (item.id > arrMsg[i].id);
 		} else {
 			return (item.id < arrMsg[0].id);
@@ -128,14 +129,14 @@ module.exports = {
 				if (findSum == this.newMsgSum) return i;
 			}
 		}
-		return -1;
+		return arrMsg.length - 1;
 	},
 	//获取状态为change的最后一条消息记录index
 	getLastMsgIndexBychang(arrMsg, change) {
 		for (let i = arrMsg.length - 1; i >= 0; --i) {
 			if (arrMsg[i].change === change) return i;
 		}
-		return -1;
+		return arrMsg.length - 1;
 	},
 	//获取消息内容
 	getMsgData(type, msg) {

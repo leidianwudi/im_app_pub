@@ -257,7 +257,11 @@
 				
 			setTimeout(() => {
 				this.$refs.emojiRef.initData();//延迟加载表情
-			}, 500);
+			}, 1000);
+				
+			// var options = {cover:false};      
+			// var str = ": 欢迎使用Html5 Plus创建本地消息！";    
+			// plus.push.createMessage(str, '{"type": 12, "account":"name2"}', options); 
 		},
 		onUnload() {
 			this.$store.state.ws.removeLister(wsType.group_chat, this.onWebScoketGroupMsg);
