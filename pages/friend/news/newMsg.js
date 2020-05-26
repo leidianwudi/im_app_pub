@@ -86,7 +86,7 @@ module.exports = {
 	},
 	//自动把单条记录添加到列表
 	autoPushNewMsg(res){
-		console.log("autoPushNewMsg:"+tran.obj2Json(res));
+		// console.log("autoPushNewMsg:"+tran.obj2Json(res));
 		lastMsg.countMsg(res, this.account);	//设置未读消息数据
 		let msg = storage.getLastMsgIndex(); 
 		let isOld = false;
@@ -114,4 +114,23 @@ module.exports = {
 		storage.setLastMsgIndex(msg, this.refreshLastMsg.bind(this)); 
 		
 	},
+	//底部tabBar红点提示
+	getMsgNum(){
+		let msg = storage.getLastMsgIndex();//获取最后一条消息数
+		let msgNum = null;//获取未读消息数
+		msg.forEach((item) =>{
+			if(!util.isEmpty(item.msgNum)) msgNum += item.msgNum;
+		});
+		//当未读消息数为空时，消除底部tabBar红点提示
+		if(util.isEmpty(msgNum)){
+			uni.removeTabBarBadge({
+				index: 0
+			});
+		}else{   	//当未读消息数不为空时，添加底部tabBar红点提示
+			uni.setTabBarBadge({
+			  index: 0,
+			  text: msgNum + ''
+			});
+		}
+	}
 }

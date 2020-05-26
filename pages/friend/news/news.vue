@@ -60,6 +60,7 @@ export default{
 			this.menu = false;
 			newMsg.refreshLastMsg(); //刷新ui数据
 			newMsg.getLastMsg();  //尝试取数据
+			newMsg.getMsgNum(); //底部tabBar红点提示操作
 		},
 		// 右上角更多按钮的显示切换
 		onNavigationBarButtonTap(){
