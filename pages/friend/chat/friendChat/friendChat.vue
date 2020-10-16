@@ -21,7 +21,7 @@
 						</view>
 				 </view>
 				 <checkbox-group @change="getMsgId">
-					<view class="tui-chat-content" v-for="(item, index) in arrMsg" :key="index" :id="'msg'+item.id">
+					<view class="tui-chat-content" v-for="(item, index) in arrMsg" :key="index" :id="'msg'+item.locationId">
 							<view class="tui-chat-center" v-if="item.addTime">{{item.addTime}}</view>
 							<view class="tui-chat-right" v-if="item.account == userEn.account"  @longpress="logoTime(item)">
 								<label v-if="select">
@@ -262,8 +262,8 @@ export default {
 			this.userEn = storage.getMyInfo();
 			this.friendAccount = res.friendAccount; //获取好友账号
 			friendMsg.init(this, this.userEn.account, this.friendAccount); //初始化好友消息数据
-			this.getFriendInfo(this.userEn.account, this.friendAccount); //查询特定好友详细信息
 			friendMsg.getMsgList(); //获取与好友的消息记录
+			this.getFriendInfo(this.userEn.account, this.friendAccount); //查询特定好友详细信息
 			this.$store.state.ws.addLister(wsType.friend_chat, this.onWebScoketMsg.bind(this));
 			this.$store.state.ws.addLister(wsType.friend_shake, this.onWebScoketMsg.bind(this));
 			//语音自然播放结束
@@ -280,7 +280,7 @@ export default {
 				this.recordEnd(e);
 			})
 			// #endif
-			console.log(this.arrMsg);
+			//console.log(this.arrMsg);
 			
 			setTimeout(() => {
 				this.$refs.emojiRef.initData();//延迟加载表情
@@ -579,18 +579,14 @@ export default {
 			//滚动条自动滚动到最后一行
 			scrollToLast(){
 				//h5要下针执行
-				// #ifdef H5
 				this.$nextTick(function() {
-				// #endif
 				
 					let i = this.arrMsg.length - 1;
 					if (i < 0) return;
 					// 滚动到底
-					this.scrollToView = 'msg' + this.arrMsg[i].id;
+					this.scrollToView = 'msg' + this.arrMsg[i].locationId;
 					
-				// #ifdef H5
 				});
-				// #endif
 			},
 			// 发送图片消息
 			sendImgUrl(imgInfo){

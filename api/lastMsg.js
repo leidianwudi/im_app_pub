@@ -7,7 +7,7 @@ module.exports = {
 	accORid: null, //设置强制已读数据 好友账户或群id
 	// 设置未读消息数据
 	countMsg(item, account) {
-		console.log("countMsg:" + tran.obj2Json(item));
+		//console.log("countMsg:" + tran.obj2Json(item));
 
 		//如果最后一条消息发送者不为自己时显示红点消息提示
 		let readMsgIndex = storage.getMsgIndex(item.type, item.friendAccount != null ? item.friendAccount : item.groupId);
@@ -38,7 +38,7 @@ module.exports = {
 			item.msgNum = '';
 		}
 
-		console.log("level:" + item.level + " msgNum:" + item.msgNum + " type:" + this.type + " accORid:" + this.accORid);
+		//console.log("level:" + item.level + " msgNum:" + item.msgNum + " type:" + this.type + " accORid:" + this.accORid);
 	},
 	// 保存已读消息数据  type:类型 accORid 好友账号或群id msgIndex已读msgIndex
 	lastMsgRead(type, accORid, msgIndex) {

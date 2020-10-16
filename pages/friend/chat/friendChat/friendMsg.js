@@ -13,6 +13,7 @@ module.exports = {
 	ui: null, //ui
 	changeIndex: 0, //我的最新消息临时id
 	newMsgSum: 0, //临时消息条数
+	locationId: 0,  //定位id(永远增加)
 
 	constructor(){},
 	// 初始化
@@ -23,6 +24,7 @@ module.exports = {
 		this.changeIndex = 0;
 		this.newMsgSum = 0;
 		this.page = 1;
+		this.locationId = 0;
 	},
 	//获取和好友的消息列表
 	getMsgList() {		
@@ -30,7 +32,7 @@ module.exports = {
 		if (!util.isEmpty(data)) 
 		{
 			this.ui.arrMsg = data;//赋值
-			this.ui.scrollToLast();
+			//this.ui.scrollToLast();
 		}
 		this.getMsg();//查找新数据
 	},
@@ -49,9 +51,12 @@ module.exports = {
 			data.forEach((item, index) => {
 				item.msgType = this.getMsgType(item.msg); //获取消息类型
 				item.msg = this.getMsgData(item.msgType, item.msg); //获取消息内容
+				--this.locationId;  //定位id一直增加
+				item.locationId = this.locationId;  //设置新定位id
 				msgNew.unshift(item);//添加到前面	
 			});			
-			this.ui.arrMsg = msgNew;//重新赋值			
+			this.ui.arrMsg = msgNew;//重新赋值		
+			//console.log(this.ui.arrMsg);
 			storage.setFriendMsg(this.friendAccount, msgNew);	//保存好友消息到本地
 			this.ui.scrollToLast();					
 		});
@@ -94,6 +99,10 @@ module.exports = {
 	autoPushMsg(item, isPush) {
 		item.msgType = this.getMsgType(item.msg); //获取消息类型	
 		item.msg = this.getMsgData(item.msgType, item.msg); //获取消息内容
+		
+		--this.locationId;  //定位id一直增加
+		item.locationId = this.locationId;  //设置新定位id
+		
 		//添加数据的情况下且是临时数据
 		if (isPush && this.isCacheMsg(item, this.ui.arrMsg)) {
 			let index = this.getFirstCacheMsgIndex(this.ui.arrMsg);
@@ -235,6 +244,7 @@ module.exports = {
 	immediateAddMsg(content, msgType, type = 0) {
 		let data = {
 			id: --this.changeIndex,
+			locationId: --this.locationId,  //设置新定位id
 			account: this.account,
 			type: type,
 			msg: content,

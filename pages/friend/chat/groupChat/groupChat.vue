@@ -54,7 +54,7 @@
 					</view>
 				 </view>
 				<checkbox-group @change="getMsgId">
-				<view class="msgList" v-for="(item, index) in arrMsg" :key="index" :id="'msg'+item.id">
+				<view class="msgList" v-for="(item, index) in arrMsg" :key="index" :id="'msg'+item.locationId">
 					<view class="msg_main">
 						<!-- <view class="tui-label" v-if="item.system">{{item.system}}</view> -->
 						<view class="tui-chat-center" v-if="item.addTime">{{item.addTime}}</view>
@@ -515,19 +515,22 @@
 				groupMsg.immediateAddMsg(imgInfo, 1);  //将我的发言消息先添加到本地
 				groupMsg.sendText(msg);				
 			},
+			
 			//滚动条自动滚动到最后一行
 			scrollToLast(){
 				//h5要下针执行
-				// #ifdef H5
+				
 				this.$nextTick(function() {
-				// #endif
 					let i = this.arrMsg.length - 1;
 					if (i < 0) return;
+					console.log(i);
 					// 滚动到底
-					this.scrollToView = 'msg' + this.arrMsg[i].id;
-				// #ifdef H5
+					
+
+					this.scrollToView = 'msg' + this.arrMsg[i].locationId;
+					console.log(this.arrMsg);
 				});
-				// #endif
+				
 			},
 			// 聊天图片宽高处理
 			setPicSize(content){
