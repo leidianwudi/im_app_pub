@@ -289,6 +289,7 @@ export default {
 		onUnload() {
 			this.$store.state.ws.removeLister(wsType.friend_chat, this.onWebScoketMsg.bind(this));
 			this.$store.state.ws.removeLister(wsType.friend_shake, this.onWebScoketMsg.bind(this));
+			console.log(0);
 			lastMsg.lastMsgRead2(0, this.friendAccount);
 		},
 		methods: {
@@ -683,6 +684,7 @@ export default {
 			},
 			//监听webscoket返回的数据
 			onWebScoketMsg(res) {	
+				console.log(this.friendAccount);
 				if((res.account != this.friendAccount) && (res.toAccount != this.friendAccount)) return;
 				this.scrollAnimation = true;  //开启滑动动画
 				console.log("onWebScoketMsg:"+ tran.obj2Json(res));

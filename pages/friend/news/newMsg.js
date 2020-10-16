@@ -75,6 +75,9 @@ module.exports = {
 		//关闭下拉刷新动画
 		uni.stopPullDownRefresh();			
 		this.ui.list = msg;  //赋值数据
+		
+		this.getMsgNum();  //刷新底部红点提示
+		
 	},
 	//监听好友消息
 	onWebScoketMsg(res) {
